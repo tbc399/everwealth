@@ -1,20 +1,24 @@
 import asyncio
+
+from fastapi.staticfiles import StaticFiles
 import os
 import re
 from contextlib import asynccontextmanager
 
-#import databases
+# import databases
 from fastapi import APIRouter, FastAPI
-#from loguru import logger as log
+from fastapi.templating import Jinja2Templates
+
+# from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
 
-#from everwealth.config import lucy
-#from everwealth.strategies import rebalance
-#from everwealth.write.investment import api, event_store
-#from everwealth.write.investment.tasks import snapshot
+# from everwealth.config import lucy
+# from everwealth.strategies import rebalance
+# from everwealth.write.investment import api, event_store
+# from everwealth.write.investment.tasks import snapshot
 from everwealth.api import router
 
-#from . import database
+# from . import database
 
 
 async def startup():
@@ -61,12 +65,12 @@ async def lifespan(app: FastAPI):
     await shutdown()
 
 
-app = FastAPI(lifespan=lifespan)
-api_router = APIRouter(prefix="/api")
+app = FastAPI()
 
-# app.include_router(investment.router)
-# api_router.include_router(view.router)
-api_router.include_router(api.router)
+app.mount("/everwealth/static", StaticFiles(directory="everwealth/static"), name="static")
+
+api_router = APIRouter()
+api_router.include_router(router)
 
 app.include_router(api_router)
 
