@@ -7,11 +7,21 @@ router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
 
 
-@router.get("/index/{id}", response_class=HTMLResponse)
-def index(request: Request, id: str):
-    return templates.TemplateResponse(request=request, name="index.html", context={"id": id})
+@router.get("/index", response_class=HTMLResponse)
+def index(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
 @router.get("/login", response_class=HTMLResponse)
 def login(request: Request):
     return templates.TemplateResponse(request=request, name="login.html")
+
+
+@router.post("/logout", response_class=HTMLResponse)
+def submit_login(request: Request):
+    return templates.TemplateResponse(request=request, name="home.html")
+
+
+@router.get("/sorry", response_class=HTMLResponse)
+def page_not_found(request: Request):
+    return templates.TemplateResponse(request=request, name="404.html")

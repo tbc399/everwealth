@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI()
 
-app.mount("/everwealth/static", StaticFiles(directory="everwealth/static"), name="static")
+app.mount("/static", StaticFiles(directory="everwealth/static"), name="static")
 
 api_router = APIRouter()
 api_router.include_router(router)
