@@ -7,7 +7,6 @@ from contextlib import asynccontextmanager
 
 # import databases
 from fastapi import APIRouter, FastAPI
-from fastapi.templating import Jinja2Templates
 
 # from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
