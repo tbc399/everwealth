@@ -3,7 +3,10 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
-  content: ['./everwealth/templates/*.html'],
+  content: [
+    './everwealth/templates/*.html',
+    'node_modules/preline/dist/*.js'
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -12,7 +15,8 @@ module.exports = {
     },
   },
   plugins: [
-      require('@tailwindcss/forms'),
+    require('@tailwindcss/forms'),
+    require('preline/plugin')
   ],
 }
 
