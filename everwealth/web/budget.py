@@ -17,3 +17,8 @@ async def create_budget(request: Request):
 @router.get("/budgets", response_class=HTMLResponse)
 async def budgets(request: Request):
     return templates.TemplateResponse(request=request, name="budgets.html")
+
+
+@router.get("/budget_section", response_class=HTMLResponse)
+async def budget_section(request: Request):
+    return templates.TemplateResponse(request=request, name="partials/budget.html")
