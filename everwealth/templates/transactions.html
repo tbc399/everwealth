@@ -1,5 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>Here are some {{ "transactions" }}!</h3>
+<div class="overflow-auto w-full">
+  <div class="overflow-hidden">
+    <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <div class="table-header-group">
+        <div class="table-row">
+          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Name</div>
+          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Age</div>
+          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">Address</div>
+          <div class="table-cell px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase">Action</div>
+        </div>
+      </div>
+      <div class="table-row-group divide-y divide-gray-200 bg-white">
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">John Brown</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">45</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">New York No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Jim Green</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">27</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">London No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+        <div class="table-row">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Joe Black</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">31</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-800">Sidney No. 1 Lake Park</div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+            <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
