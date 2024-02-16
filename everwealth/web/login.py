@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Request, Form
 from typing import Annotated
-from fastapi.responses import HTMLResponse
+
+from fastapi import APIRouter, Form, Request, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+
 from everwealth.models import User
 
 router = APIRouter()
@@ -14,3 +16,6 @@ async def login(request: Request):
     return templates.TemplateResponse(request=request, name="login.html")
 
 
+@router.post("/login", response_class=HTMLResponse)
+async def submit_login(request: Request, email: Annotated[str, Form()]):
+    return templates.TemplateResponse(request=request, name="transactions.html")

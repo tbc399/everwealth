@@ -26,7 +26,9 @@ async def login(request: Request):
 
 
 @router.post("/submit_login", response_class=HTMLResponse)
-async def submit_login(request: Request, username: Annotated[str, Form()], password: Annotated[str, Form()]):
+async def submit_login(
+    request: Request, username: Annotated[str, Form()], password: Annotated[str, Form()]
+):
     print(username)
     print(password)
     return templates.TemplateResponse(request=request, name="home.html")
@@ -35,5 +37,3 @@ async def submit_login(request: Request, username: Annotated[str, Form()], passw
 @router.get("/sorry", response_class=HTMLResponse)
 def page_not_found(request: Request):
     return templates.TemplateResponse(request=request, name="404.html")
-
-

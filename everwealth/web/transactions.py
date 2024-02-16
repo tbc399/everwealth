@@ -14,3 +14,6 @@ async def get_transactions(request: Request):
     return templates.TemplateResponse(request=request, name="transactions.html")
 
 
+@router.get("/transaction_section", response_class=HTMLResponse)
+async def transaction_section(request: Request):
+    return templates.TemplateResponse(request=request, name="partials/transactions.html")
