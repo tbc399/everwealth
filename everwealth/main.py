@@ -18,6 +18,7 @@ from starlette.middleware.cors import CORSMiddleware
 from everwealth.web.budget import router as budget_router
 from everwealth.web.login import router as login_router
 from everwealth.web.transactions import router as transaction_router
+from everwealth.web.dashboard import router as dashboard_router
 
 
 async def startup():
@@ -73,6 +74,7 @@ api_router = APIRouter()
 api_router.include_router(budget_router)
 api_router.include_router(transaction_router)
 api_router.include_router(login_router)
+api_router.include_router(dashboard_router)
 
 app.include_router(api_router)
 

@@ -18,4 +18,5 @@ async def login(request: Request):
 
 @router.post("/login", response_class=HTMLResponse)
 async def submit_login(request: Request, email: Annotated[str, Form()]):
-    return templates.TemplateResponse(request=request, name="transactions.html")
+    # TODO: perfomr login auth
+    return RedirectResponse(url="/transactions", status_code=303)
