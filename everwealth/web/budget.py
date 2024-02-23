@@ -16,7 +16,12 @@ async def create_budget(request: Request):
 
 @router.get("/budgets", response_class=HTMLResponse)
 async def budgets(request: Request):
-    return templates.TemplateResponse(request=request, name="budgets.html")
+    budgets = ["Groceries", "Gas", "Home School", "Entertainment"]
+    return templates.TemplateResponse(
+        request=request,
+        name="budgets.html",
+        context={"budgets": budgets},
+    )
 
 
 @router.get("/budget_section", response_class=HTMLResponse)
