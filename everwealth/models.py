@@ -21,3 +21,15 @@ class User(BaseModel):
     first: str
     last: str
     email: EmailStr  # TODO: is this necessary?
+
+
+class Budget(BaseModel):
+    category: str  # linked to categories
+    amount: int
+
+    def aggregate_transactions():
+        """Compute total current spend for this budget"""
+        return
+
+    def percentage(self):
+        return round((self.current_spend / self.amount  ) * 100)

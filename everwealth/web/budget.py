@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Form
 from typing import Annotated
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from everwealth.models import User
+from everwealth.models import User, Budget
 
 router = APIRouter()
 
@@ -16,7 +16,16 @@ async def create_budget(request: Request):
 
 @router.get("/budgets", response_class=HTMLResponse)
 async def budgets(request: Request):
-    budgets = ["Groceries", "Gas", "Home School", "Entertainment"]
+    budgets = [
+        Budget(category="Groceries", amount=40, percentage=50),
+        Budget(category="Gas", amount=23, percentage=50),
+        Budget(category="Home School", amount=100, percentage=50),
+        Budget(category="Entertainment", amount=55, percentage=50),
+        Budget(category="Date Night", amount=100, percentage=50),
+        Budget(category="Water", amount=75, percentage=50),
+        Budget(category="Pet", amount=90, percentage=50),
+        Budget(category="Tiingo", amount=10, percentage=50),
+    ]
     return templates.TemplateResponse(
         request=request,
         name="budgets.html",
