@@ -9,17 +9,13 @@
     <script src="{{ url_for('modules', path='preline/dist/preline.js') }}"></script>
   </head>
 <body class="bg-gray-50 dark:bg-slate-950">
-  <!-- ========== Top Level Nav ========== -->
-  {% include "partials/navbar.html" %} 
-  <!-- ========== END ========== -->
-
   <!-- ========== MAIN CONTENT ========== -->
   <main id="content" role="main">
     <!-- Nav -->
     {% include "partials/tabs.html" %}
     <!-- End Nav -->
 
-    <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 min-h-[75rem]">
+    <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-4 min-h-[75rem]">
       {% block content %} {% endblock %}
     </div>
   </main>

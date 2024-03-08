@@ -26,10 +26,12 @@ class User(BaseModel):
 class Budget(BaseModel):
     category: str  # linked to categories
     amount: int
+    spent: int
 
     def aggregate_transactions():
         """Compute total current spend for this budget"""
         return
 
+    @property
     def percentage(self):
-        return round((self.current_spend / self.amount  ) * 100)
+        return round((self.spent / self.amount) * 100)

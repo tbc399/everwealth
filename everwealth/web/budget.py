@@ -17,18 +17,37 @@ async def create_budget(request: Request):
 @router.get("/budgets", response_class=HTMLResponse)
 async def budgets(request: Request):
     budgets = [
-        Budget(category="Groceries", amount=40, percentage=50),
-        Budget(category="Gas", amount=23, percentage=50),
-        Budget(category="Home School", amount=100, percentage=50),
-        Budget(category="Entertainment", amount=55, percentage=50),
-        Budget(category="Date Night", amount=100, percentage=50),
-        Budget(category="Water", amount=75, percentage=50),
-        Budget(category="Pet", amount=90, percentage=50),
-        Budget(category="Tiingo", amount=10, percentage=50),
+        Budget(category="Groceries", amount=40, spent=40),
+        Budget(category="Gas", amount=23, spent=11),
+        Budget(category="Home School", amount=100, spent=98),
+        Budget(category="Entertainment", amount=55, spent=50),
+        Budget(category="Date Night", amount=100, spent=10),
+        Budget(category="Water", amount=75, spent=45),
+        Budget(category="Pet", amount=90, spent=23),
+        Budget(category="Tiingo", amount=10, spent=5),
     ]
     return templates.TemplateResponse(
         request=request,
         name="budgets.html",
+        context={"budgets": budgets},
+    )
+
+
+@router.get("/budgets-v2", response_class=HTMLResponse)
+async def budgets_v2(request: Request):
+    budgets = [
+        Budget(category="Groceries", amount=40, spent=40),
+        Budget(category="Gas", amount=23, spent=11),
+        Budget(category="Home School", amount=100, spent=98),
+        Budget(category="Entertainment", amount=55, spent=50),
+        Budget(category="Date Night", amount=100, spent=10),
+        Budget(category="Water", amount=75, spent=45),
+        Budget(category="Pet", amount=90, spent=23),
+        Budget(category="Tiingo", amount=10, spent=5),
+    ]
+    return templates.TemplateResponse(
+        request=request,
+        name="budgets2.html",
         context={"budgets": budgets},
     )
 
