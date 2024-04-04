@@ -1,0 +1,40 @@
+<div id="hs-modal-create-budget" class="hs-overlay hidden size-full fixed top-10 start-0 z-[80]">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
+    <div class="relative flex flex-col bg-white shadow-lg rounded-xl border dark:border-slate-800 dark:bg-slate-900">
+      <div class="absolute top-2 end-2">
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-lg border border-transparent text-slate-900 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" data-hs-overlay="#hs-modal-create-budget">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <form>
+        <div class="p-3 text-center flex flex-col gap-y-4">
+
+          <div class="flex flex-row justify-between">
+            <select class="" placeholder="Category">
+              <option>Groceries</option>
+              <option>Gas</option>
+              <option>Electricity</option>
+              <option>Entertainment</option>
+            </select>
+            
+            <label class="dark:text-slate-300">Amount</label>
+            <input type="text" class="dark:bg-slate-900">
+            </input>
+          </div>
+
+
+          <div class="mt-6 flex justify-end gap-x-4">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-teal-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" data-hs-overlay="#hs-modal-create-budget">
+              Cancel
+            </button>
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" data-hs-overlay="#hs-modal-create-budget">
+              Create
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

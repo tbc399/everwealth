@@ -1,10 +1,13 @@
 from typing import Annotated
+from asyncpg import Connection
+from asyncpg import Connection
 
-from fastapi import APIRouter, Form, Request, Response
+from fastapi import APIRouter, Form, Request, Response, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from everwealth.models import User
+from everwealth.db import get_connection
+from everwealth.users import  fetch_user, create_user
 
 router = APIRouter()
 
@@ -17,9 +20,17 @@ async def login(request: Request):
 
 
 @router.post("/login", response_class=HTMLResponse)
-async def submit_login(request: Request, email: Annotated[str, Form()]):
-    # TODO: perfomr login auth
-    return RedirectResponse(url="/transactions", status_code=303)
+async def submit_login(request: Request, email: Annotated[str, Form()], conn: Connection = Depends(get_connection)):
+    # TODO add handling for email validation
+    # TODO handle a redirect page if it comes in
+    user = await fetch_user(email, conn)
+    if user:
+        print(f"user {email} already exists in db")
+    else:
+        await create_user(email, conn)
+        print(f"Created user {email}")
+
+    return RedirectResponse(url="/dashboard", status_code=303)  # TODO: redirect to other page
 
 
 @router.get("/not-found", response_class=HTMLResponse)

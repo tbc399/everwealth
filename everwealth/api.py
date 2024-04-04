@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Request, Form
 from typing import Annotated
+
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+
 from everwealth.models import User
 
 router = APIRouter()

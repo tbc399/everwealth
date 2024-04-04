@@ -1,17 +1,37 @@
-from fastapi import APIRouter, Request, Form
 from typing import Annotated
+
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from everwealth.models import User, Budget
+
+from everwealth.models import Budget
+from everwealth.users import User
+from asyncpg import Connection
+from everwealth.db import get_connection
+
+from fastapi.responses import RedirectResponse
+from fastapi import Depends
 
 router = APIRouter()
 
 templates = Jinja2Templates(directory="everwealth/templates")
 
 
-@router.post("/create_budget", response_class=HTMLResponse)
-async def create_budget(request: Request):
-    return templates.TemplateResponse(request=request, name="index.html")
+@router.post("/budgets", response_class=HTMLResponse)
+async def create_budget(
+    request: Request,
+    category: Annotated[str, Form()],
+    amount: Annotated[int, Form()],
+    conn: Connection = Depends(get_connection),
+):
+    print(category)
+    print(amount)
+    return RedirectResponse(url="/budgets-v2", status_code=303)  # TODO: redirect to other page
+
+
+@router.get("/new_budget", response_class=HTMLResponse)
+async def get_create_budget_form(request: Request):
+    return templates.TemplateResponse(request=request, name="new-budget.html")
 
 
 @router.get("/budgets", response_class=HTMLResponse)
