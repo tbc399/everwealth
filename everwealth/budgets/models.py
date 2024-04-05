@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 import asyncpg
 from pydantic import BaseModel
@@ -8,13 +8,13 @@ from shortuuid import ShortUUID
 
 
 class Budget(BaseModel):
-    id: str  # shortuuid
-    created_at: datetime
-    updated_at: datetime
+    id: str = ShortUUID()  # shortuuid
+    created_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
     category: str  # to link to Category
-    total: float
-    rollover: bool
-    account: str  # shortuuid
+    total: float = 0.0
+    rollover: Optional[bool] = False
+    account: str = ""  # shortuuid
 
     async def save(self):
         # write to db

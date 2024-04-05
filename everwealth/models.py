@@ -12,8 +12,8 @@ class ConnectedAccount(BaseModel):
 
 
 class AccountTransaction(BaseModel):
-    id: str
-    hash: str  # used to match transactions coming from source
+    id: str = ""
+    hash: str = ""  # used to match transactions coming from source
     account: Optional[ConnectedAccount] = None
     description: str
     amount: float

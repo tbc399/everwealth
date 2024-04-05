@@ -4,7 +4,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from everwealth.models import Budget
+from everwealth.budgets import Budget
 from everwealth.users import User
 from asyncpg import Connection
 from everwealth.db import get_connection
@@ -56,7 +56,7 @@ async def budgets(request: Request):
 @router.get("/budgets-v2", response_class=HTMLResponse)
 async def budgets_v2(request: Request):
     budgets = [
-        Budget(category="Groceries", amount=40, spent=40),
+        Budget(category="Groceries", amount=40, spent=40, ),
         Budget(category="Gas", amount=23, spent=11),
         Budget(category="Home School", amount=100, spent=98),
         Budget(category="Entertainment", amount=55, spent=50),
