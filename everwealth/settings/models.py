@@ -18,7 +18,8 @@ async def create(name: str, user: User, conn: Connection):
     categories = await fetch_many(conn)
     #if name not in categories:
     #    category = Category(name=name, user=user)
-    await conn.execute(f"INSERT INTO categories () VALUES ('{user.model_dump_json()}')")
+    category = Category(name=name, user=user)
+    await conn.execute(f"INSERT INTO categories (data) VALUES ('{category.model_dump_json()}')")
     return category
 
 
@@ -28,12 +29,13 @@ async def fetch(name: str, conn: Connection):
 
 
 async def fetch_many(conn: Connection):
-    records = await conn.fetch(f'SELECT data from users where data @> \'{{"email": "{email}"}}\'')
-    return
+    records = await conn.fetch("SELECT data from categories")
+    return [Category.model_validate_json(x["data"]) for x in records]
 
 
 # TODO: should categories have a hierarchy, e.g. "Entertainment" with sub
 # categories of "Movies", "Date Night", etc...
+# TODO: add these back in. Will have to determine how we associsat these with each user
 default_category_names = [
     "Groceries",
     "Gas",
