@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from everwealth.db import get_connection
-from everwealth.users import  fetch_user, create_user
+from everwealth.users import fetch_user, create_user
 
 router = APIRouter()
 
@@ -20,7 +20,9 @@ async def login(request: Request):
 
 
 @router.post("/login", response_class=HTMLResponse)
-async def submit_login(request: Request, email: Annotated[str, Form()], conn: Connection = Depends(get_connection)):
+async def submit_login(
+    request: Request, email: Annotated[str, Form()], conn: Connection = Depends(get_connection)
+):
     # TODO add handling for email validation
     # TODO handle a redirect page if it comes in
     user = await fetch_user(email, conn)

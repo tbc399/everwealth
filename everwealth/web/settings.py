@@ -30,7 +30,7 @@ async def create_category(
 @router.get("/categories", response_class=HTMLResponse)
 async def get_categories(request: Request, conn: Connection = Depends(get_connection)):
     categories = await fetch_many(conn)
-    #categories.extend(default_category_names)
+    # categories.extend(default_category_names)
     return templates.TemplateResponse(
         request=request,
         name="categories.html",

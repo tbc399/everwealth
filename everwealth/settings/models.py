@@ -16,20 +16,20 @@ class Category(BaseModel):
 
 async def create(name: str, user: User, conn: Connection):
     categories = await fetch_many(conn)
-    #if name not in categories:
+    # if name not in categories:
     #    category = Category(name=name, user=user)
     category = Category(name=name, user=user)
     await conn.execute(f"INSERT INTO categories (data) VALUES ('{category.model_dump_json()}')")
     return category
 
 
-async def fetch(name: str, conn: Connection):
+async def fetch(name: str, user: User, conn: Connection):
     record = await conn.fetch(f'SELECT data from users where data @> \'{{"name": "{name}"}}\'')
     return Category(record[0])
 
 
-async def fetch_many(conn: Connection):
-    records = await conn.fetch("SELECT data from categories")
+async def fetch_many(user: User, conn: Connection):
+    records = await conn.fetch("SELECT data from categories where data")
     return [Category.model_validate_json(x["data"]) for x in records]
 
 
@@ -47,5 +47,5 @@ default_category_names = [
     "Electricity",
     "Internet",
     "Utilities",
-    "Vehicle Maintenance"
+    "Vehicle Maintenance",
 ]

@@ -1,26 +1,10 @@
 from datetime import datetime
+from pydantic import Field
+from shortuuid import uuid
 from typing import Optional, List
 
 from asyncpg import Connection
 from pydantic import BaseModel, EmailStr
-
-
-class ConnectedAccount(BaseModel):
-    """A third party account to pull transaction info from"""
-
-    pass
-
-
-class AccountTransaction(BaseModel):
-    id: str = ""
-    hash: str = ""  # used to match transactions coming from source
-    account: Optional[ConnectedAccount] = None
-    description: str
-    amount: float
-    category: str  # fk to Category
-    date: datetime
-    notes: str
-    hidden: Optional[bool] = False
 
 
 class Budget(BaseModel):

@@ -12,7 +12,7 @@ class User(BaseModel):
 
 async def fetch_user(email: str, conn: Connection):
     # TODO: email needs to be validated. Can it be done as pydantic Form validation?
-    row = await conn.fetchrow(f"SELECT data from users where data @> '{{\"email\": \"{email}\"}}'")
+    row = await conn.fetchrow(f'SELECT data from users where data @> \'{{"email": "{email}"}}\'')
     print(row)
     return row
 
