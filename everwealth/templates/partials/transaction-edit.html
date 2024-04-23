@@ -1,0 +1,74 @@
+<div _="on closeModal remove me">
+  <!-- modal underlay -->
+  <div id="upload-file-modal-backdrop" 
+    style="z-index: 79;" 
+    class="transition duration fixed inset-0 bg-slate-900 bg-opacity-0 dark:bg-opacity-50 hs-overlay-backdrop"
+    _="on click trigger closeModal">
+  </div>
+  <!-- end modal underlay -->
+
+  <!-- transaction modal -->
+  <div id="transaction-edit-modal"
+    class="hs-overlay size-full open fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none"
+    aria-hidden="false" 
+    tabindex="-1">
+
+    <form hx-put="/transactions/{{ transaction.id }}/edit" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="flex flex-col w-full h-full py-3 px-4 bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-slate-900 dark:border-slate-800 dark:shadow-slate-700/70">
+          <div class="flex flex-row justify-between">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              Edit transaction
+            </h3>
+            <button 
+              type="button" 
+              class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-neutral-700"
+              data-hs-overlay="#transaction-edit-modal"
+              _="on click trigger closeModal">
+
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex flex-row justify-between">
+            <div class="flex flex-col">
+              <label for="description-edit" class="text-black dark:text-white">Description</label>
+              <input id="description-edit" name="description" type="text" value="{{ transaction.description }}"></input>
+            </div>
+            <div>
+              <label for="new-budget-category" class="block mb-2 text-sm text-slate-700 font-medium dark:text-slate-400">Category</label>
+              <div class="relative">
+                <select id="new-budget-category" name="category">
+                  <option value="">Choose</option>
+                  <option>Groceries</option>
+                  <option>Gas</option>
+                  <option>Mortgage</option>
+                  <option>Car Payment</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-row justify-between">
+            <div>
+              <label for="transaction-amount-edit" name="amount" class="text-black dark:text-white">Amount</label>
+              <input id="transaction-amount-edit" name="amount" type="text" value="{{ transaction.amount }}"></input>
+            </div>
+            <div>
+              <label for="transaction-date-edit" name="date" class="text-black dark:text-white">Date</label>
+              <input id="transaction-date-edit" name="date" type="text" value="{{ transaction.date }}"></input>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" class="text-black dark:text-white p-2 rounded-lg border dark:border-slate-800">
+              Update
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <!-- end transaction modal -->
+</div>

@@ -49,7 +49,7 @@ async def budgets(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="budgets.html",
-        context={"budgets": budgets},
+        context={"budgets": budgets, "active_tab": "budgets"},
     )
 
 
@@ -72,7 +72,7 @@ async def budgets_v2(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="budgets2.html",
-        context={"budgets": budgets},
+        context={"budgets": budgets, "active_tab": "budgets"},
     )
 
 

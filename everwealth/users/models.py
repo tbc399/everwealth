@@ -1,10 +1,13 @@
 from typing import Optional
+from starlette.authentication import BaseUser
 
+from shortuuid import uuid
 from asyncpg import Connection
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
-class User(BaseModel):
+class User(BaseModel, BaseUser):
+    id: str = Field(default_factory=uuid)  # short uuid
     first: Optional[str] = None
     last: Optional[str] = None
     email: EmailStr  # TODO: is this necessary?

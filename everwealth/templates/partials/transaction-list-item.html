@@ -1,0 +1,31 @@
+<div id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
+  <div class="table-cell px-6 py-3 whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-500">
+    {{ transaction.date.strftime("%b %d, %Y") }}
+  </div>
+  <div class="table-cell px-6 py-3 whitespace-nowrap text-sm font-normal text-slate-800 dark:text-slate-400">
+    {{ transaction.description }}
+  </div>
+  <div class="table-cell px-6 py-3 whitespace-nowrap text-sm text-slate-800 dark:text-slate-400">
+    {% if transaction.category %}
+      {{ transaction.category.name }}
+    {% else %}
+      Uncategorized
+    {% endif %}
+  </div>
+  <div class="table-cell px-6 py-2 whitespace-nowrap text-sm font-normal
+    {% if transaction.amount > 0 %}
+      dark:text-teal-400
+    {% else %}
+      dark:text-slate-500
+    {% endif %}
+    ">
+    <span class="w-full flex justify-end"><span class="darK:text-slate-600 font-normal">$</span>{{ "%.2f"|format(transaction.amount|abs) }}</span>
+  </div>
+  <div class="table-cell px-6 py-3 whitespace-nowrap text-sm text-slate-800 dark:text-slate-300">
+  </div>
+  <div class="table-cell px-6 py-3 whitespace-nowrap text-sm font-bold text-teal-700 dark:text-teal-700">
+    <button hx-target="#tran_{{ transaction.id }}" hx-swap="beforeend" hx-get="/transactions/{{ transaction.id }}/edit" class="dark:hover:text-teal-800">
+      Edit
+    </button>
+  </div>
+</div>

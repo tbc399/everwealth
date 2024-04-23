@@ -11,13 +11,13 @@ class Category(BaseModel):
     id: str = Field(default_factory=uuid)
     name: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    user: Optional[User] = None
+    user: Optional[str] = None
 
 
 async def create(name: str, user: User, conn: Connection):
     categories = await fetch_many(conn)
-    # if name not in categories:
-    #    category = Category(name=name, user=user)
+    if name not in categories:
+       category = Category(name=name, user=user)
     category = Category(name=name, user=user)
     await conn.execute(f"INSERT INTO categories (data) VALUES ('{category.model_dump_json()}')")
     return category
@@ -29,7 +29,8 @@ async def fetch(name: str, user: User, conn: Connection):
 
 
 async def fetch_many(user: User, conn: Connection):
-    records = await conn.fetch("SELECT data from categories where data")
+    # TODO: filter on user id
+    records = await conn.fetch("SELECT data from categories")
     return [Category.model_validate_json(x["data"]) for x in records]
 
 

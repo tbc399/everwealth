@@ -1,13 +1,17 @@
 <nav class="sticky -top-px bg-white font-medium text-sm ring-1 ring-gray-900 ring-opacity-5 border-none pt-6 md:pb-6 -mt-px dark:bg-slate-950/95 backdrop-blur-md dark:border-gray-900 dark:shadow-slate-700/[.7]" aria-label="Jump links">
   <div class="max-w-7xl snap-x w-full flex basis-full justify-between items-center overflow-x-auto px-4 py-0.5 mx-auto">
     <div class="me-5 md:me-8">
-      <a class="flex-none text-3xl font-black dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 " href="#" aria-label="Brand">
-        <!--<span class="text-teal-500 font-semibold">Budget</span><span class="text-teal-700">4</span>-->
-        <p class="text-teal-600 lowercase">jaxon</p>
+      <a class="flex-none text-2xl font-bold dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 " href="#" aria-label="Brand">
+        <span class="text-teal-500 font-semibold">Budget</span><span class="text-teal-700">Craft</span>
+        <!--<p class="text-teal-600 lowercase">jaxon</p>-->
       </a>
     </div>
     <div class="flex flex-row gap-x-1">
-      <div class="flex snap-center shrink-0 p-2 rounded-lg dark:focus:ring-1 dark:hover:bg-slate-900 dark:active:bg-slate-800">
+      <div class="flex snap-center shrink-0 p-2 rounded-lg dark:hover:bg-slate-900 dark:active:bg-slate-800
+        {% if active_tab == "dashboard" %}
+          dark:bg-slate-900
+        {% endif %}
+        ">
         <a class="inline-flex items-center gap-x-1 dark:text-slate-300" href="#">
           <svg xmlns="http://www.w3.org/2000/svg" 
             width="24" 
@@ -16,7 +20,11 @@
           Dashboard
         </a>
       </div>
-      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:ring-1 dark:hover:ring-slate-800 dark:hover:bg-slate-900">
+      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:bg-slate-900 dark:active:bg-slate-800
+        {% if active_tab == "budgets" %}
+          dark:bg-slate-900
+        {% endif %}
+        ">
         <a class="inline-flex items-center gap-x-1 dark:text-slate-300" href="/budgets-v2">
           <svg xmlns="http://www.w3.org/2000/svg" 
             width="24" 
@@ -25,7 +33,11 @@
           Budgets
         </a>
       </div>
-      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:ring-1 dark:hover:ring-slate-800 dark:hover:bg-slate-900">
+      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:bg-slate-900 dark:active:bg-slate-800
+        {% if active_tab == "transactions" %}
+          dark:bg-slate-900
+        {% endif %}
+        ">
         <a class="inline-flex items-center gap-x-1 dark:text-slate-300 dark:focus:outline-none" href="/transactions">
           <svg xmlns="http://www.w3.org/2000/svg" 
             width="24" 
@@ -36,7 +48,11 @@
           Transactions
         </a>
       </div>
-      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:ring-1 dark:hover:ring-slate-800 dark:hover:bg-slate-900">
+      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:bg-slate-900 dark:active:bg-slate-800
+        {% if active_tab == "accounts" %}
+          dark:bg-slate-900
+        {% endif %}
+        ">
         <a class="inline-flex items-center gap-x-1 dark:text-slate-300" href="#">
         <svg xmlns="http://www.w3.org/2000/svg" 
             width="20" 

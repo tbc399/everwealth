@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 # from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.authentication import AuthenticationMiddleware, AuthenticationBackend
 
 from everwealth import db
 from everwealth.config import settings
@@ -62,8 +63,8 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://makeshift-web-service.herokuapp.com",
-        "https://makeshift-web-service.herokuapp.com",
+        # "http://makeshift-web-service.herokuapp.com",
+        # "https://makeshift-web-service.herokuapp.com",
         "http://localhost",
         "http://localhost:8080",
     ],
@@ -71,3 +72,5 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+#app.add_middleware(AuthenticationMiddleware, None)
