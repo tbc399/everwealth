@@ -891,6 +891,11 @@ select {
   margin-bottom: 0.5rem;
 }
 
+.mx-10 {
+  margin-left: 2.5rem;
+  margin-right: 2.5rem;
+}
+
 .-mt-px {
   margin-top: -1px;
 }
@@ -957,6 +962,10 @@ select {
 
 .mt-auto {
   margin-top: auto;
+}
+
+.mb-3 {
+  margin-bottom: 0.75rem;
 }
 
 .block {
@@ -1126,6 +1135,10 @@ select {
   width: 100%;
 }
 
+.w-\[38px\] {
+  width: 38px;
+}
+
 .min-w-60 {
   min-width: 15rem;
 }
@@ -1193,12 +1206,6 @@ select {
 
 .snap-center {
   scroll-snap-align: center;
-}
-
-.appearance-none {
-  -webkit-appearance: none;
-     -moz-appearance: none;
-          appearance: none;
 }
 
 .flex-row {
@@ -1314,6 +1321,12 @@ select {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));
+}
+
+.space-x-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
 .divide-y > :not([hidden]) ~ :not([hidden]) {
@@ -1753,10 +1766,6 @@ select {
   line-height: 1rem;
 }
 
-.font-black {
-  font-weight: 900;
-}
-
 .font-bold {
   font-weight: 700;
 }
@@ -2063,16 +2072,6 @@ select {
   padding-bottom: 0px;
 }
 
-.autofill\:bg-slate-950:-webkit-autofill {
-  --tw-bg-opacity: 1;
-  background-color: rgb(2 6 23 / var(--tw-bg-opacity));
-}
-
-.autofill\:bg-slate-950:autofill {
-  --tw-bg-opacity: 1;
-  background-color: rgb(2 6 23 / var(--tw-bg-opacity));
-}
-
 .autofill\:bg-red-700:-webkit-autofill {
   --tw-bg-opacity: 1;
   background-color: rgb(185 28 28 / var(--tw-bg-opacity));
@@ -2081,14 +2080,6 @@ select {
 .autofill\:bg-red-700:autofill {
   --tw-bg-opacity: 1;
   background-color: rgb(185 28 28 / var(--tw-bg-opacity));
-}
-
-.autofill\:bg-none:-webkit-autofill {
-  background-image: none;
-}
-
-.autofill\:bg-none:autofill {
-  background-image: none;
 }
 
 .hover\:bg-blue-700:hover {
@@ -2520,6 +2511,20 @@ select {
     border-color: transparent;
   }
 
+  .dark\:border-slate-900 {
+    --tw-border-opacity: 1;
+    border-color: rgb(15 23 42 / var(--tw-border-opacity));
+  }
+
+  .dark\:border-slate-900\/50 {
+    border-color: rgb(15 23 42 / 0.5);
+  }
+
+  .dark\:border-neutral-700 {
+    --tw-border-opacity: 1;
+    border-color: rgb(64 64 64 / var(--tw-border-opacity));
+  }
+
   .dark\:border-b-slate-900 {
     --tw-border-opacity: 1;
     border-bottom-color: rgb(15 23 42 / var(--tw-border-opacity));
@@ -2557,6 +2562,15 @@ select {
   .dark\:bg-teal-600 {
     --tw-bg-opacity: 1;
     background-color: rgb(13 148 136 / var(--tw-bg-opacity));
+  }
+
+  .dark\:bg-slate-900\/50 {
+    background-color: rgb(15 23 42 / 0.5);
+  }
+
+  .dark\:bg-neutral-900 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(23 23 23 / var(--tw-bg-opacity));
   }
 
   .dark\:bg-opacity-50 {
@@ -2627,6 +2641,21 @@ select {
     color: rgb(255 255 255 / var(--tw-text-opacity));
   }
 
+  .dark\:text-neutral-400 {
+    --tw-text-opacity: 1;
+    color: rgb(163 163 163 / var(--tw-text-opacity));
+  }
+
+  .dark\:placeholder-neutral-500::-moz-placeholder {
+    --tw-placeholder-opacity: 1;
+    color: rgb(115 115 115 / var(--tw-placeholder-opacity));
+  }
+
+  .dark\:placeholder-neutral-500::placeholder {
+    --tw-placeholder-opacity: 1;
+    color: rgb(115 115 115 / var(--tw-placeholder-opacity));
+  }
+
   .dark\:shadow-slate-700\/70 {
     --tw-shadow-color: rgb(51 65 85 / 0.7);
     --tw-shadow: var(--tw-shadow-colored);
@@ -2666,16 +2695,6 @@ select {
   .dark\:checked\:bg-teal-600:checked {
     --tw-bg-opacity: 1;
     background-color: rgb(13 148 136 / var(--tw-bg-opacity));
-  }
-
-  .dark\:-webkit-autofill\:bg-slate-950:-webkit-autofill {
-    --tw-bg-opacity: 1;
-    background-color: rgb(2 6 23 / var(--tw-bg-opacity));
-  }
-
-  .dark\:autofill\:bg-slate-950:autofill {
-    --tw-bg-opacity: 1;
-    background-color: rgb(2 6 23 / var(--tw-bg-opacity));
   }
 
   .dark\:hover\:bg-gray-700:hover {
@@ -2830,6 +2849,11 @@ select {
     --tw-ring-color: rgb(15 118 110 / var(--tw-ring-opacity));
   }
 
+  .dark\:focus\:ring-neutral-600:focus {
+    --tw-ring-opacity: 1;
+    --tw-ring-color: rgb(82 82 82 / var(--tw-ring-opacity));
+  }
+
   .dark\:focus\:ring-offset-gray-800:focus {
     --tw-ring-offset-color: #1f2937;
   }
@@ -2855,14 +2879,6 @@ select {
       --tw-border-opacity: 1;
       border-color: rgb(30 41 59 / var(--tw-border-opacity));
     }
-  }
-}
-
-@media (forced-colors: active) {
-  .forced-colors\:appearance-none {
-    -webkit-appearance: none;
-       -moz-appearance: none;
-            appearance: none;
   }
 }
 

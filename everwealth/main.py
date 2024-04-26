@@ -1,6 +1,3 @@
-import asyncio
-import os
-import re
 from contextlib import asynccontextmanager
 
 import asyncpg
@@ -11,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 # from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.authentication import AuthenticationMiddleware, AuthenticationBackend
+from starlette.middleware.authentication import AuthenticationMiddleware
 
 from everwealth import db
 from everwealth.config import settings
@@ -23,7 +20,7 @@ from everwealth.web.accounts import router as accounts_router
 # from everwealth.write.investment.tasks import snapshot
 from everwealth.web.budget import router as budget_router
 from everwealth.web.dashboard import router as dashboard_router
-from everwealth.web.login import router as login_router
+from everwealth.auth.web import router as login_router
 from everwealth.web.transactions import router as transaction_router
 from everwealth.web.settings import router as settings_router
 

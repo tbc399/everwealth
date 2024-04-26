@@ -1,0 +1,17 @@
+{
+  "id": "shortuuid",
+  "email": "travis@gmail.com",
+  "profile": {
+    "first": "Travis",
+    "last": "Cammack"
+  },
+  "transactions": [],
+  "transaction_rules": [],
+  "budgets": [],
+  "sessions": [],
+  "otps": [],
+  "settings": {
+    "categories": []
+  }
+}
+
