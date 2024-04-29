@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from asyncpg import Connection
-from fastapi import APIRouter, Depends, Form, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, Form, Request, BackgroundTasks, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from loguru import logger
@@ -16,19 +16,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
 
 
-@router.post("login/{otp_id}", response_class=HTMLResponse)
-async def submit_opt_code(request: Request, conn: Connection = Depends(get_connection)):
-    # TODO: Need to validate otp expiry
-    # TODO: Do we validate the device?
-    # TODO: validate the # of attempts is under a threshold of 3, for example
-    return templates.TemplateResponse(
-        request=request,
-        name="login-success.html",
-    )
-
-
 @router.get("/login", response_class=HTMLResponse)
 async def get_login_page(request: Request):
+    # TODO: check for active session and redirect if found
     return templates.TemplateResponse(request=request, name="auth/login.html")
 
 
@@ -89,6 +79,10 @@ async def submit_otp_validation(
     conn: Connection = Depends(get_connection),
 ):
     # TODO: I think this should return a page directing the user to go back to the original login page
+    # TODO: Need to validate otp expiry
+    # TODO: Do we validate the device?
+    # TODO: validate the # of attempts is under a threshold of 3, for example
+
     otpass = await otp.fetch_by_magic_token(magic_token, conn)
     if not otpass:
         logger.info(f"No otp found for magic token {magic_token}")
@@ -107,7 +101,7 @@ async def submit_otp_validation(
         user = await users.create(otpass.email, conn)
 
     # TODO: create a new session here
-    new_session = await sessions.create(user_id=user.id)
+    _ = await sessions.create(user.id, conn)
 
     return templates.TemplateResponse(
         request=request,
@@ -126,6 +120,28 @@ async def get_login_pending_page(
     return templates.TemplateResponse(
         request=request, name="auth/login-pending.html", context={"otp": otpass}
     )
+
+
+@router.get("/login/{otp_id}/check")
+async def check_login_status(request: Request, otp_id: str, conn: Connection = Depends(get_connection)):
+
+    otpass = await otp.fetch(otp_id, conn)
+    if not otpass:
+        logger.info(f"Otp {otpass.id} not found")
+        return RedirectResponse(url="/sorry", status_code=303)
+
+    if otpass.is_expired():
+        logger.info(f"Otp {otpass.id} has expired")
+        return RedirectResponse(url="/sorry", status_code=303)
+
+    session = await sessions.fetch_latest_active(otpass.email, conn)
+    logger.info(f"Checking for active session for {otpass.email}")
+    logger.info(f"session {session}")
+
+    if session:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    return Response(status_code=401)
 
 
 @router.post("/logout", response_class=HTMLResponse)
