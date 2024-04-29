@@ -34,9 +34,11 @@ async def get_login_page(request: Request):
 
 @router.post("/login", response_class=HTMLResponse)
 async def submit_login(
-    request: Request, email: Annotated[EmailStr, Form()], tasks: BackgroundTasks, conn: Connection = Depends(get_connection)
+    request: Request,
+    email: Annotated[EmailStr, Form()],
+    tasks: BackgroundTasks,
+    conn: Connection = Depends(get_connection),
 ):
-
     user = await users.fetch(email, conn)
     if user:
         logger.info(f"User with email {email} already exists")
@@ -53,33 +55,76 @@ async def submit_login(
     otpass = await otp.create(email, conn)
     tasks.add_task(otp.send_email, email, otpass)
 
-    return RedirectResponse(url=f"/login/{otpass.id}", status_code=303)  # TODO: redirect to other page
+    return RedirectResponse(
+        url=f"/login/{otpass.id}", status_code=303
+    )  # TODO: redirect to other page
 
 
 # the "magic" link sent to the user's email
 @router.get("/login/validate/{magic_token}", response_class=HTMLResponse)
-async def get_login_validate_page(request: Request, magic_token: str, conn: Connection = Depends(get_connection)):
+async def get_login_validate_page(
+    request: Request, magic_token: str, conn: Connection = Depends(get_connection)
+):
     # TODO: I think this should return a page directing the user to go back to the original login page
     otpass = await otp.fetch_by_magic_token(magic_token, conn)
     if not otpass:
-        return templates.TemplateResponse(request=request, name="not-found.html")
+        logger.info(f"No otp found for magic token {magic_token}")
+        return RedirectResponse(url="/sorry", status_code=303)
 
     return templates.TemplateResponse(
         request=request,
         name="auth/login-validation.html",
+        context={"otp": otpass}
+    )
+
+
+@router.post("/login/validate/{magic_token}", response_class=HTMLResponse)
+async def submit_otp_validation(
+    request: Request,
+    magic_token: str,
+    digit_1: Annotated[int, Form()],
+    digit_2: Annotated[int, Form()],
+    digit_3: Annotated[int, Form()],
+    digit_4: Annotated[int, Form()],
+    conn: Connection = Depends(get_connection),
+):
+    # TODO: I think this should return a page directing the user to go back to the original login page
+    otpass = await otp.fetch_by_magic_token(magic_token, conn)
+    if not otpass:
+        logger.info(f"No otp found for magic token {magic_token}")
+        return RedirectResponse(url="/sorry", status_code=303)
+
+    if otpass.is_expired():
+        logger.info(f"Otp {otpass.id} has expired")
+        # TODO: need a dedicated "has expired" page
+        return RedirectResponse(url="/sorry", status_code=303)
+
+    logger.debug(f"Looking for existing user {otpass.email}")
+    user = await users.fetch(otpass.email, conn)
+
+    if not user:
+        logger.info(f"Creating new user for {otpass.email}")
+        user = await users.create(otpass.email, conn)
+
+    # TODO: create a new session here
+    new_session = await sessions.create(user_id=user.id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/login-success.html",
     )
 
 
 @router.get("/login/{otp_id}", response_class=HTMLResponse)
-async def get_login_pending_page(request: Request, otp_id: str, conn: Connection = Depends(get_connection)):
+async def get_login_pending_page(
+    request: Request, otp_id: str, conn: Connection = Depends(get_connection)
+):
     otpass = await otp.fetch(otp_id, conn)
     logger.debug(f"otpass found: {otpass.id}")
     # TODO: give back a 404 or something else that says this OTP have expired/invalidated
     # TODO: this page will need to poll until OTP expiration or otp code is validated from email
     return templates.TemplateResponse(
-        request=request,
-        name="auth/login-pending.html",
-        context={"otp": otpass}
+        request=request, name="auth/login-pending.html", context={"otp": otpass}
     )
 
 

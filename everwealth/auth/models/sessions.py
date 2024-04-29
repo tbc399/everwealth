@@ -17,8 +17,10 @@ class Session(BaseModel):
     invalidated: Optional[bool] = Field(default=False)
 
 
-async def create(user: str):
-    return
+async def create(user_id: str, conn: Connection):
+    session = Session(user_id=user_id)
+    async with conn.transaction():
+        await conn.execute(f"INSERT INTO sessions (data) VALUES ('{session.model_dump_json()}')")
 
 
 async def invalidate(id: str, conn: Connection):

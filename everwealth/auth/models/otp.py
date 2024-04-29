@@ -15,7 +15,12 @@ class OneTimePass(BaseModel):
     expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(minutes=5))
     created_at: datetime = Field(default_factory=datetime.utcnow)
     invalidated: Optional[bool] = Field(default=False)
-    
+
+    def is_expired(self):
+        if self.invalidated:
+            return True
+        return self.expiry < datetime.utcnow()
+
 
 async def create(email: str, conn: Connection):
     otp = OneTimePass(email=email)
@@ -45,8 +50,10 @@ async def invalidate(id: str, conn: Connection):
         )
 
 
+# TODO: move this guy out to a more "service-like" module
 async def send_email(email: str, otpass: OneTimePass):
-    magic_url = f"/login/validate?token={otpass.magic_token}"
+    # TODO: how to get the base url?
+    magic_url = f"http://localhost:8000/login/validate/{otpass.magic_token}"
     logger.info(f"magic url: {magic_url}")
     logger.info(f"sending otp email to {email}")
 
