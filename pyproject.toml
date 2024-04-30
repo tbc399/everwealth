@@ -5,6 +5,9 @@ description = ""
 authors = ["Travis Cammack <traviscammack@protonmail.com>"]
 readme = "README.md"
 
+[tool.pylint.format]
+max-line-length = 100
+
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.108.0"

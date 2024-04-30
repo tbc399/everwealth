@@ -29,17 +29,19 @@ async def submit_login(
     tasks: BackgroundTasks,
     conn: Connection = Depends(get_connection),
 ):
-    user = await users.fetch(email, conn)
-    if user:
-        logger.info(f"User with email {email} already exists")
-        session = await sessions.fetch_latest_active(user.id, conn)
-        if session:
-            logger.info(f"User {user.id} has an active session. Redirecting back to dashboard")
-            return RedirectResponse(url="dashboard", status_code=303)
-        else:
-            logger.info(f"user {user.id} does not currently have an active session")
-    else:
-        logger.info(f"no user exists for email {email}")
+    # TODO: have to pull a session from the cookies or else do a new auth flow
+
+    #user = await users.fetch(email, conn)
+    #if user:
+    #    logger.info(f"User with email {email} already exists")
+    #    session = await sessions.fetch_latest_active(user.id, conn)
+    #    if session:
+    #        logger.info(f"User {user.id} has an active session. Redirecting back to dashboard")
+    #        return RedirectResponse(url="dashboard", status_code=303)
+    #    else:
+    #        logger.info(f"user {user.id} does not currently have an active session")
+    #else:
+    #    logger.info(f"no user exists for email {email}")
 
     # TODO: need to invalidate any currently active otps when creating a new one
     otpass = await otp.create(email, conn)
@@ -100,8 +102,7 @@ async def submit_otp_validation(
         logger.info(f"Creating new user for {otpass.email}")
         user = await users.create(otpass.email, conn)
 
-    # TODO: create a new session here
-    _ = await sessions.create(user.id, conn)
+    _ = await sessions.create(user.id, otpass.id, conn)
 
     return templates.TemplateResponse(
         request=request,
@@ -128,18 +129,22 @@ async def check_login_status(request: Request, otp_id: str, conn: Connection = D
     otpass = await otp.fetch(otp_id, conn)
     if not otpass:
         logger.info(f"Otp {otpass.id} not found")
-        return RedirectResponse(url="/sorry", status_code=303)
+        return Response(status_code=200, headers={"HX-Redirect": "/sorry"})
 
     if otpass.is_expired():
+        # TODO: need a page to show that otp has expired
         logger.info(f"Otp {otpass.id} has expired")
-        return RedirectResponse(url="/sorry", status_code=303)
+        return Response(status_code=200, headers={"HX-Redirect": "/sorry"})
 
-    session = await sessions.fetch_latest_active(otpass.email, conn)
+    session = await sessions.fetch_by_otp_id(otpass.id, conn)
     logger.info(f"Checking for active session for {otpass.email}")
-    logger.info(f"session {session}")
 
     if session:
-        return RedirectResponse(url="/dashboard", status_code=303)
+        logger.info(f"Found session {session}")
+        response = Response(status_code=200, headers={"HX-Redirect": "/dashboard"})
+        response.set_cookie(key="session", value=session.id)
+        return response
+
 
     return Response(status_code=401)
 
@@ -147,6 +152,7 @@ async def check_login_status(request: Request, otp_id: str, conn: Connection = D
 @router.post("/logout", response_class=HTMLResponse)
 async def submit_logout(request: Request, conn: Connection = Depends(get_connection)):
     # Need to invalidate session and notify the browser to invalidate its session cookie
+    sessions.invalidate("", conn)
     return
 
 

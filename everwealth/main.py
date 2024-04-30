@@ -5,12 +5,14 @@ import asyncpg
 # import databases
 from fastapi import APIRouter, FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.authentication import AuthenticationMiddleware
 
 # from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.authentication import AuthenticationMiddleware
 
 from everwealth import db
+from everwealth.auth.middleware import SessionBackend
+from everwealth.auth.web import router as login_router
 from everwealth.config import settings
 from everwealth.web.accounts import router as accounts_router
 
@@ -20,9 +22,8 @@ from everwealth.web.accounts import router as accounts_router
 # from everwealth.write.investment.tasks import snapshot
 from everwealth.web.budget import router as budget_router
 from everwealth.web.dashboard import router as dashboard_router
-from everwealth.auth.web import router as login_router
-from everwealth.web.transactions import router as transaction_router
 from everwealth.web.settings import router as settings_router
+from everwealth.web.transactions import router as transaction_router
 
 
 async def startup():
@@ -70,4 +71,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#app.add_middleware(AuthenticationMiddleware, None)
+app.add_middleware(AuthenticationMiddleware, backend=SessionBackend)

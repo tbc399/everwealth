@@ -4,21 +4,28 @@ from datetime import datetime, timedelta
 import shortuuid
 from typing import Optional
 from asyncpg import Connection
+from loguru import logger
 
 
 # TODO: how to make "long lived" sessions?
 class Session(BaseModel):
     id: str = Field(default_factory=lambda: shortuuid.random(length=64))  # a short uuid
     expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(days=1))
+    otp_id: str  # the otp this session was generated from
     user_id: str
     device_id: Optional[str] = Field(default="")  # TODO: is there a way to get this??
     device_trusted: Optional[bool] = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     invalidated: Optional[bool] = Field(default=False)
 
+    def is_expired(self):
+        if self.invalidated:
+            return True
+        return self.expiry < datetime.utcnow()
 
-async def create(user_id: str, conn: Connection):
-    session = Session(user_id=user_id)
+
+async def create(user_id: str, otp_id: str, conn: Connection):
+    session = Session(user_id=user_id, otp_id=otp_id)
     async with conn.transaction():
         await conn.execute(f"INSERT INTO sessions (data) VALUES ('{session.model_dump_json()}')")
 
@@ -37,12 +44,24 @@ async def fetch(id: str):
 
 async def fetch_latest_active(user_id: str, conn: Connection):
     now = datetime.utcnow()
-    rows = await conn.fetch(
-        f"SELECT data FROM sessions WHERE data['user_id'] = '\"{user_id}\"' AND data['invalidated'] = 'false'"
-    )
+    sql = f"SELECT data FROM sessions WHERE data['user_id'] = '\"{user_id}\"' AND data['invalidated'] = 'false'"
+    logger.debug(f"executing sql: {sql}")
+    rows = await conn.fetch(sql)
     if rows:
-        sessions = sorted((Session.model_validate_json(x["data"]) for x in rows), key=attrgetter('created_at'))
-        active_sessions = [x for x in sessions if x.expiry < now]
+        logger.debug(f"found {len(rows)}")
+        sessions = sorted(
+            (Session.model_validate_json(x["data"]) for x in rows), key=attrgetter("created_at")
+        )
+        active_sessions = [x for x in sessions if x.expiry > now]
     else:
         return None
     return active_sessions[-1] if active_sessions else None
+
+
+async def fetch_by_otp_id(otp_id: str, conn: Connection):
+    sql = f"SELECT data FROM sessions WHERE data['otp_id'] = '\"{otp_id}\"'"
+    logger.debug(f"executing sql: {sql}")
+    row = await conn.fetchrow(sql)
+    if row:
+        return Session.model_validate_json(row["data"])
+    return None
