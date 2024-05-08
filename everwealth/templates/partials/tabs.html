@@ -1,4 +1,4 @@
-<nav class="sticky -top-px bg-white font-medium text-sm ring-1 ring-gray-900 ring-opacity-5 border-none pt-6 md:pb-6 -mt-px dark:bg-slate-950/95 backdrop-blur-md dark:border-gray-900 dark:shadow-slate-700/[.7]" aria-label="Jump links">
+<nav class="-top-px bg-white font-medium text-sm ring-1 ring-gray-900 ring-opacity-5 border-none pt-6 md:pb-6 -mt-px dark:bg-slate-950/95 backdrop-blur-md dark:border-gray-900 dark:shadow-slate-700/[.7]" aria-label="Jump links">
   <div class="max-w-7xl snap-x w-full flex basis-full justify-between items-center overflow-x-auto px-4 py-0.5 mx-auto">
     <div class="me-5 md:me-8">
       <a class="flex-none text-2xl font-bold dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 " href="#" aria-label="Brand">
@@ -62,8 +62,29 @@
           Accounts
         </a>
       </div>
-      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:ring-1 dark:hover:ring-slate-800 dark:hover:bg-slate-900">
-        <a class="inline-flex items-center gap-x-2 dark:text-slate-300" href="/categories">
+      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:bg-slate-900 dark:active:bg-slate-800
+        {% if active_tab == "insights" %}
+          dark:bg-slate-900
+        {% endif %}
+        ">
+        <a class="inline-flex items-center gap-x-1 dark:text-slate-300" href="#">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+            width="20" 
+            height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+            class="hidden size-4"><path d="M4 9a2 2 0 0 1-2-2V5h6v2a2 2 0 0 1-2 2Z"/><path d="M3 5V3"/><path d="M7 5V3"/><path d="M19 15V6.5a3.5 3.5 0 0 0-7 0v11a3.5 3.5 0 0 1-7 0V9"/><path d="M17 21v-2"/><path d="M21 21v-2"/><path d="M22 19h-6v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"/></svg>
+          Insights
+        </a>
+      </div>
+      <div class="flex snap-center shrink-0 p-2 sm:last-pe-0 rounded-lg dark:hover:bg-slate-900 dark:active:bg-slate-800
+        {% if active_tab == "settings" %}
+          dark:bg-slate-900
+        {% endif %}
+        ">
+        <a class="inline-flex items-center gap-x-1 dark:text-slate-300" href="/settings">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+            width="20" 
+            height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+            class="hidden size-4"><path d="M4 9a2 2 0 0 1-2-2V5h6v2a2 2 0 0 1-2 2Z"/><path d="M3 5V3"/><path d="M7 5V3"/><path d="M19 15V6.5a3.5 3.5 0 0 0-7 0v11a3.5 3.5 0 0 1-7 0V9"/><path d="M17 21v-2"/><path d="M21 21v-2"/><path d="M22 19h-6v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"/></svg>
           Settings
         </a>
       </div>

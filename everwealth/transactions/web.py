@@ -1,7 +1,9 @@
 import asyncio
+from everwealth.auth import auth_user
 import csv
 from datetime import datetime, date
 from typing import Annotated
+from everwealth.settings import categories
 
 from asyncpg import Connection
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
@@ -12,12 +14,14 @@ from everwealth.db import get_connection
 from everwealth.transactions import (
     Account,
     AccountTransaction,
+    AccountTransactionCategoryView,
+    AccountView,
     bulk_create,
     fetch,
     fetch_many,
-    update
+    update,
 )
-from everwealth.users import User
+from everwealth.auth import User
 
 router = APIRouter()
 
@@ -26,23 +30,27 @@ templates = Jinja2Templates(directory="everwealth/templates")
 
 @router.get("/transactions", response_class=HTMLResponse)
 async def get_transactions(request: Request, conn: Connection = Depends(get_connection)):
-    # request.user
-    user = User(email="traviscammack@protonmail.com")
-    transactions = await fetch_many(None, conn)
+    transactions = await fetch_many(request.user, conn)
     return templates.TemplateResponse(
         request=request,
-        name="transactions.html",
+        name="transactions/transactions.html",
         context={"transactions": reversed(transactions), "active_tab": "transactions"},
     )
 
 
 @router.get("/transactions/{id}/edit", response_class=HTMLResponse)
 async def get_transaction_edit_section(
-    id: str, request: Request, conn: Connection = Depends(get_connection)
+    id: str,
+    request: Request,
+    conn: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
     transaction = await fetch(id, conn)
+    cats = await categories.fetch_many(user_id, conn)
     return templates.TemplateResponse(
-        request=request, name="partials/transaction-edit.html", context={"transaction": transaction}
+        request=request,
+        name="transactions/edit-modal.html",
+        context={"transaction": transaction, "categories": cats},
     )
 
 
@@ -53,23 +61,26 @@ async def update_transaction(
     description: Annotated[str, Form()],
     amount: Annotated[float, Form()],
     date: Annotated[date, Form()],
-    category: Annotated[str, Form()] = None,
-    conn: Connection = Depends(get_connection),
+    category_id: Annotated[str, Form(alias="category")] = None,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-
-    transaction: AccountTransaction = await fetch(id, conn)
-
     # TODO: need to validate input
 
+    transaction: AccountTransaction = await fetch(id, db)
     transaction.description = description
-    # transaction.category = category
     transaction.amount = amount
 
-    updated_transaction = await update(transaction, conn)
+    print(user_id)
+    print(category_id)
+    cat = await categories.fetch(category_id, user_id, db)
+    transaction.category = AccountTransactionCategoryView(id=cat.id, name=cat.name)
+
+    updated_transaction = await update(transaction, db)
 
     return templates.TemplateResponse(
         request=request,
-        name="partials/transaction-list-item.html",
+        name="transactions/list-item.html",
         context={"transaction": updated_transaction},
     )
 
@@ -79,9 +90,20 @@ async def create_transaction(request: Request, conn: Connection = Depends(get_co
     return
 
 
+@router.get("/transactions/upload", response_class=HTMLResponse)
+async def get_upload_modal(request: Request, db: Connection = Depends(get_connection)):
+    return templates.TemplateResponse(
+        request=request,
+        name="transactions/upload-modal.html",
+    )
+
+
 @router.post("/transactions/upload", response_class=HTMLResponse)
 async def upload_transactions(
-    request: Request, file: UploadFile, conn: Connection = Depends(get_connection)
+    request: Request,
+    file: UploadFile,
+    conn: Connection = Depends(get_connection),
+    user: User = Depends(auth_user),
 ):
     # TODO: provide a form for user to map their upload file headers to the acceptable ones.
 
@@ -93,15 +115,13 @@ async def upload_transactions(
 
     transactions = []
 
-    # need to get the account
-    user = User(email="traviscammack@protonmail.com")
-    account = Account(user=user.id)
+    # TODO: need to get the account
 
     for line in reader:
         transactions.append(
             AccountTransaction(
-                user=user.id,
-                account=account,
+                user_id=user.id,
+                account=None,
                 description=line["Description"],
                 amount=line["Amount"],
                 date=datetime.strptime(line["Date"], "%Y-%M-%d").date(),

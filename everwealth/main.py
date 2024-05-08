@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-
+import asyncio
 import asyncpg
+import lucette
 
 # import databases
 from fastapi import APIRouter, FastAPI
@@ -22,12 +23,42 @@ from everwealth.web.accounts import router as accounts_router
 # from everwealth.write.investment.tasks import snapshot
 from everwealth.web.budget import router as budget_router
 from everwealth.web.dashboard import router as dashboard_router
-from everwealth.web.settings import router as settings_router
-from everwealth.web.transactions import router as transaction_router
+from everwealth.settings.categories.web import router as settings_router
+from everwealth.transactions.web import router as transaction_router
+
+from loguru import logger
+import logging
+import inspect
+
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        # Get corresponding Loguru level if it exists.
+        level: str | int
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Find caller from where originated the logged message.
+        frame, depth = inspect.currentframe(), 0
+        while frame and (depth == 0 or frame.f_code.co_filename == logging.__file__):
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
+
+
+lucy = lucette.Lucette()
+lucy
 
 
 async def startup():
     setattr(db, "pool", await asyncpg.create_pool(settings.database_url))
+    asyncio.create_task(lucy.run())
 
 
 async def shutdown():
@@ -71,4 +102,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(AuthenticationMiddleware, backend=SessionBackend)
+app.add_middleware(AuthenticationMiddleware, backend=SessionBackend())

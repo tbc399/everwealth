@@ -10,7 +10,7 @@ from loguru import logger
 class OneTimePass(BaseModel):
     id: str = Field(default_factory=shortuuid.uuid)
     magic_token: str = Field(default_factory=lambda: shortuuid.random(length=64))
-    code: PositiveInt = Field(default_factory=lambda: random.randint(1000,9999))
+    code: PositiveInt = Field(default_factory=lambda: random.randint(1000, 9999))
     email: EmailStr
     expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(minutes=5))
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -36,7 +36,9 @@ async def fetch(id: str, conn: Connection):
 
 
 async def fetch_by_magic_token(magic_token: str, conn: Connection):
-    row = await conn.fetchrow(f'SELECT data from otp where data @> \'{{"magic_token": "{magic_token}"}}\'')
+    row = await conn.fetchrow(
+        f'SELECT data from otp where data @> \'{{"magic_token": "{magic_token}"}}\''
+    )
     if row:
         return OneTimePass.model_validate_json(row["data"])
     return None
@@ -56,5 +58,3 @@ async def send_email(email: str, otpass: OneTimePass):
     magic_url = f"http://localhost:8000/login/validate/{otpass.magic_token}"
     logger.info(f"magic url: {magic_url}")
     logger.info(f"sending otp email to {email}")
-
-

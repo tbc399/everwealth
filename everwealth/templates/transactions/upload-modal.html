@@ -1,0 +1,97 @@
+<div _="on closeUploadModal remove me">
+  <!-- modal underlay -->
+  <div id="upload-file-modal-backdrop" 
+    style="z-index: 79;" 
+    class="transition duration fixed inset-0 bg-slate-950 bg-opacity-0 dark:bg-opacity-40 hs-overlay-backdrop"
+    _="on click trigger closeUploadModal">
+  </div>
+  <!-- end modal underlay -->
+
+  <!-- transaction upload modal -->
+  <div 
+    id="transaction-upload-file-modal" 
+    class="hs-overlay open size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none"
+    aria-hidden="false" 
+    tabindex="-1"
+    >
+    <div class="hs-overlay-open:mt-0 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-10 opacity-0 transition-all max-w-full max-h-full h-full sm:hs-overlay-open:mt-10 sm:mt-0 sm:max-w-lg sm:max-h-none sm:h-auto sm:mx-auto">
+      <form method="post" action="/transactions/upload" enctype="multipart/form-data">
+        <div class="flex flex-col bg-white pointer-events-auto max-w-full max-h-full h-full sm:max-w-lg sm:max-h-none sm:h-auto sm:border sm:rounded-xl sm:dark:shadow-lg sm:dark:shadow-slate-950 dark:bg-slate-950 sm:dark:border-slate-800">
+          <div class="flex flex-col py-3 px-4">
+            <div class="flex justify-end mb-2">
+              <button 
+                type="button" 
+                class="flex items-center disabled:opacity-50 disabled:pointer-events-none"
+                data-hs-overlay="#trnsaction-upload-file-modal"
+                _="on click trigger closeUploadModal"
+                >
+                <svg class="flex-shrink-0 size-5 dark:text-slate-600 dark:hover:text-slate-500" 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"></path>
+                  <path d="m6 6 12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex items-center justify-center w-full">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                  width="50" 
+                  height="50" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  stroke-width="1.5" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  class="text-slate-500 lucide lucide-file-spreadsheet">
+                  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+                  <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
+                  <path d="M8 13h2"/>
+                  <path d="M14 13h2"/>
+                  <path d="M8 17h2"/>
+                  <path d="M14 17h2"/></svg>
+                <p class="mb-2 mt-3 text-sm text-slate-500 dark:text-slate-400">Click to upload a csv file</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">(MAX. 5MB)</p>
+              </div>
+            </div>
+            <div class="px-10">
+              <label>
+                <input name="file" type="file" class="block w-full text-sm text-gray-500
+                  file:me-4 file:py-2 file:px-4
+                  file:rounded-lg file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-teal-700 file:hover:bg-teal-600 file:text-slate-300
+                  p-1
+                  border rounded-xl dark:border-slate-800
+                  file:disabled:opacity-50 file:disabled:pointer-events-none
+                ">
+              </label>
+            </div> 
+            <div class="px-10 mt-2 flex justify-end dark:text-slate-500 dark:hover:text-teal-700 dark:hover:underline dark:hover:underline-offset-1 text-sm font-bold">
+              <a href="#">
+                More options
+              </a>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 mt-auto sm:mt-0">
+            <button 
+              type="button" 
+              class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal text-slate-400 
+              disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 
+              dark:text-white dark:hover:bg-gray-800"
+              _="on click trigger closeUploadModal">
+              Close
+            </button>
+            <button type="submit" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-md border border-transparent bg-teal-700 text-slate-300 hover:bg-teal-600 disabled:opacity-50 disabled:pointer-events-none">
+              Import
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- end transaction upload modal -->
+</div>

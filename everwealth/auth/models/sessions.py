@@ -5,9 +5,16 @@ import shortuuid
 from typing import Optional
 from asyncpg import Connection
 from loguru import logger
+from itsdangerous import Serializer
+from cryptography.fernet import Fernet
 
 
 # TODO: how to make "long lived" sessions?
+# DB stored sessions vs encrypted sessions stored in the cookies
+# If they're stored on the server then there is more control to block, invalidate, exchange, etc...
+# TODO: sessions need to be specific to the device the user is using
+# TODO: expire and replace sessions on a regular basis (old sessions would have to be invalidated somehow)
+# Maybe we could cache db sessions to make them fast!?
 class Session(BaseModel):
     id: str = Field(default_factory=lambda: shortuuid.random(length=64))  # a short uuid
     expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(days=1))
@@ -19,8 +26,6 @@ class Session(BaseModel):
     invalidated: Optional[bool] = Field(default=False)
 
     def is_expired(self):
-        if self.invalidated:
-            return True
         return self.expiry < datetime.utcnow()
 
 
@@ -38,8 +43,13 @@ async def invalidate(id: str, conn: Connection):
         )
 
 
-async def fetch(id: str):
-    return
+async def fetch(id: str, conn: Connection):
+    sql = f"SELECT data FROM sessions WHERE data['id'] = '\"{id}\"'"
+    logger.debug(f"executing sql: {sql}")
+    row = await conn.fetchrow(sql)
+    if row:
+        return Session.model_validate_json(row["data"])
+    return None
 
 
 async def fetch_latest_active(user_id: str, conn: Connection):

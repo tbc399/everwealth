@@ -2,7 +2,9 @@
   <!-- modal underlay -->
   <div id="upload-file-modal-backdrop" 
     style="z-index: 79;" 
-    class="transition duration fixed inset-0 bg-slate-900 bg-opacity-0 dark:bg-opacity-50 hs-overlay-backdrop"
+    class="transition duration fixed inset-0 bg-slate-900 bg-opacity-0 dark:bg-opacity-20 hs-overlay-backdrop"
+    aria-hidden="false" 
+    tabindex="-1"
     _="on click trigger closeModal">
   </div>
   <!-- end modal underlay -->
@@ -15,7 +17,7 @@
 
     <form hx-put="/transactions/{{ transaction.id }}/edit" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML">
       <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
-        <div class="flex flex-col w-full h-full py-3 px-4 bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-slate-900 dark:border-slate-800 dark:shadow-slate-700/70">
+        <div class="flex flex-col w-full h-full py-3 px-4 bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-slate-950 dark:border-slate-800 dark:shadow-slate-700/70">
           <div class="flex flex-row justify-between">
             <h3 class="font-bold text-gray-800 dark:text-white">
               Edit transaction
@@ -42,11 +44,9 @@
               <label for="new-budget-category" class="block mb-2 text-sm text-slate-700 font-medium dark:text-slate-400">Category</label>
               <div class="relative">
                 <select id="new-budget-category" name="category">
-                  <option value="">Choose</option>
-                  <option>Groceries</option>
-                  <option>Gas</option>
-                  <option>Mortgage</option>
-                  <option>Car Payment</option>
+                  {% for category in categories %}
+                  <option id="{{ category.id }}" value="{{ category.id }}">{{ category.name }}</option>
+                  {% endfor %}
                 </select>
               </div>
             </div>

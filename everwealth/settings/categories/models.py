@@ -1,8 +1,8 @@
 from pydantic import BaseModel
+from loguru import logger
 from typing import Optional
 from asyncpg import Connection
 from datetime import datetime
-from everwealth.users import User
 from shortuuid import uuid
 from pydantic import Field
 
@@ -11,26 +11,31 @@ class Category(BaseModel):
     id: str = Field(default_factory=uuid)
     name: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    user: Optional[str] = None
+    user_id: Optional[str] = None
 
 
-async def create(name: str, user: User, conn: Connection):
-    categories = await fetch_many(conn)
+async def create(name: str, user_id: str, db: Connection):
+    categories = await fetch_many(user_id, db)
     if name not in categories:
-       category = Category(name=name, user=user)
-    category = Category(name=name, user=user)
-    await conn.execute(f"INSERT INTO categories (data) VALUES ('{category.model_dump_json()}')")
+        category = Category(name=name, user_id=user_id)
+    category = Category(name=name, user_id=user_id)
+    await db.execute(f"INSERT INTO categories (data) VALUES ('{category.model_dump_json()}')")
     return category
 
 
-async def fetch(name: str, user: User, conn: Connection):
-    record = await conn.fetch(f'SELECT data from users where data @> \'{{"name": "{name}"}}\'')
-    return Category(record[0])
+async def fetch(id: str, user_id: str, db: Connection):
+    sql = f'SELECT data from categories where data @> \'{{"id": "{id}", "user_id": "{user_id}"}}\''
+    logger.debug(f"Executing SQL: {sql}")
+    record = await db.fetchrow(sql)
+    return Category.model_validate_json(record["data"])
 
 
-async def fetch_many(user: User, conn: Connection):
+async def fetch_many(user_id: str, db: Connection):
+    logger.debug(f"Fetching categories for {user_id}")
     # TODO: filter on user id
-    records = await conn.fetch("SELECT data from categories")
+    records = await db.fetch(
+        f'SELECT data from categories where data @> \'{{"user_id": "{user_id}"}}\''
+    )
     return [Category.model_validate_json(x["data"]) for x in records]
 
 

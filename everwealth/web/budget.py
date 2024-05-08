@@ -5,7 +5,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from everwealth.budgets import Budget
-from everwealth.users import User
 from asyncpg import Connection
 from everwealth.db import get_connection
 

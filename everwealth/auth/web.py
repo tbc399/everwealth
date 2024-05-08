@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import EmailStr
 
 from everwealth.db import get_connection
-from everwealth import users
+from everwealth.auth import users
 from everwealth.auth import otp, sessions
 
 router = APIRouter()
@@ -27,12 +27,12 @@ async def submit_login(
     request: Request,
     email: Annotated[EmailStr, Form()],
     tasks: BackgroundTasks,
-    conn: Connection = Depends(get_connection),
+    db: Connection = Depends(get_connection),
 ):
     # TODO: have to pull a session from the cookies or else do a new auth flow
 
-    #user = await users.fetch(email, conn)
-    #if user:
+    # user = await users.fetch(email, conn)
+    # if user:
     #    logger.info(f"User with email {email} already exists")
     #    session = await sessions.fetch_latest_active(user.id, conn)
     #    if session:
@@ -40,11 +40,11 @@ async def submit_login(
     #        return RedirectResponse(url="dashboard", status_code=303)
     #    else:
     #        logger.info(f"user {user.id} does not currently have an active session")
-    #else:
+    # else:
     #    logger.info(f"no user exists for email {email}")
 
     # TODO: need to invalidate any currently active otps when creating a new one
-    otpass = await otp.create(email, conn)
+    otpass = await otp.create(email, db)
     tasks.add_task(otp.send_email, email, otpass)
 
     return RedirectResponse(
@@ -64,9 +64,7 @@ async def get_login_validate_page(
         return RedirectResponse(url="/sorry", status_code=303)
 
     return templates.TemplateResponse(
-        request=request,
-        name="auth/login-validation.html",
-        context={"otp": otpass}
+        request=request, name="auth/login-validation.html", context={"otp": otpass}
     )
 
 
@@ -78,14 +76,14 @@ async def submit_otp_validation(
     digit_2: Annotated[int, Form()],
     digit_3: Annotated[int, Form()],
     digit_4: Annotated[int, Form()],
-    conn: Connection = Depends(get_connection),
+    db: Connection = Depends(get_connection),
 ):
     # TODO: I think this should return a page directing the user to go back to the original login page
     # TODO: Need to validate otp expiry
     # TODO: Do we validate the device?
     # TODO: validate the # of attempts is under a threshold of 3, for example
 
-    otpass = await otp.fetch_by_magic_token(magic_token, conn)
+    otpass = await otp.fetch_by_magic_token(magic_token, db)
     if not otpass:
         logger.info(f"No otp found for magic token {magic_token}")
         return RedirectResponse(url="/sorry", status_code=303)
@@ -96,13 +94,13 @@ async def submit_otp_validation(
         return RedirectResponse(url="/sorry", status_code=303)
 
     logger.debug(f"Looking for existing user {otpass.email}")
-    user = await users.fetch(otpass.email, conn)
+    user = await users.fetch(otpass.email, db)
 
     if not user:
         logger.info(f"Creating new user for {otpass.email}")
-        user = await users.create(otpass.email, conn)
+        user = await users.create(otpass.email, db)
 
-    _ = await sessions.create(user.id, otpass.id, conn)
+    _ = await sessions.create(user.id, otpass.id, db)
 
     return templates.TemplateResponse(
         request=request,
@@ -124,8 +122,9 @@ async def get_login_pending_page(
 
 
 @router.get("/login/{otp_id}/check")
-async def check_login_status(request: Request, otp_id: str, conn: Connection = Depends(get_connection)):
-
+async def check_login_status(
+    request: Request, otp_id: str, conn: Connection = Depends(get_connection)
+):
     otpass = await otp.fetch(otp_id, conn)
     if not otpass:
         logger.info(f"Otp {otpass.id} not found")
@@ -144,7 +143,6 @@ async def check_login_status(request: Request, otp_id: str, conn: Connection = D
         response = Response(status_code=200, headers={"HX-Redirect": "/dashboard"})
         response.set_cookie(key="session", value=session.id)
         return response
-
 
     return Response(status_code=401)
 
