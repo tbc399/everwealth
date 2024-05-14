@@ -30,6 +30,7 @@ class AccountView(BaseModel):
 
 class AccountTransaction(BaseModel):
     id: str = Field(default_factory=uuid)
+    source_hash: Optional[int] = Field(default=None)
     user_id: str  # the short uuid of the owning user
     source_hash: int = 0  # used to match transactions to source
     account: Optional[AccountView] = None
@@ -43,7 +44,8 @@ class AccountTransaction(BaseModel):
 
     def hash(self):
         if not self.source_hash:
-            self.source_hash = hash("".join((self.date, self.description, self.amount)))
+            # we don't want to override the original hash in case the constituent fields have changed
+            self.source_hash = hash(f"{self.date}{self.description}{self.amount}")
 
 
 async def create(account: Account, description: str, amount, conn: Connection, category=None):

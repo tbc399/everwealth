@@ -4,6 +4,7 @@ import csv
 from datetime import datetime, date
 from typing import Annotated
 from everwealth.settings import categories
+from dateutil import parser
 
 from asyncpg import Connection
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
@@ -34,6 +35,15 @@ async def get_transactions(request: Request, conn: Connection = Depends(get_conn
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions.html",
+        context={"transactions": reversed(transactions), "active_tab": "transactions"},
+    )
+
+@router.get("/transactions-partial", response_class=HTMLResponse)
+async def get_transactions_partial(request: Request, conn: Connection = Depends(get_connection)):
+    transactions = await fetch_many(request.user, conn)
+    return templates.TemplateResponse(
+        request=request,
+        name="transactions/transactions-partial.html",
         context={"transactions": reversed(transactions), "active_tab": "transactions"},
     )
 
@@ -103,7 +113,7 @@ async def upload_transactions(
     request: Request,
     file: UploadFile,
     conn: Connection = Depends(get_connection),
-    user: User = Depends(auth_user),
+    user_id: User = Depends(auth_user),
 ):
     # TODO: provide a form for user to map their upload file headers to the acceptable ones.
 
@@ -118,15 +128,19 @@ async def upload_transactions(
     # TODO: need to get the account
 
     for line in reader:
-        transactions.append(
-            AccountTransaction(
-                user_id=user.id,
-                account=None,
-                description=line["Description"],
-                amount=line["Amount"],
-                date=datetime.strptime(line["Date"], "%Y-%M-%d").date(),
-            )
+        print(line)
+        transaction = AccountTransaction(
+            user_id=user_id,
+            account=None,
+            description=line["Description"],
+            amount=line["Amount"],
+            #date=datetime.strptime(line["Date"], "%Y-%M-%d").date(),
+            date=parser.parse(line["Date"]).date(),
         )
+        transaction.hash()
+        transactions.append(transaction)
+
+    # TODO: need to check hashes so as not to duplicate
 
     await bulk_create(transactions, conn)
 

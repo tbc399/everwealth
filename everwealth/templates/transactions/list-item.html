@@ -19,7 +19,13 @@
       dark:text-slate-500
     {% endif %}
     ">
-    <span class="w-full flex justify-end"><span class="darK:text-slate-600 font-normal">$</span>{{ "%.2f"|format(transaction.amount|abs) }}</span>
+    <span class="w-full flex justify-end">
+      {% if transaction.amount > 0 %}
+        +{{"%.2f"|format(transaction.amount)}}
+      {% else %}
+        {{"%.2f"|format(transaction.amount)}}
+      {% endif %}
+    </span>
   </div>
   <div class="table-cell px-6 py-3 whitespace-nowrap text-sm text-slate-800 dark:text-slate-300">
   </div>

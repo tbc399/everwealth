@@ -27,6 +27,7 @@ loguru = "^0.7.2"
 lucette = {path = "../lucette", develop = true}
 itsdangerous = "^2.2.0"
 cryptography = "^42.0.5"
+python-dateutil = "^2.9.0.post0"
 
 
 [build-system]

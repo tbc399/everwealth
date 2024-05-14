@@ -16,6 +16,11 @@ def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 
+@router.get("/base", response_class=HTMLResponse)
+def index(request: Request):
+    return templates.TemplateResponse(request=request, name="base.html")
+
+
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request):
     return templates.TemplateResponse(request=request, name="dashboard.html")
