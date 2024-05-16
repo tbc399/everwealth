@@ -4,7 +4,7 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
   content: [
-    './everwealth/templates/*.html',
+    './everwealth/templates/**/*.html',
     './everwealth/templates/**/*.html',
     './everwealth/auth/templates/*.html',
     './everwealth/transactions/templates/**/*.html',

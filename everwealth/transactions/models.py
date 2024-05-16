@@ -29,6 +29,9 @@ class AccountView(BaseModel):
 
 
 class AccountTransaction(BaseModel):
+    """
+    TODO: should I add an original set of fields?
+    """
     id: str = Field(default_factory=uuid)
     source_hash: Optional[int] = Field(default=None)
     user_id: str  # the short uuid of the owning user

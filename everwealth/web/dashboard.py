@@ -3,7 +3,9 @@ from fastapi.responses import HTMLResponse
 from asyncpg import Connection
 from everwealth.db import get_connection
 from fastapi.templating import Jinja2Templates
-from everwealth.transactions import fetch_many
+from everwealth import transactions
+from everwealth.settings import categories
+from everwealth.auth import auth_user
 
 router = APIRouter()
 
@@ -16,7 +18,8 @@ async def dashboard(request: Request):
 
 
 @router.get("/layout", response_class=HTMLResponse)
-async def layout(request: Request, conn: Connection = Depends(get_connection)):
-    transactions = await fetch_many(request.user, conn)
-    return templates.TemplateResponse(request=request, name="layout.html", context={"transactions": transactions})
+async def layout(request: Request, conn: Connection = Depends(get_connection), user_id: str = Depends(auth_user)):
+    transactions_ = await transactions.fetch_many(user_id, conn)
+    categories_ = await categories.fetch_many(user_id, conn)
+    return templates.TemplateResponse(request=request, name="layout.html", context={"transactions": transactions_, "categories": categories_})
 
