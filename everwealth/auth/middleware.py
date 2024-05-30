@@ -1,10 +1,11 @@
-from starlette.middleware.authentication import AuthenticationBackend
-from fastapi.exceptions import HTTPException
-from starlette.requests import HTTPConnection
-from starlette.authentication import AuthCredentials
-from everwealth.auth import sessions, users, User
 from fastapi import Cookie
+from fastapi.exceptions import HTTPException
 from loguru import logger
+from starlette.authentication import AuthCredentials
+from starlette.middleware.authentication import AuthenticationBackend
+from starlette.requests import HTTPConnection
+
+from everwealth.auth import User, sessions, users
 
 
 class SessionBackend(AuthenticationBackend):

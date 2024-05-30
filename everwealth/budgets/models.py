@@ -3,27 +3,18 @@ from datetime import datetime
 from typing import List, Optional
 
 import asyncpg
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from shortuuid import ShortUUID
 
 
 class Budget(BaseModel):
     id: str = ShortUUID()  # shortuuid
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
     category: str  # to link to Category
-    total: float = 0.0
+    total: float
     rollover: Optional[bool] = False
-    account: str = ""  # shortuuid
-
-    async def save(self):
-        # write to db
-        # determine if create or update with the ID
-        return
-
-    async def duplicate(self):
-        # duplicate from one month to the next
-        return
 
 
 async def get_current_budgets(account: str) -> List[Budget]:

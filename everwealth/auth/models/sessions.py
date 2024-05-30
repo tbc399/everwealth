@@ -1,12 +1,13 @@
-from pydantic import Field, IPvAnyAddress, BaseModel, PositiveInt, EmailStr
-from operator import attrgetter
 from datetime import datetime, timedelta
-import shortuuid
+from operator import attrgetter
 from typing import Optional
+
+import shortuuid
 from asyncpg import Connection
-from loguru import logger
-from itsdangerous import Serializer
 from cryptography.fernet import Fernet
+from itsdangerous import Serializer
+from loguru import logger
+from pydantic import BaseModel, EmailStr, Field, IPvAnyAddress, PositiveInt
 
 
 # TODO: how to make "long lived" sessions?

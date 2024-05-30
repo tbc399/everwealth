@@ -1,15 +1,14 @@
 from typing import Annotated
 
 from asyncpg import Connection
-from fastapi import APIRouter, Depends, Form, Request, BackgroundTasks, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 from pydantic import EmailStr
 
+from everwealth.auth import otp, sessions, users
 from everwealth.db import get_connection
-from everwealth.auth import users
-from everwealth.auth import otp, sessions
 
 router = APIRouter()
 

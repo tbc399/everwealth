@@ -1,4 +1,2 @@
-from .models import sessions
-from .models import otp
-from .models import users
-from .models.users import auth_user, User
+from .models import otp, sessions, users
+from .models.users import User, auth_user

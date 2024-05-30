@@ -1,7 +1,7 @@
-from lucette import Subscriber, BaseMessage
+from lucette import BaseMessage, Subscriber
 
-from everwealth.settings.categories import Category
 from everwealth import transactions
+from everwealth.settings.categories import Category
 
 subscriber = Subscriber()
 

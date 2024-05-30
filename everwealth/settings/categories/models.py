@@ -1,10 +1,10 @@
-from pydantic import BaseModel
-from loguru import logger
-from typing import Optional
-from asyncpg import Connection
 from datetime import datetime
+from typing import Optional
+
+from asyncpg import Connection
+from loguru import logger
+from pydantic import BaseModel, Field
 from shortuuid import uuid
-from pydantic import Field
 
 
 class Category(BaseModel):

@@ -1,1 +1,1 @@
-from .models import Category, fetch, fetch_many, create
+from .models import Category, create, fetch, fetch_many

@@ -1,17 +1,17 @@
 import asyncio
-from everwealth.auth import auth_user
 import csv
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Annotated
-from everwealth.settings import categories
-from dateutil import parser
 
 from asyncpg import Connection
+from dateutil import parser
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+from everwealth.auth import User, auth_user
 from everwealth.db import get_connection
+from everwealth.settings import categories
 from everwealth.transactions import (
     Account,
     AccountTransaction,
@@ -22,7 +22,6 @@ from everwealth.transactions import (
     fetch_many,
     update,
 )
-from everwealth.auth import User
 
 router = APIRouter()
 
@@ -30,13 +29,17 @@ templates = Jinja2Templates(directory="everwealth/templates")
 
 
 @router.get("/transactions", response_class=HTMLResponse)
-async def get_transactions(request: Request, conn: Connection = Depends(get_connection)):
-    transactions = await fetch_many(request.user, conn)
+async def get_transactions(
+    request: Request, conn: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    transactions = await fetch_many(user_id, conn)
+    print(transactions)
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions.html",
-        context={"transactions": reversed(transactions), "active_tab": "transactions"},
+        context={"transactions": list(reversed(transactions)), "active_tab": "transactions"},
     )
+
 
 @router.get("/transactions-partial", response_class=HTMLResponse)
 async def get_transactions_partial(request: Request, conn: Connection = Depends(get_connection)):
@@ -134,7 +137,7 @@ async def upload_transactions(
             account=None,
             description=line["Description"],
             amount=line["Amount"],
-            #date=datetime.strptime(line["Date"], "%Y-%M-%d").date(),
+            # date=datetime.strptime(line["Date"], "%Y-%M-%d").date(),
             date=parser.parse(line["Date"]).date(),
         )
         transaction.hash()

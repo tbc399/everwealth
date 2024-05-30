@@ -1,10 +1,11 @@
-from pydantic import Field, EmailStr, PositiveInt, BaseModel
-import shortuuid
-from typing import Optional
-from datetime import datetime, timedelta
 import random
+from datetime import datetime, timedelta
+from typing import Optional
+
+import shortuuid
 from asyncpg import Connection
 from loguru import logger
+from pydantic import BaseModel, EmailStr, Field, PositiveInt
 
 
 class OneTimePass(BaseModel):

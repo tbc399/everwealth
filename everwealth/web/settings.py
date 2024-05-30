@@ -1,15 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse
+from asyncpg import Connection
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from everwealth.settings import create, fetch_many, default_category_names
-from asyncpg import Connection
 from everwealth.db import get_connection
-
-from fastapi.responses import RedirectResponse
-from fastapi import Depends
+from everwealth.settings import create, default_category_names, fetch_many
 from everwealth.users import User
 
 router = APIRouter()

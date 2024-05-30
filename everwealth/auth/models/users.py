@@ -1,16 +1,14 @@
-from typing import Optional
-from fastapi import HTTPException
-from everwealth.db import get_connection
-from fastapi import Depends
-from everwealth.auth import sessions
+from typing import Annotated, Optional
+
+from asyncpg import Connection
+from fastapi import Cookie, Depends, HTTPException
 from loguru import logger
-from typing import Annotated
+from pydantic import BaseModel, EmailStr, Field
+from shortuuid import uuid
 from starlette.authentication import BaseUser
 
-from fastapi import Cookie
-from shortuuid import uuid
-from asyncpg import Connection
-from pydantic import BaseModel, EmailStr, Field
+from everwealth.auth import sessions
+from everwealth.db import get_connection
 
 
 class User(BaseModel, BaseUser):
