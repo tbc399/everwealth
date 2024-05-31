@@ -45,6 +45,18 @@ async def budgets(request: Request):
         Budget(category="Water", amount=75, spent=45),
         Budget(category="Pet", amount=90, spent=23),
         Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
+        Budget(category="Tiingo", amount=10, spent=5),
     ]
     return templates.TemplateResponse(
         request=request,

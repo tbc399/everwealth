@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, Field
 from shortuuid import uuid
 from starlette.authentication import BaseUser
 
-from everwealth.auth import sessions
+from . import sessions
 from everwealth.db import get_connection
 
 

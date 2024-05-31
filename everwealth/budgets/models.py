@@ -1,19 +1,17 @@
-from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
-import asyncpg
 from pydantic import BaseModel, Field
 from shortuuid import ShortUUID
 
 
 class Budget(BaseModel):
     id: str = ShortUUID()  # shortuuid
-    user_id: str
+    user_id: str = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    category: str  # to link to Category
-    total: float
+    category: str = None  # to link to Category
+    amount: int = None
     rollover: Optional[bool] = False
 
 
