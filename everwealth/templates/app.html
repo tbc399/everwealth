@@ -64,22 +64,22 @@
             Budgets
           </div>
         </a>
-        <div class="flex snap-center shrink-0 py-1.5 ps-4 sm:last-pe-0 rounded-md dark:hover:bg-slate-900 dark:active:bg-slate-800
+        <a class="flex snap-center shrink-0 py-1.5 ps-4 sm:last-pe-0 rounded-md dark:hover:bg-slate-900 dark:active:bg-slate-800
           {% if active_tab == "transactions" %}
             dark:bg-slate-900
           {% endif %}
-          ">
-          <a class="inline-flex items-center gap-x-2 dark:focus:outline-none"
-            hx-get="/transactions-partial"
-            hx-swap="none">
+          "
+          href="/transactions"
+          >
+          <div class="inline-flex items-center gap-x-2 dark:focus:outline-none">
             <svg 
               viewBox="0 0 24 24" 
               class="size-4 fill-none stroke-2 stroke-slate-500">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
             </svg>
             Transactions
-          </a>
-        </div>
+          </div>
+        </a>
         <div class="flex snap-center shrink-0 py-1.5 ps-4 sm:last-pe-0 rounded-md dark:hover:bg-slate-900 dark:active:bg-slate-800
           {% if active_tab == "accounts" %}
             dark:bg-slate-900
