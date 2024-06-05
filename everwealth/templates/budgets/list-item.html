@@ -1,11 +1,11 @@
-<div id="bud_{{ budget.id }}" class="group flex flex-row w-full rounded-lg border border-slate-800 min-h-20 p-2 bg-slate-900 hover:border-slate-700 dark:active:bg-slate-800/50 active:border-slate-600">
+<div id="bud_{{ budget.id }}" class="group flex flex-row w-full rounded-lg border border-slate-800 min-h-20 p-2 bg-slate-900/30 hover:bg-slate-900/50 hover:border-slate-700 dark:active:bg-slate-800/50 active:border-slate-600">
   <div class="flex justify-between w-full">
     <span class="text-sm font-semibold text-slate-200">{{ budget.category }}</span>
   </div>
   <div class="flex flex-row w-full">
     <div class="flex flex-col items-center justify-center w-2/12">
-      <span class="text-lg text-slate-200 font-semibold">
-        <span class="h-full text-sm font-normal text-teal-700 me-0.5">$</span>{{ 20 }}
+      <span class="text-lg text-slate-200 font-nornal">
+        <span class="h-full text-xs font-normal text-teal-700 me-0.5">$</span>{{ 20 }}
       </span>
     </div>
     <div class="flex items-center justify-center h-full w-8/12">
@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="flex flex-col items-center justify-center w-2/12">
-      <span class="text-lg text-slate-200 font-semibold">
-        <span class="h-full text-sm font-normal text-teal-700 me-0.5">$</span>{{ budget.amount }}
+      <span class="text-lg text-slate-200 font-normal">
+        <span class="h-full text-xs font-normal text-teal-700 me-0.5">$</span>{{ budget.amount }}
       </span>
     </div>
   </div>

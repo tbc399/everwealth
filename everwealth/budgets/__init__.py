@@ -1,1 +1,1 @@
-from .models import Budget
+from .models import Budget, fetch_many
