@@ -23,8 +23,9 @@ class Session(BaseModel):
     user_id: str
     device_id: Optional[str] = Field(default="")  # TODO: is there a way to get this??
     device_trusted: Optional[bool] = Field(default=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
     invalidated: Optional[bool] = Field(default=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     def is_expired(self):
         return self.expiry < datetime.utcnow()
@@ -32,36 +33,51 @@ class Session(BaseModel):
 
 async def create(user_id: str, otp_id: str, conn: Connection):
     session = Session(user_id=user_id, otp_id=otp_id)
+    columns = ",".join(
+        [
+            "id",
+            "expiry",
+            "otp_id",
+            "user_id",
+            "device_id",
+            "device_trusted",
+            "invalidated",
+            "created_at",
+            "updated_at",
+        ]
+    )
+    values = f"'{session.id}','{session.expiry}','{session.otp_id}','{session.user_id}', \
+    '{session.device_id}',{session.device_trusted},{session.invalidated},'{session.created_at}',\
+    '{session.updated_at}'"
     async with conn.transaction():
-        await conn.execute(f"INSERT INTO sessions (data) VALUES ('{session.model_dump_json()}')")
+        await conn.execute(f"INSERT INTO sessions ({columns}) VALUES ({values})")
+    return session
 
 
 async def invalidate(id: str, conn: Connection):
     async with conn.transaction():
         # TODO: learn how to replace with proper prepared statements
-        await conn.execute(
-            f"UPDATE sessions SET data['invalidated'] = true where data['id'] = '\"{id}\"'"
-        )
+        await conn.execute(f"UPDATE sessions SET invalidated = true WHERE id = '{id}'")
 
 
 async def fetch(id: str, conn: Connection):
-    sql = f"SELECT data FROM sessions WHERE data['id'] = '\"{id}\"'"
+    sql = f"SELECT * FROM sessions WHERE id = '{id}'"
     logger.debug(f"executing sql: {sql}")
     row = await conn.fetchrow(sql)
     if row:
-        return Session.model_validate_json(row["data"])
+        return Session.model_validate(dict(row))
     return None
 
 
 async def fetch_latest_active(user_id: str, conn: Connection):
     now = datetime.utcnow()
-    sql = f"SELECT data FROM sessions WHERE data['user_id'] = '\"{user_id}\"' AND data['invalidated'] = 'false'"
+    sql = f"SELECT * FROM sessions WHERE user_id = '{user_id}' AND NOT invalidated"
     logger.debug(f"executing sql: {sql}")
     rows = await conn.fetch(sql)
     if rows:
         logger.debug(f"found {len(rows)}")
         sessions = sorted(
-            (Session.model_validate_json(x["data"]) for x in rows), key=attrgetter("created_at")
+            (Session.model_validate(dict(x)) for x in rows), key=attrgetter("created_at")
         )
         active_sessions = [x for x in sessions if x.expiry > now]
     else:
@@ -70,9 +86,9 @@ async def fetch_latest_active(user_id: str, conn: Connection):
 
 
 async def fetch_by_otp_id(otp_id: str, conn: Connection):
-    sql = f"SELECT data FROM sessions WHERE data['otp_id'] = '\"{otp_id}\"'"
+    sql = f"SELECT * FROM sessions WHERE otp_id = '{otp_id}'"
     logger.debug(f"executing sql: {sql}")
     row = await conn.fetchrow(sql)
     if row:
-        return Session.model_validate_json(row["data"])
+        return Session.model_validate(dict(row))
     return None

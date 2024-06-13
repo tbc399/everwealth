@@ -19,15 +19,22 @@ class User(BaseModel, BaseUser):
 
 
 async def fetch(id: str, conn: Connection):
-    row = await conn.fetchrow(f'SELECT data from users where data @> \'{{"id": "{id}"}}\'')
+    row = await conn.fetchrow(f"SELECT * FROM users WHERE id = '{id}'")
     if row:
-        return User.model_validate_json(row["data"])
+        return User.model_validate(dict(row))
     return None
 
 
 async def create(email: str, conn: Connection, first: str = None, last: str = None):
     user = User(email=email)
-    await conn.execute(f"INSERT INTO users (data) VALUES ('{user.model_dump_json()}')")
+    dump = user.model_dump()
+    columns = ",".join(dump.keys())
+    values = dump.values()
+    place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
+    sql = f"INSERT INTO users ({columns}) VALUES ({place_holders})"
+    logger.debug(f"Running sql {sql}")
+    async with conn.transaction():
+        await conn.execute(sql, *values)
     return user
 
 

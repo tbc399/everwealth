@@ -111,10 +111,11 @@ async def submit_otp_validation(
 async def get_login_pending_page(
     request: Request, otp_id: str, conn: Connection = Depends(get_connection)
 ):
-    otpass = await otp.fetch(otp_id, conn)
+    otpass: otp.OneTimePass = await otp.fetch(otp_id, conn)
     logger.debug(f"otpass found: {otpass.id}")
-    # TODO: give back a 404 or something else that says this OTP have expired/invalidated
-    # TODO: this page will need to poll until OTP expiration or otp code is validated from email
+    if otpass.is_expired():
+        # TODO: give back something more specific to this case of the OTP expiring
+        return templates.TemplateResponse(request=request, name="404.html", status_code=404)
     return templates.TemplateResponse(
         request=request, name="auth/login-pending.html", context={"otp": otpass}
     )

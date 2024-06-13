@@ -1,0 +1,52 @@
+<div hx-swap-oob="outerHTML:#budget-detail" id="budget-detail" id="budget-detail" class="flex flex-col border border-slate-900 rounded-md bg-slate-900/25 gap-y-5 w-full min-h-32 p-4">
+  <div class="flex flex-row justify-between mb-4">
+    <span class="text-sm text-slate-400">Edit budget for <span class="font-bold text-base text-teal-800">{{ budget.category.name }}</span></span>
+    <svg viewBox="0 0 24 24" class="hidden size-4 stroke-slate-500 stroke-[2.5px] fill-current">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  </div>
+  <div class="w-full flex justify-between gap-y-2">
+    <div class="flex flex-col">
+      <span class="text-slate-300 text-sm font-semibold">Amount</span>
+      <div class="text-xs font-normal text-slate-500">How much do you plan to spend on {{ budget.category.name }}?</div>
+    </div>
+    <div class="flex items-end">
+      <span class="text-teal-700 me-2">$</span>
+      <input id="budget-amount-edit" type="text" value={{ budget.amount }} class="w-20 border-none ring-1 ring-slate-800 focus:border-none focus:shadow-lg focus:shadow-slate-950 focus:ring-slate-700 rounded bg-slate-900 placeholder-slate-600 py-1 px-1.5 text-sm font-normal text-slate-400 text-left" placeholder="Amount"></input>
+    </div>
+  </div>
+  <div class="w-full flex justify-between gap-y-2">
+    <div class="flex flex-col">
+      <span class="text-slate-300 text-sm font-semibold">Frequency</span>
+      <div class="text-xs font-normal text-slate-500">How often do you plan to spend on {{ budget.category.name }}?</div>
+    </div>
+    <div class="flex items-end">
+      <div id="toggle-count" class="p-0.5 inline-block rounded-md bg-transparent border border-slate-800">
+        <label for="toggle-count-monthly" class="relative inline-block py-0.5 px-2">
+          <span class="inline-block relative z-10 text-xs font-medium text-slate-400 cursor-pointer">
+            Monthly
+          </span>
+          <input id="toggle-count-monthly" name="frequency" value="monthly" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent cursor-pointer before:absolute before:inset-0 before:size-full before:rounded focus:ring-offset-0 checked:before:shadow-sm checked:bg-none focus:ring-transparent checked:before:bg-slate-800 focus:ring-offset-transparent"
+            {% if budget.frequency.value == 'monthly' %}
+              checked
+            {% endif %}
+          >
+        </label>
+        <label for="toggle-count-annual" class="relative inline-block py-0.5 px-2">
+          <span class="inline-block relative z-10 text-xs font-medium cursor-pointer text-slate-400">
+            Yearly
+          </span>
+          <input id="toggle-count-annual" name="frequency" value="yearly" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent cursor-pointer before:absolute before:inset-0 before:size-full before:rounded focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-slate-800 dark:focus:ring-offset-transparent"
+            {% if budget.frequency.value == 'yearly' %}
+              checked
+            {% endif %}
+          >
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="flex justify-end mt-5">
+    <button class="rounded-md me-2 bg-teal-800 hover:bg-teal-700 active:bg-teal-800 active:text-slate-200 py-1.5 px-2.5 text-xs font-semibold text-slate-200 hover:text-slate-100">Update</button>
+    <button class="rounded-md border border-slate-800 hover:bg-slate-900/25 active:bg-slate-900/50 py-1.5 px-2.5 text-xs font-semibold text-slate-400 hover:text-slate-300">Cancel</button>
+  </div>
+</div>

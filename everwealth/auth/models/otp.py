@@ -25,32 +25,35 @@ class OneTimePass(BaseModel):
 
 async def create(email: str, conn: Connection):
     otp = OneTimePass(email=email)
-    await conn.execute(f"INSERT INTO otp (data) VALUES ('{otp.model_dump_json()}')")
+    dump = otp.model_dump()
+    columns = ",".join(
+        ["id", "magic_token", "code", "email", "expiry", "created_at", "invalidated"]
+    )
+    values = f"'{otp.id}','{otp.magic_token}',{otp.code},'{otp.email}','{otp.expiry}','{otp.created_at}',{otp.invalidated}"
+    print(values)
+    async with conn.transaction():
+        await conn.execute(f"INSERT INTO otp ({columns}) VALUES ({values})")
     return otp
 
 
 async def fetch(id: str, conn: Connection):
-    row = await conn.fetchrow(f'SELECT data from otp where data @> \'{{"id": "{id}"}}\'')
+    row = await conn.fetchrow(f"SELECT * FROM otp WHERE id = '{id}'")
     if row:
-        return OneTimePass.model_validate_json(row["data"])
+        return OneTimePass.model_validate(dict(row))
     return None
 
 
 async def fetch_by_magic_token(magic_token: str, conn: Connection):
-    row = await conn.fetchrow(
-        f'SELECT data from otp where data @> \'{{"magic_token": "{magic_token}"}}\''
-    )
+    row = await conn.fetchrow(f"SELECT * FROM otp WHERE magic_token = '{magic_token}'")
     if row:
-        return OneTimePass.model_validate_json(row["data"])
+        return OneTimePass.model_validate(dict(row))
     return None
 
 
 async def invalidate(id: str, conn: Connection):
     async with conn.transaction():
         # TODO: learn how to replace with proper prepared statements
-        await conn.execute(
-            f"UPDATE otp SET data['invalidated'] = true where data['id'] = '\"{id}\"'"
-        )
+        await conn.execute(f"UPDATE otp SET invalidated = true WHERE id = '{id}'")
 
 
 # TODO: move this guy out to a more "service-like" module

@@ -27,12 +27,25 @@
             </div>
             <div class="w-full flex justify-between gap-y-2">
               <div class="flex flex-col">
+                <span class="text-slate-300 text-sm font-semibold">Category</span>
+                <div class="text-sm font-normal text-slate-500">What is this budget for?</div>
+              </div>
+              <div class="flex items-end">
+                <select id="create-budget-category" name="category" class="w-52 border border-slate-800 rounded bg-slate-900/20 placeholder-slate-600 py-0.5 px-2 text-xs text-slate-400">
+                  {% for category in categories %}
+                  <option id="cat_{{ category.id }}" value="{{ category.id }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="w-full flex justify-between gap-y-2">
+              <div class="flex flex-col">
                 <span class="text-slate-300 text-sm font-semibold">Amount</span>
                 <div class="text-sm font-normal text-slate-500">How much do you plan to spend on {{ "Groceries" }}?</div>
               </div>
               <div class="flex items-end">
                 <span class="text-teal-700 me-2">$</span>
-                <input id="budget-amount-edit" type="text" value="100345" class="w-20 border-none ring-1 ring-slate-700 focus:border-none focus:shadow-sm focus:shadow-slate-950 focus:ring-1 focus:ring-slate-600  rounded bg-slate-900 placeholder-slate-600 py-1 px-1.5 text-sm font-normal text-slate-400 text-right" placeholder="Amount"></input>
+                <input id="budget-amount-edit" type="text" name="amount" class="w-20 border-none ring-1 ring-slate-700 focus:border-none focus:shadow-sm focus:shadow-slate-950 focus:ring-1 focus:ring-slate-600  rounded bg-slate-900 placeholder-slate-600 py-1 px-1.5 text-sm font-normal text-slate-400 text-right" placeholder="Amount"></input>
               </div>
             </div>
             <div class="w-full flex justify-between gap-y-2">
@@ -46,13 +59,13 @@
                     <span class="inline-block relative z-10 text-sm font-medium text-gray-800 cursor-pointer dark:text-neutral-200">
                       Monthly
                     </span>
-                    <input id="toggle-count-monthly" name="toggle-count" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent rounded-lg cursor-pointer before:absolute before:inset-0 before:size-full before:rounded-lg focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-neutral-800 dark:focus:ring-offset-transparent">
+                    <input id="toggle-count-monthly" name="frequency" value="monthly" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent rounded-lg cursor-pointer before:absolute before:inset-0 before:size-full before:rounded-lg focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-neutral-800 dark:focus:ring-offset-transparent" checked="">
                   </label>
                   <label for="toggle-count-annual" class="relative inline-block py-2 px-3">
                     <span class="inline-block relative z-10 text-sm font-medium text-gray-800 cursor-pointer dark:text-neutral-200">
                       Yearly
                     </span>
-                    <input id="toggle-count-annual" name="toggle-count" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent rounded-lg cursor-pointer before:absolute before:inset-0 before:size-full before:rounded-lg focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-neutral-800 dark:focus:ring-offset-transparent" checked="">
+                    <input id="toggle-count-annual" name="frequency" value="yearly" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent rounded-lg cursor-pointer before:absolute before:inset-0 before:size-full before:rounded-lg focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-neutral-800 dark:focus:ring-offset-transparent">
                   </label>
                 </div>
               </div>
