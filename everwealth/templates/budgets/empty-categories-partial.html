@@ -1,0 +1,42 @@
+<!-- Budget Tab Bar -->
+<div hx-swap-oob="outerHTML:#budgets-tab-bar" id="budgets-tab-bar" class="flex flex-row rounded-lg border border-slate-800 bg-gray-950">
+  <button hx-get="/budgets/partial" hx-swap="none" class="rounded-md py-1 px-2 text-xs font-semibold text-slate-500">Budgets</button>
+  <button class="rounded-md py-1 px-2 text-xs font-semibold bg-slate-800 text-slate-300">Categories</button>
+</div>
+
+<!-- Empty Categories Main Content -->
+<div 
+  hx-swap-oob="outerHTML:#budgets-main-content" 
+  id="budgets-main-content" 
+  class="flex h-full overflow-y-auto items-center justify-center">
+  <div class="flex flex-col justify-center items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 256 256" fill="none" id="my-svg">
+      <defs>
+        <linearGradient id="gradient1">
+          <stop class="stop1" offset="0%" stop-color="#8f66ff"></stop>
+          <stop class="stop2" offset="100%" stop-color="#3d12ff"></stop>
+        </linearGradient>
+      </defs>
+      <rect id="backgr" width="128" height="128" fill="none" rx="60"></rect>
+      <g id="group" transform="translate(0,0) scale(1)">
+        <path d="M74.667 96.000V53.333H181.333V96.000H74.667Z" stroke="#1e293b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" id="primary"></path>
+        <path d="M74.667 202.667V160.000H181.333V202.667H74.667Z" stroke="#1e293b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" id="primary"></path>
+        <path d="M42.667 128.000H213.333" stroke="#115e59" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" id="secondary"></path>
+      </g>
+    </svg>
+    <button 
+      hx-get="budgets/categories/create"
+      hx-target="body"
+      hx-swap="beforeend"
+      type="button" 
+      title="Create new budget category" 
+      class="py-2 ps-3 pe-4 inline-flex items-center gap-x-1 text-xs font-semibold rounded
+      text-slate-100 bg-teal-800 hover:bg-teal-700 active:bg-teal-800 hover:bg-slate-800/50 disabled:opacity-50 
+      disabled:pointer-events-none dark:focus:outline-none">
+      <svg viewBox="0 0 24 24" class="size-3 fill-none stroke-2 stroke-slate-100">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      New category
+    </button>
+  </div>
+</div>

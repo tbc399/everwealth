@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, ConfigDict
 from shortuuid import ShortUUID, uuid
 from asyncpg import Connection
 from enum import Enum
@@ -22,11 +22,13 @@ class BudgetCategoryView(BaseModel):
 
 
 class Budget(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     id: str = Field(default_factory=uuid)  # shortuuid
     user_id: str = None
-    user: User
-    category_id: str = None  # to link to Category
-    category: Category
+    user: Optional[User] = None
+    category_id: str = None
+    category: Optional[Category] = None
     amount: int = None
     rollover: Optional[bool] = False
     frequency: Frequency = Field(default=Frequency.monthly)
@@ -39,16 +41,24 @@ class Budget(BaseModel):
 
 
 async def fetch_all_by_month(user_id: str, year: int, month: int, db: Connection) -> List[Budget]:
-    logger.debug(f"Fetching budgets for {user_id}")
-    # TODO: filter on user id
-    # records = await db.fetch(
-    #    f'SELECT data from budgets where data @> \'{{"user_id": "{user_id}"}}\''
-    # )
-    # TODO need to filter for current month
-    records = await db.fetch(
-        f"SELECT * FROM budgets WHERE user_id = '{user_id}' AND year = {year} AND month = {month}"
-    )
-    return [Budget.model_validate_json(x) for x in records]
+    sql = f"""
+    SELECT budgets.*, categories.name as category_name, categories.created_at as category_created_at, categories.user_id as category_user_id FROM budgets JOIN categories ON budgets.category_id = categories.id
+        WHERE budgets.user_id = '{user_id}' AND year = {year} AND month = {month}
+        """
+    logger.debug(f"Executing sql {sql}")
+    records = await db.fetch(sql)
+    budgets = []
+    for record in records:
+        category = Category(
+            id=record.get("category_id"),
+            name=record.get("category_name"),
+            created_at=record.get("category_created_at"),
+            user_id=record.get("category_user_id"),
+        )
+        budget = Budget.model_validate(dict(record))
+        budget.category = category
+        budgets.append(budget)
+    return budgets
 
 
 async def fetch(id: str, user_id: str, db: Connection) -> Budget:
@@ -57,15 +67,20 @@ async def fetch(id: str, user_id: str, db: Connection) -> Budget:
     #    f'SELECT data from budgets where data @> \'{{"user_id": "{user_id}", "id": "{id}"}}\''
     # )
     record = await db.fetchrow(f"SELECT * FROM budgets WHERE user_id = '{user_id}' AND id = '{id}'")
-    return Budget.model_validate_json(record)
+    return Budget.model_validate(dict(record))
 
 
 async def create(budget: Budget, db: Connection) -> Budget:
-    # validate that category is not already being used for a budget
-    # await db.execute(f"INSERT INTO budgets (data) VALUES ('{budget.model_dump_json()}')")
-    dump = budget.model_dump(exclude=("user", "category"))
-    column_names = ",".join(dump.keys())
-    value_names = ",".join(dump.values())
-    with db.transaction():
-        await db.execute(f"INSERT INTO budgets ({column_names}) VALUES ({value_names})")
+    # TODO validate that category is not already being used for a budget
+    dump = budget.model_dump(
+        exclude=("user", "category"),
+    )
+    print(dump)
+    columns = ",".join(dump.keys())
+    values = dump.values()
+    place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
+    sql = f"INSERT INTO budgets ({columns}) VALUES ({place_holders})"
+    logger.debug(f"Executing sql {sql}")
+    async with db.transaction():
+        await db.execute(sql, *values)
     return budget

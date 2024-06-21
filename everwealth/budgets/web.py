@@ -1,6 +1,7 @@
 from typing import Annotated
 from collections import defaultdict
 from everwealth.auth import auth_user
+from everwealth.settings import categories
 from datetime import datetime
 
 from asyncpg import Connection
@@ -30,7 +31,7 @@ async def create_budget(
     cat = await categories.fetch(category_id, user_id, db)
     budget = Budget(
         user_id=user_id,
-        category=BudgetCategoryView(id=category_id, name=cat.name),
+        category_id=category_id,
         amount=amount,
         frequency=frequency,
     )
@@ -69,30 +70,74 @@ async def get_budget_create_modal(
 
 
 @router.get("/budgets", response_class=HTMLResponse)
-async def budgets(
+async def get_budgets(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     now = datetime.utcnow()
     budgets = await fetch_all_by_month(user_id, now.year, now.month, db)
-    budget_names = set(_.category.name for _ in budgets)
-    budget_sums = defaultdict(float)
-
-    # trans = await transactions.fetch_many_by_month(user_id, month, db)
-    trans = await transactions.fetch_many(user_id, db)
-
-    for transaction in trans:
-        if transaction.category.name in budget_names:
-            budget_sums[transaction.category.name] += transaction.amount
 
     return templates.TemplateResponse(
         request=request,
         name="budgets/budgets.html",
-        context={"budgets": budgets, "budget_sums": budget_sums, "active_tab": "budgets"},
+        context={
+            "budgets": budgets,
+            "active_tab": "budgets",
+            "title": "Budgets",
+            "partial_template": "budgets/budgets-partial.html",
+            "partial_endpoint": "budgets/partial",
+        },
     )
 
 
 @router.get("/budgets/partial", response_class=HTMLResponse)
-async def budgets_partial(request: Request):
+async def budgets_partial(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    now = datetime.utcnow()
+    budgets = await fetch_all_by_month(user_id, now.year, now.month, db)
     return templates.TemplateResponse(
-        request=request, name="budgets/budgets-partial.html", context={"active_tab": "budgets"}
+        request=request,
+        name="budgets/budgets-partial.html",
+        context={"active_tab": "budgets", "budgets": budgets},
+    )
+
+
+@router.get("/categories", response_class=HTMLResponse)
+async def get_categories(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    cats = await categories.fetch_many(user_id, db)
+
+    # template = "budgets/categories-partial.html"
+
+    return templates.TemplateResponse(
+        request=request,
+        name="budgets/budgets.html",
+        context={
+            "active_tab": "budgets",
+            "categories": cats,
+            "title": "Categories",
+            "partial_template": "budgets/categories-partial.html",
+            "partial_endpoint": "categories/partial",
+        },
+    )
+
+
+@router.get("/categories/partial", response_class=HTMLResponse)
+async def categories_partial(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    cats = await categories.fetch_many(user_id, db)
+
+    # if cats:
+    #    template = "budgets/categories-partial.html"
+    # else:
+    #    template = "budgets/empty-categories-partial.html"
+
+    template = "budgets/categories-partial.html"
+
+    return templates.TemplateResponse(
+        request=request,
+        name=template,
+        context={"active_tab": "categories", "categories": cats},
     )

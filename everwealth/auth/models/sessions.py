@@ -18,7 +18,7 @@ from pydantic import BaseModel, EmailStr, Field, IPvAnyAddress, PositiveInt
 # Maybe we could cache db sessions to make them fast!?
 class Session(BaseModel):
     id: str = Field(default_factory=lambda: shortuuid.random(length=64))  # a short uuid
-    expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(days=1))
+    expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(days=10))
     otp_id: str  # the otp this session was generated from
     user_id: str
     device_id: Optional[str] = Field(default="")  # TODO: is there a way to get this??

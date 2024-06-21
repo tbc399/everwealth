@@ -7,16 +7,20 @@ import asyncpg
 import lucette
 
 # import databases
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse, Response
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.exceptions import HTTPException as StartletteHTTPException
 
 # from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
 
 from everwealth import db
-from everwealth.auth.middleware import SessionBackend
+#from everwealth.auth.middleware import SessionBackend
 from everwealth.auth.web import router as login_router
 
 # from everwealth.config import lucy
@@ -29,6 +33,9 @@ from everwealth.settings.categories.web import router as settings_router
 from everwealth.transactions.web import router as transaction_router
 from everwealth.web.accounts import router as accounts_router
 from everwealth.web.dashboard import router as dashboard_router
+from everwealth.lucy_config import lucy
+
+templates = Jinja2Templates(directory="everwealth/templates")
 
 
 class InterceptHandler(logging.Handler):
@@ -50,10 +57,6 @@ class InterceptHandler(logging.Handler):
 
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-
-
-lucy = lucette.Lucette()
-lucy
 
 
 async def startup():
@@ -101,5 +104,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(StartletteHTTPException)
+async def exception_handler(request: Request, exc):
+    if exc.status_code == 401:
+        if "HX-Request" in request.headers:
+            return Response(status_code=200, headers={"HX-Redirect": "/login"})
+        else:
+            return RedirectResponse(url="/login", status_code=303)
+    return http_exception_handler(request, exc)
+
 
 # app.add_middleware(AuthenticationMiddleware, backend=SessionBackend())

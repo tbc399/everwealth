@@ -7,8 +7,11 @@ from fastapi.templating import Jinja2Templates
 from loguru import logger
 from pydantic import EmailStr
 
-from everwealth.auth import otp, sessions, users
+from everwealth.auth.models import otp, sessions, users
 from everwealth.db import get_connection
+from .events import UserCreated
+from everwealth.lucy_config import lucy
+
 
 router = APIRouter()
 
@@ -93,11 +96,15 @@ async def submit_otp_validation(
         return RedirectResponse(url="/sorry", status_code=303)
 
     logger.debug(f"Looking for existing user {otpass.email}")
-    user = await users.fetch(otpass.email, db)
+    user = await users.fetch_by_email(otpass.email, db)
 
     if not user:
-        logger.info(f"Creating new user for {otpass.email}")
         user = await users.create(otpass.email, db)
+        logger.info(f"New user created for {otpass.email}")
+
+        # TODO: This should probably happen in a background task
+        event = UserCreated(user_id=user.id)
+        await lucy.publish(event)
 
     _ = await sessions.create(user.id, otpass.id, db)
 

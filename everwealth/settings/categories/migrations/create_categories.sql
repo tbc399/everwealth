@@ -7,4 +7,5 @@ CREATE TABLE categories (
 );
 
 CREATE INDEX categories_id_index on categories(id);
+CREATE INDEX categories_user_id_index on categories(user_id);
 
