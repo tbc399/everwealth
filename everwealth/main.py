@@ -20,7 +20,8 @@ from starlette.exceptions import HTTPException as StartletteHTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 from everwealth import db
-#from everwealth.auth.middleware import SessionBackend
+
+# from everwealth.auth.middleware import SessionBackend
 from everwealth.auth.web import router as login_router
 
 # from everwealth.config import lucy

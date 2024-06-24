@@ -3,13 +3,23 @@ from typing import Optional, List
 
 from asyncpg import Connection
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from shortuuid import uuid
+from enum import Enum
 
 
+class CategoryType(Enum):
+    income = "income"
+    expense = "expense"
+
+
+# TODO: Should we have a category/sub category design?
 class Category(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     id: str = Field(default_factory=uuid)
     name: str
+    type: CategoryType = Field(default=CategoryType.expense)
     user_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -35,7 +45,6 @@ async def create_many(categories: List[Category], user_id: str, db: Connection):
         )
 
 
-
 async def fetch(id: str, user_id: str, db: Connection):
     sql = f"SELECT * FROM categories WHERE id = '{id}' AND user_id = '{user_id}'"
     logger.debug(f"Executing SQL: {sql}")
@@ -49,20 +58,3 @@ async def fetch_many(user_id: str, db: Connection):
     records = await db.fetch(f"SELECT * FROM categories WHERE user_id = '{user_id}'")
     return [Category.model_validate(dict(x)) for x in records]
 
-
-# TODO: should categories have a hierarchy, e.g. "Entertainment" with sub
-# categories of "Movies", "Date Night", etc...
-# TODO: add these back in. Will have to determine how we associsat these with each user
-default_category_names = [
-    "Groceries",
-    "Gas",
-    "Entertainment",
-    "Electricity",
-    "Mortgage",
-    "Rent",
-    "Restaurant",
-    "Electricity",
-    "Internet",
-    "Utilities",
-    "Vehicle Maintenance",
-]
