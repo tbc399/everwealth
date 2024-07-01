@@ -1,4 +1,4 @@
-<div id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
+<div hx-get="/transactions/{{ transaction.id }}/edit" hx-swap="none" id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
   <div class="table-cell px-6 py-2.5 whitespace-nowrap text-xs font-semibold text-slate-800 dark:text-slate-500">
     {{ transaction.date.strftime("%b %d, %Y") }}
   </div>
@@ -6,8 +6,8 @@
     {{ transaction.description }}
   </div>
   <div class="table-cell px-6 py-2.5 whitespace-nowrap text-xs text-slate-800 dark:text-slate-300">
-    {% if transaction.category %}
-      {{ transaction.category.name }}
+    {% if transaction.category_name %}
+      {{ transaction.category_name }}
     {% else %}
       Uncategorized
     {% endif %}
@@ -21,9 +21,9 @@
     ">
     <span class="w-full flex justify-end">
       {% if transaction.amount > 0 %}
-        +{{"%.2f"|format(transaction.amount)}}
+        +{{ "{:,.2f}".format(transaction.amount) }}
       {% else %}
-        {{"%.2f"|format(transaction.amount)}}
+        {{ "{:,.2f}".format(transaction.amount) }}
       {% endif %}
     </span>
   </div>

@@ -1,0 +1,49 @@
+<div hx-swap-oob="outerHTML:#transaction-detail" id="transaction-detail" id="transaction-detail" class="flex flex-col border border-slate-900 rounded-md bg-slate-900/25 gap-y-5 w-full min-h-32 p-4">
+  <form hx-put="/transactions/{{ transaction.id }}" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML">
+    <div class="flex flex-row justify-between text-slate-200 text-sm font-bold mb-4">
+      <span>Edit Transaction</span>
+      <svg viewBox="0 0 24 24" class="size-4 stroke-slate-500 stroke-[2.5px] fill-current">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </div>
+    <div class="flex justify-between mb-5">
+      <div class="flex items-center">
+        <div class="flex flex-center max-h-[10px]">
+          <input type="checkbox" id="hs-xs-switch" class="w-[25px] h-[10px] bg-gray-100 border-transparent text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-600
+            before:inline-block before:size-2 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:rounded-full before:shadow before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-neutral-400 dark:checked:before:bg-blue-200">
+        </div>
+        <label for="hs-xs-switch" class="text-sm text-gray-500 ms-3 dark:text-neutral-400">Extra small</label>
+      </div>
+      <input type="date" name="date" value="{{ transaction.date }}" class="border border-slate-800 rounded bg-slate-900 text-slate-400 placeholder-slate-600 py-1.5 px-2 text-xs [&::-webkit-calendar-picker-indicator]:stroke-slate-600"/>
+    </div>
+    <div class="w-full flex justify-between gap-x-3">
+      <input 
+         type="text" 
+         name="description"
+         class="w-full border border-slate-800 focus:ring-0 focus:border focus:border-slate-700 rounded-md focus:shadow-lg focus:shadow-slate-950 bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400"
+         placeholder="Transaction description"
+         value="{{ transaction.description }}"/>
+      <select name="category" class="w-52 border border-slate-800 rounded bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400" placeholder="category">
+        {% for category in categories %}
+        <option value="{{ category.id }}" {% if transaction.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="w-full flex gap-x-3 items-center">
+      <input type="text" name="amount" disabled value="{{ transaction.amount }}" class="w-20 border border-slate-800 rounded-md bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-300 text-right" placeholder="Amount"></input>
+      <a class="text-xs font-semibold text-teal-700 hover:underline hover:underline-offset-2" href="#">Split</a>
+    </div>
+    <div class="w-full flex justify-end">
+    </div>
+    <div class="w-full min-h-20">
+      <textarea 
+        name="notes"
+        class="w-full min-h-20 border border-slate-800 focus:ring-0 focus:border focus:border-slate-700 focus:shadow-lg focus:shadow-slate-950 rounded-md bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400" 
+        placeholder="Enter any notes here..."
+      >{{ transaction.notes }}</textarea>
+    </div>
+    <div class="flex justify-end mt-4">
+      <button type="submit" class="rounded-md bg-teal-800 hover:bg-teal-700 active:bg-teal-800 active:text-slate-200 py-1.5 px-2.5 text-xs font-semibold text-slate-200 hover:text-slate-100">Update</button>
+    </div>
+  </form>
+</div>

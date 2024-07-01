@@ -8,13 +8,16 @@
 <!-- end header -->
 
 <!-- Main content window -->
-<div id="main-content" class="flex flex-col h-full bg-slate-900/20 overflow-y-auto">
+<div id="main-content" class="flex flex-col h-full bg-slate-900/15 overflow-y-auto">
   <div class="w-full flex flex-row justify-between items-center gap-x-2 border-b border-slate-800 px-3 py-2">
     <div>
       <button class="rounded-md border border-slate-700 py-1 px-2 bg-gray-900 text-xs font-semibold text-slate-300">Transactions</button>
       <button class="rounded-md border border-slate-800 py-1 px-2 text-xs font-semibold text-slate-500">Rules</button>
     </div>
     <button 
+      hx-get="transactions/upload"
+      hx-target="body"
+      hx-swap="beforeend"
       type="button" 
       title="Upload transactions" 
       class="py-1 ps-1 pe-1.5 inline-flex items-center gap-x-1 text-xs font-semibold rounded
@@ -70,47 +73,11 @@
     </div>
 
     <!-- Transaction Detail -->
-    <div class="flex justify-center w-1/2 min-h-full p-2 border-l border-slate-800">
-      <div class="flex flex-col gap-y-3 w-full h-1/2 p-4">
-        <div class="flex flex-row justify-between text-slate-200 text-sm font-bold mb-4">
-          <span>Edit Transaction</span>
-          <svg viewBox="0 0 24 24" class="size-4 stroke-slate-500 stroke-[2.5px] fill-current">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        </div>
-        <div class="flex justify-between mb-5">
-          <div class="flex items-center">
-            <div class="flex flex-center max-h-[10px]">
-              <input type="checkbox" id="hs-xs-switch" class="w-[25px] h-[10px] bg-gray-100 border-transparent text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-600
-                before:inline-block before:size-2 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:rounded-full before:shadow before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-neutral-400 dark:checked:before:bg-blue-200">
-            </div>
-            <label for="hs-xs-switch" class="text-sm text-gray-500 ms-3 dark:text-neutral-400">Extra small</label>
-          </div>
-          <input type="date" class="border border-slate-800 rounded bg-slate-900 text-slate-400 placeholder-slate-600 py-1.5 px-2 text-xs [&::-webkit-calendar-picker-indicator]:stroke-slate-600"/>
-        </div>
-        <div class="w-full flex justify-between gap-x-3">
-          <input type="text" class="w-full border border-slate-800 focus:ring-0 focus:border focus:border-slate-700 rounded-md focus:shadow-lg focus:shadow-slate-950 bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400" placeholder="Transaction description"/>
-          <select class="w-52 border border-slate-800 rounded bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400" placeholder="categroy">
-            <option>Category 1</option>
-            <option>Category 2</option>
-            <option>Category 3</option>
-          </select>
-        </div>
-        <div class="w-full flex gap-x-3 items-center">
-          <input type="text" disabled value="100345.2" class="w-20 border border-slate-800 rounded-md bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-300 text-right" placeholder="Amount"></input>
-          <a class="text-xs font-semibold text-teal-700 hover:underline hover:underline-offset-2" href="#">Split</a>
-        </div>
-        <div class="w-full flex justify-end">
-        </div>
-        <div class="w-full min-h-20">
-          <textarea class="w-full min-h-20 border border-slate-800 focus:ring-0 focus:border focus:border-slate-700 focus:shadow-lg focus:shadow-slate-950 rounded-md bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400" placeholder="Enter any notes here..."></textarea>
-        </div>
-        <div class="flex justify-end mt-4">
-          <button class="rounded-md bg-teal-800 hover:bg-teal-700 active:bg-teal-800 active:text-slate-200 py-1.5 px-2.5 text-xs font-semibold text-slate-200 hover:text-slate-100">Update</button>
-        </div>
-      </div>
+    <div class="flex flex-col w-1/2 min-h-full py-4 px-4 border-l border-slate-800">
+      <div id="transaction-detail"></div>
     </div>
     <!-- End Transaction Detail -->
+
   </div>
 </div>
 <!-- end main content window -->

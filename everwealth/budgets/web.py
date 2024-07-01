@@ -1,7 +1,6 @@
 from typing import Annotated
 from collections import defaultdict
 from everwealth.auth import auth_user
-from everwealth.settings import categories
 from datetime import datetime
 
 from asyncpg import Connection
@@ -9,9 +8,8 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from everwealth.budgets import Budget, fetch, fetch_all_by_month, create, BudgetCategoryView
+from everwealth.budgets import Budget, BudgetView, Category, BudgetMonthsView
 from everwealth import transactions
-from everwealth.settings import categories
 from everwealth.db import get_connection
 
 router = APIRouter()
@@ -28,14 +26,14 @@ async def create_budget(
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    cat = await categories.fetch(category_id, user_id, db)
+    cat = await Category.fetch(category_id, user_id, db)
     budget = Budget(
         user_id=user_id,
         category_id=category_id,
         amount=amount,
         frequency=frequency,
     )
-    _ = await create(budget, db)
+    _ = await Budget.create(budget, db)
     return RedirectResponse(url="/budgets", status_code=303)  # TODO: redirect to other page
 
 
@@ -46,7 +44,7 @@ async def get_edit_budget(
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    budget = await fetch(id, user_id, db)
+    budget = await Budget.fetch(id, user_id, db)
     return templates.TemplateResponse(
         request=request, name="budgets/edit-budget.html", context={"budget": budget}
     )
@@ -63,7 +61,7 @@ async def get_budget_create_modal(
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    cats = await categories.fetch_many(user_id, db)
+    cats = await Category.fetch_many(user_id, db)
     return templates.TemplateResponse(
         request=request, name="budgets/create-modal.html", context={"categories": cats}
     )
@@ -74,7 +72,7 @@ async def get_budgets(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     now = datetime.utcnow()
-    budgets = await fetch_all_by_month(user_id, now.year, now.month, db)
+    budgets = await BudgetView.fetch_all_by_month(user_id, now.year, now.month, db)
 
     return templates.TemplateResponse(
         request=request,
@@ -94,11 +92,12 @@ async def budgets_partial(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     now = datetime.utcnow()
-    budgets = await fetch_all_by_month(user_id, now.year, now.month, db)
+    budgets = await BudgetView.fetch_all_by_month(user_id, now.year, now.month, db)
+    budget_months = await BudgetMonthsView.fetch_by_year(user_id, now.year, db)
     return templates.TemplateResponse(
         request=request,
         name="budgets/budgets-partial.html",
-        context={"active_tab": "budgets", "budgets": budgets},
+        context={"active_tab": "budgets", "budgets": budgets, "budget_months": budget_months},
     )
 
 
@@ -106,7 +105,7 @@ async def budgets_partial(
 async def get_categories(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    cats = await categories.fetch_many(user_id, db)
+    cats = await Category.fetch_many(user_id, db)
 
     # template = "budgets/categories-partial.html"
 
@@ -127,7 +126,7 @@ async def get_categories(
 async def categories_partial(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    cats = await categories.fetch_many(user_id, db)
+    cats = await Category.fetch_many(user_id, db)
 
     # if cats:
     #    template = "budgets/categories-partial.html"

@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from everwealth import transactions
 from everwealth.auth import auth_user
 from everwealth.db import get_connection
-from everwealth.settings import categories
+from everwealth.budgets import Category
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ async def layout(
     request: Request, conn: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     transactions_ = await transactions.fetch_many(user_id, conn)
-    categories_ = await categories.fetch_many(user_id, conn)
+    categories_ = await Category.fetch_many(user_id, conn)
     return templates.TemplateResponse(
         request=request,
         name="layout.html",

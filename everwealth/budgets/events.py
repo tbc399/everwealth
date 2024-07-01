@@ -1,15 +1,15 @@
 from lucette import Subscriber
 from everwealth.auth.events import UserCreated
-from asyncpg import Connection
 from loguru import logger
 from . import Category, CategoryType
+from everwealth import db
 
 
 sub = Subscriber()
 
 
 @sub.subscribe
-async def create_default_categories(message: UserCreated, db: Connection):
+async def create_default_categories(message: UserCreated):
     logger.info(f"Creating default categories for user {message.user_id}")
     expense_categories = [
         # Home
@@ -23,12 +23,11 @@ async def create_default_categories(message: UserCreated, db: Connection):
         "Home Maintenance",
         "Flood Insurance",
         "Furniture",
-
         # Auto
         "Auto",
         "Car Payment",
         "Car Insurance",
-        "Car Maintenance"
+        "Car Maintenance",
         "Gas & Fuel",
         "Car Wash",
         "Toll",
@@ -36,43 +35,35 @@ async def create_default_categories(message: UserCreated, db: Connection):
         "Public Transportation",
         "Rideshare",
         "Parking",
-
         # Food
         "Food",
         "Groceries",
         "Restaurants",
         "Fast Food",
         "Coffee Shop",
-        
         # Education
         "Education",
         "Tuition",
         "Student Loan",
         "Books & Supplies",
-
         # Cash & ATM
         "Cash & ATM",
-
         # Charity
         "Charity & Donations",
-
         # Entertainment
         "Entertainment",
         "Movies",
         "Family Night",
         "Date Night",
-
         # Financial
         "Financial",
         "Life Insurance",
         "Retirement Savings",
         "Investments",
-        
         # Fitness
         "Fitness",
         "Gym Membership",
         "Personal Training",
-
         # Health
         "Health",
         "Suppliments",
@@ -82,10 +73,8 @@ async def create_default_categories(message: UserCreated, db: Connection):
         "Health Share",
         "Eyecare",
         "Pharmacy",
-
         # Gifts
         "Gifts",
-
         # Kids
         "Kids",
         "Child Care",
@@ -94,39 +83,33 @@ async def create_default_categories(message: UserCreated, db: Connection):
         "Diapers",
         "Formula",
         "Toys",
-
         # Personal Care
         "Personal Care",
         "Salon",
         "Barber",
         "Spa",
         "Laundry",
-
         # Savings
         "Savings",
         "Emergency Fund",
         "Vacation Fund",
         "Car Fund",
-
         # Pets
         "Pets",
         "Veterinary",
         "Pet Food",
         "Pet Grooming",
         "Pet Boarding",
-
         # Shopping
         "Shopping",
         "Electronics",
         "Clothing",
         "Books",
-
         # Travel
         "Travel",
         "Airfare",
         "Rental Cars",
         "Hotels",
-
         # Utilities
         "Utilities",
         "Electricity",
@@ -134,8 +117,7 @@ async def create_default_categories(message: UserCreated, db: Connection):
         "Gas",
         "Internet & Cable",
         "Phone",
-        "Trash"
-
+        "Trash",
     ]
     income_categories = [
         "Income",
@@ -144,7 +126,7 @@ async def create_default_categories(message: UserCreated, db: Connection):
         "Tax Refund",
         "Earned Interest",
         "Dividends",
-        "Rental Income"
+        "Rental Income",
     ]
     cats = [
         Category(name=name, type=CategoryType.expense, user_id=message.user_id)
@@ -156,4 +138,5 @@ async def create_default_categories(message: UserCreated, db: Connection):
             for name in income_categories
         ]
     )
-    categories.bulk_create(cats, db)
+    async with db.pool.acquire() as connection:
+        await Category.create_many(cats, connection)

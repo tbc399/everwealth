@@ -30,7 +30,8 @@ from everwealth.auth.web import router as login_router
 # from everwealth.write.investment.tasks import snapshot
 from everwealth.budgets.web import router as budget_router
 from everwealth.config import settings
-from everwealth.settings.categories.web import router as settings_router
+
+# from everwealth.settings.categories.web import router as settings_router
 from everwealth.transactions.web import router as transaction_router
 from everwealth.web.accounts import router as accounts_router
 from everwealth.web.dashboard import router as dashboard_router
@@ -89,7 +90,7 @@ api_router.include_router(transaction_router)
 api_router.include_router(login_router)
 api_router.include_router(dashboard_router)
 api_router.include_router(accounts_router)
-api_router.include_router(settings_router)
+# api_router.include_router(settings_router)
 
 app.include_router(api_router)
 
@@ -114,7 +115,7 @@ async def exception_handler(request: Request, exc):
             return Response(status_code=200, headers={"HX-Redirect": "/login"})
         else:
             return RedirectResponse(url="/login", status_code=303)
-    return http_exception_handler(request, exc)
+    await http_exception_handler(request, exc)
 
 
 # app.add_middleware(AuthenticationMiddleware, backend=SessionBackend())

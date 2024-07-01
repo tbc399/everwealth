@@ -5,22 +5,16 @@ from typing import Annotated
 
 from asyncpg import Connection
 from dateutil import parser
-from fastapi import APIRouter, Depends, Form, Request, UploadFile
+from fastapi import APIRouter, Depends, Form, Request, UploadFile, Path
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from everwealth.auth import User, auth_user
 from everwealth.db import get_connection
-from everwealth.settings import categories
+from everwealth.budgets import Category
 from everwealth.transactions import (
     Account,
-    AccountTransaction,
-    AccountTransactionCategoryView,
-    AccountView,
-    bulk_create,
-    fetch,
-    fetch_many,
-    update,
+    Transaction,
 )
 
 router = APIRouter()
@@ -30,10 +24,9 @@ templates = Jinja2Templates(directory="everwealth/templates")
 
 @router.get("/transactions", response_class=HTMLResponse)
 async def get_transactions(
-    request: Request, conn: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    transactions = await fetch_many(user_id, conn)
-    print(transactions)
+    transactions = await Transaction.fetch_many(user_id, db)
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions.html",
@@ -43,7 +36,7 @@ async def get_transactions(
 
 @router.get("/transactions-partial", response_class=HTMLResponse)
 async def get_transactions_partial(request: Request, conn: Connection = Depends(get_connection)):
-    transactions = await fetch_many(request.user, conn)
+    transactions = await Transaction.fetch_many(request.user, conn)
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions-partial.html",
@@ -53,48 +46,52 @@ async def get_transactions_partial(request: Request, conn: Connection = Depends(
 
 @router.get("/transactions/{id}/edit", response_class=HTMLResponse)
 async def get_transaction_edit_section(
-    id: str,
+    id: Annotated[str, Path(min_length=22, max_length=22)],
     request: Request,
-    conn: Connection = Depends(get_connection),
+    db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    transaction = await fetch(id, conn)
-    cats = await categories.fetch_many(user_id, conn)
+    transaction = await Transaction.fetch(id, db)
+    print(transaction)
+    cats = await Category.fetch_many(user_id, db)
     return templates.TemplateResponse(
         request=request,
-        name="transactions/edit-modal.html",
+        name="transactions/edit-transaction.html",
         context={"transaction": transaction, "categories": cats},
     )
 
 
-@router.put("/transactions/{id}/edit", response_class=HTMLResponse)
+@router.put("/transactions/{id}", response_class=HTMLResponse)
 async def update_transaction(
-    id: str,
+    id: Annotated[str, Path(min_length=22, max_length=22)],
     request: Request,
     description: Annotated[str, Form()],
-    amount: Annotated[float, Form()],
+    # amount: Annotated[float, Form()],
     date: Annotated[date, Form()],
+    notes: Annotated[str, Form()] = None,
     category_id: Annotated[str, Form(alias="category")] = None,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
     # TODO: need to validate input
 
-    transaction: AccountTransaction = await fetch(id, db)
+    transaction: Transaction = await Transaction.fetch(id, db)
     transaction.description = description
-    transaction.amount = amount
+    transaction.date = date
+    transaction.notes = notes
+    # transaction.amount = amount
 
-    print(user_id)
-    print(category_id)
-    cat = await categories.fetch(category_id, user_id, db)
-    transaction.category = AccountTransactionCategoryView(id=cat.id, name=cat.name)
+    cat = await Category.fetch(category_id, user_id, db)
+    # need to throw if cat is invalid
+    transaction.category_id = cat.id
+    transaction.category_name = cat.name
 
-    updated_transaction = await update(transaction, db)
+    await transaction.update(db)
 
     return templates.TemplateResponse(
         request=request,
         name="transactions/list-item.html",
-        context={"transaction": updated_transaction},
+        context={"transaction": transaction},
     )
 
 
@@ -132,7 +129,7 @@ async def upload_transactions(
 
     for line in reader:
         print(line)
-        transaction = AccountTransaction(
+        transaction = Transaction(
             user_id=user_id,
             account=None,
             description=line["Description"],
@@ -145,7 +142,7 @@ async def upload_transactions(
 
     # TODO: need to check hashes so as not to duplicate
 
-    await bulk_create(transactions, conn)
+    await Transaction.create_many(transactions, conn)
 
     return RedirectResponse(url="/transactions", status_code=303)  # TODO: redirect to other page
 

@@ -103,8 +103,7 @@ async def submit_otp_validation(
         logger.info(f"New user created for {otpass.email}")
 
         # TODO: This should probably happen in a background task
-        event = UserCreated(user_id=user.id)
-        await lucy.publish(event)
+        await lucy.publish(UserCreated(user_id=user.id, db=db))
 
     _ = await sessions.create(user.id, otpass.id, db)
 
