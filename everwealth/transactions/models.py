@@ -2,18 +2,12 @@ from datetime import date
 from typing import Iterable, List, Optional
 
 from asyncpg import Connection
+from loguru import logger
 from pydantic import BaseModel, Field, PositiveFloat
 from shortuuid import uuid
 
-from everwealth.budgets import Category
 from everwealth.auth import User
-from loguru import logger
-
-
-class Account(BaseModel):
-    """A third party account to pull transaction info from"""
-
-    user: str
+from everwealth.budgets import Category
 
 
 class TransactionRule(BaseModel):

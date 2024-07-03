@@ -1,11 +1,9 @@
 import asyncio
-
-import asyncpg
-
-from config import settings
+import sys
 from pathlib import Path
 
-import sys
+import asyncpg
+from config import settings
 
 
 async def run():

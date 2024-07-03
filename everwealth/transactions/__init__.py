@@ -1,4 +1,1 @@
-from .models import (
-    Account,
-    Transaction,
-)
+from .models import Transaction

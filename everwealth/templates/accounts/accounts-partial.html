@@ -1,0 +1,27 @@
+<div hx-swap-oob="outerHTML:#main-content" id="main-content" class="flex flex-col h-full bg-slate-900/15 overflow-y-auto">
+  <div class="w-full flex flex-row justify-between items-center gap-x-2 border-b border-slate-800 px-3 py-2">
+    <div id="budgets-tab-bar" class="flex flex-row rounded-lg border border-slate-800 bg-gray-950">
+      <!--
+      <button hx-get="/budgets/partial" hx-swap="none" class="rounded-md py-1 px-2 bg-slate-800 text-xs font-semibold text-slate-300">Budgets</button>
+      <button hx-get="/categories/partial" hx-push-url="/categories" hx-swap="none" class="rounded-md py-1 px-2 text-xs font-semibold text-slate-500">Categories</button>
+      -->
+    </div>
+    <button 
+      hx-get="budgets/create"
+      hx-target="body"
+      hx-swap="beforeend"
+      type="button" 
+      title="Create New Budget" 
+      class="hidden py-1 ps-2.5 pe-3 inline-flex items-center gap-x-1 text-xs font-semibold rounded
+      text-slate-100 bg-teal-800 hover:bg-teal-700 active:bg-teal-800 hover:bg-slate-800/50 disabled:opacity-50 
+      disabled:pointer-events-none dark:focus:outline-none">
+      <svg viewBox="0 0 24 24" class="size-3 fill-none stroke-2 stroke-slate-100">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      New budget
+    </button>
+  </div>
+  <div>
+    Accounts List
+  </div>
+</div>

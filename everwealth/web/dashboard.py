@@ -5,8 +5,8 @@ from fastapi.templating import Jinja2Templates
 
 from everwealth import transactions
 from everwealth.auth import auth_user
-from everwealth.db import get_connection
 from everwealth.budgets import Category
+from everwealth.db import get_connection
 
 router = APIRouter()
 

@@ -1,9 +1,10 @@
-from lucette import Subscriber
-from everwealth.auth.events import UserCreated
 from loguru import logger
-from . import Category, CategoryType
-from everwealth import db
+from lucette import Subscriber
 
+from everwealth import db
+from everwealth.auth.events import UserCreated
+
+from . import Category, CategoryType
 
 sub = Subscriber()
 

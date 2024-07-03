@@ -8,18 +8,19 @@ import lucette
 
 # import databases
 from fastapi import APIRouter, FastAPI, HTTPException, Request
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse, Response
 from fastapi.exception_handlers import http_exception_handler
+from fastapi.responses import RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from loguru import logger
-from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.exceptions import HTTPException as StartletteHTTPException
+from starlette.middleware.authentication import AuthenticationMiddleware
 
 # from loguru import logger as log
 from starlette.middleware.cors import CORSMiddleware
 
 from everwealth import db
+from everwealth.accounts.web import router as accounts_router
 
 # from everwealth.auth.middleware import SessionBackend
 from everwealth.auth.web import router as login_router
@@ -30,12 +31,11 @@ from everwealth.auth.web import router as login_router
 # from everwealth.write.investment.tasks import snapshot
 from everwealth.budgets.web import router as budget_router
 from everwealth.config import settings
+from everwealth.lucy_config import lucy
 
 # from everwealth.settings.categories.web import router as settings_router
 from everwealth.transactions.web import router as transaction_router
-from everwealth.web.accounts import router as accounts_router
 from everwealth.web.dashboard import router as dashboard_router
-from everwealth.lucy_config import lucy
 
 templates = Jinja2Templates(directory="everwealth/templates")
 

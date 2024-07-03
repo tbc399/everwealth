@@ -81,20 +81,24 @@
             Transactions
           </div>
         </a>
-        <div class="flex snap-center shrink-0 py-1.5 ps-4 sm:last-pe-0 rounded-md dark:hover:bg-slate-900 dark:active:bg-slate-800
+        <button class="flex snap-center shrink-0 py-1.5 ps-4 sm:last-pe-0 rounded-md dark:hover:bg-slate-900 dark:active:bg-slate-800
           {% if active_tab == "accounts" %}
             dark:bg-slate-900
           {% endif %}
-          ">
-          <a class="inline-flex items-center gap-x-2" href="#">
-          <svg 
-            viewBox="0 0 24 24" 
-            class="size-4 stroke-slate-500 fill-none stroke-2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-          </svg>
-            Connections
-          </a>
-        </div>
+          "
+          hx-get="/accounts/partial"
+          hx-push-url="/accounts"
+          hx-swap="none"
+          >
+          <div class="inline-flex items-center gap-x-2" href="#">
+            <svg 
+              viewBox="0 0 24 24" 
+              class="size-4 stroke-slate-500 fill-none stroke-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+            </svg>
+            Accounts
+          </div>
+        </button>
         <div class="flex snap-center shrink-0 py-1.5 ps-4 sm:last-pe-0 rounded-md dark:hover:bg-slate-900/50 dark:active:bg-slate-900 focus:text-slate-200 active:text-slate-200
           {% if active_tab == "insights" %}
             dark:bg-slate-900

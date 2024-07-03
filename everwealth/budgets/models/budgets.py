@@ -1,20 +1,22 @@
-from datetime import datetime, date, timedelta
-from dateutil.relativedelta import relativedelta
+from datetime import date, datetime, timedelta
+from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, PositiveInt, ConfigDict
-from shortuuid import uuid
 from asyncpg import Connection
-from enum import Enum
-from everwealth.auth import User
-from .categories import Category
-
+from dateutil.relativedelta import relativedelta
 from loguru import logger
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+from shortuuid import uuid
+
+from everwealth.auth import User
+
+from .categories import Category
 
 
 class Frequency(Enum):
     yearly = "yearly"
     monthly = "monthly"
+
 
 class BudgetMonth(Enum):
     JAN = "Jan"
@@ -30,6 +32,7 @@ class BudgetMonth(Enum):
     NOV = "Nov"
     DEC = "Dec"
 
+
 class BudgetMonthsView(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
@@ -40,11 +43,30 @@ class BudgetMonthsView(BaseModel):
     @staticmethod
     async def fetch_by_year(user_id: str, year: int, db: Connection):
         sql = f"""
-            SELECT * FROM budgets WHERE
+            SELECT budgets.month AS month, sum(coalesce(transactions.amount, 0)) AS balance, COUNT(transactions.amount) AS transaction_count
+                from budgets LEFT JOIN transactions ON budgets.category_id = transactions.category_id 
+                WHERE budgets.user_id = '{user_id}' AND year = '{year}' 
+                GROUP BY budgets.month
         """
-        #records = await db.fetch(sql)
-        months = [BudgetMonthsView(month=month) for month in BudgetMonth]
+        records = await db.fetch(sql)
+        records_by_month = {record.get("month"): record for record in records}
+        print(records_by_month)
+        current_month = datetime.utcnow().month
+        current_year = datetime.utcnow().year
+        months = [
+            BudgetMonthsView(
+                month=month,
+                on_budget=(
+                    records_by_month.get(n).get("balance") >= 0 if n in records_by_month else None
+                ),
+                current=bool(year == current_year and current_month == n),
+            )
+            for n, month in enumerate(BudgetMonth, start=1)
+        ]
+        for _ in months:
+            print(_)
         return months
+
 
 class BudgetView(BaseModel):
     """A read only model for budgets"""
@@ -110,7 +132,6 @@ class Budget(BaseModel):
         )
         return Budget.model_validate(dict(record))
 
-	
     async def create(self, db: Connection):
         # TODO validate that category is not already being used for a budget
         dump = self.model_dump(

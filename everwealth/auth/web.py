@@ -9,9 +9,9 @@ from pydantic import EmailStr
 
 from everwealth.auth.models import otp, sessions, users
 from everwealth.db import get_connection
-from .events import UserCreated
 from everwealth.lucy_config import lucy
 
+from .events import UserCreated
 
 router = APIRouter()
 

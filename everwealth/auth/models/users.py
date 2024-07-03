@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated, Optional
 
 from asyncpg import Connection
@@ -6,10 +7,10 @@ from loguru import logger
 from pydantic import BaseModel, EmailStr, Field
 from shortuuid import uuid
 from starlette.authentication import BaseUser
-from datetime import datetime
+
+from everwealth.db import get_connection
 
 from . import sessions
-from everwealth.db import get_connection
 
 
 class User(BaseModel, BaseUser):
