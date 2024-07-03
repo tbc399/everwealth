@@ -1,4 +1,5 @@
 import asyncio
+import stripe
 import inspect
 import logging
 from contextlib import asynccontextmanager
@@ -63,6 +64,7 @@ logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
 async def startup():
     setattr(db, "pool", await asyncpg.create_pool(settings.database_url))
+    stripe.api_key = settings.stripe_api_key
     asyncio.create_task(lucy.run())
 
 

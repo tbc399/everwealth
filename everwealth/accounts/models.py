@@ -4,6 +4,7 @@ from asyncpg import Connection
 from loguru import logger
 from pydantic import BaseModel, Field
 from shortuuid import uuid
+import stripe
 
 
 class AccountView(BaseModel):
@@ -26,7 +27,7 @@ class Account(BaseModel):
         return Account.model_validate(dict(record))
 
 
-'''
+"""
 stripe_account = {
     "id": "fca_1MwVK82eZvKYlo2Cjw8FMxXf",
     "object": "linked_account",
@@ -48,4 +49,4 @@ stripe_account = {
     "supported_payment_method_types": ["us_bank_account"],
     "transaction_refresh": null,
 }
-'''
+"""

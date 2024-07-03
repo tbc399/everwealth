@@ -1,4 +1,5 @@
 from typing import Annotated
+import stripe
 
 from asyncpg import Connection
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request, Response
@@ -104,6 +105,9 @@ async def submit_otp_validation(
 
         # TODO: This should probably happen in a background task
         await lucy.publish(UserCreated(user_id=user.id, db=db))
+
+        # should this be an event handler to let the response come back timely?
+        await stripe.Customer.create_async(name="", email=user.email)
 
     _ = await sessions.create(user.id, otpass.id, db)
 

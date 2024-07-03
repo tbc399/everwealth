@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 from typing import Annotated
+import stripe
 
 from asyncpg import Connection
 from fastapi import APIRouter, Depends, Form, Request
@@ -22,7 +23,7 @@ templates = Jinja2Templates(directory="everwealth/templates")
 async def get_accounts(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    #accounts = await Account.fetch_all(user_id, db)
+    # accounts = await Account.fetch_all(user_id, db)
 
     return templates.TemplateResponse(
         request=request,
@@ -41,7 +42,7 @@ async def get_accounts(
 async def get_accounts_partial(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    #accounts = await Account.fetch_all(user_id, db)
+    # accounts = await Account.fetch_all(user_id, db)
 
     return templates.TemplateResponse(
         request=request,
@@ -53,4 +54,15 @@ async def get_accounts_partial(
             "partial_template": "accounts/accounts-partial.html",
             "partial_endpoint": "accounts/partial",
         },
+    )
+
+
+@router.post("/accounts", response_class=HTMLResponse)
+async def create_account(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    users.
+    session = await stripe.financial_connections.Session.create_async(
+        account_holder={"type": "customer", "customer": user_id},
+        permissions=["balances", "ownership", "payment_method", "transactions"],
     )
