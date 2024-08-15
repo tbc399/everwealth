@@ -1,11 +1,11 @@
 import asyncio
-import stripe
 import inspect
 import logging
 from contextlib import asynccontextmanager
 
 import asyncpg
 import lucette
+import stripe
 
 # import databases
 from fastapi import APIRouter, FastAPI, HTTPException, Request
@@ -21,6 +21,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from everwealth import db
+from everwealth.accounts.hooks import router as accounts_hooks_router
 from everwealth.accounts.web import router as accounts_router
 
 # from everwealth.auth.middleware import SessionBackend
@@ -93,6 +94,7 @@ api_router.include_router(login_router)
 api_router.include_router(dashboard_router)
 api_router.include_router(accounts_router)
 # api_router.include_router(settings_router)
+api_router.include_router(accounts_hooks_router)
 
 app.include_router(api_router)
 

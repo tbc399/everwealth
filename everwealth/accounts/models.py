@@ -1,30 +1,77 @@
 from datetime import datetime
+from enum import Enum
+from typing import List, Optional
 
 from asyncpg import Connection
 from loguru import logger
 from pydantic import BaseModel, Field
 from shortuuid import uuid
-import stripe
 
 
 class AccountView(BaseModel):
     pass
 
 
+class AssetType(Enum):
+    vehicle = "vehicle"
+    property = "property"
+    other = "other"
+
+
+class Asset:
+    id: str = Field(min_length=22, max_length=22, default_factory=uuid)
+    name: str
+    type: AssetType
+    user_id: str = Field(min_length=22, max_length=22, default_factory=uuid)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class AccountType(Enum):
+    cash = "cash"
+    credit = "credit"
+    investment = "investment"
+    other = "other"
+    manual = "manual"
+
+
 class Account(BaseModel):
     id: str = Field(min_length=22, max_length=22, default_factory=uuid)
     name: str
+    type: AccountType
     user_id: str = Field(min_length=22, max_length=22, default_factory=uuid)
     institution_name: str
-    stripe_id: str
+    stripe_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @staticmethod
-    async def fetch_all(user_id: str, db: Connection):
-        logger.debug(f"Fetching budget for id {id} and user_id {user_id}")
-        record = await db.fetch(f"SELECT * FROM accounts WHERE user_id = '{user_id}'")
+    async def fetch_by_type(user_id: str, type: str, db: Connection) -> List["Account"]:
+        sql = f"SELECT * FROM accounts WHERE user_id = '{user_id}' and type = '{type}'"
+        logger.debug(f"Executing sql {sql}")
+        records = await db.fetch(sql)
+        if not records:
+            return []
+        return [Account.model_validate(dict(record)) for record in records]
+
+    @staticmethod
+    async def fetch_by_stripe_id(stripe_id: str, db: Connection) -> "Account":
+        sql = f"SELECT * FROM accounts WHERE stripe_id = '{stripe_id}'"
+        logger.debug(f"Executing sql {sql}")
+        record = await db.fetchrow(sql)
+        if not record:
+            return None
         return Account.model_validate(dict(record))
+
+    async def save(self, db: Connection):
+        dump = self.model_dump()
+        columns = ",".join(dump.keys())
+        values = dump.values()
+        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
+        sql = f"INSERT INTO accounts ({columns}) VALUES ({place_holders})"
+        logger.debug(f"Executing sql {sql}")
+        async with db.transaction():
+            await db.execute(sql, *values)
 
 
 """

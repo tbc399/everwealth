@@ -1,15 +1,15 @@
-from typing import Annotated
 from collections import defaultdict
-from everwealth.auth import auth_user
 from datetime import datetime
+from typing import Annotated
 
 from asyncpg import Connection
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from everwealth.budgets import Budget, BudgetView, Category, BudgetMonthsView
 from everwealth import transactions
+from everwealth.auth import auth_user
+from everwealth.budgets import Budget, BudgetMonthsView, BudgetView, Category
 from everwealth.db import get_connection
 
 router = APIRouter()

@@ -1,6 +1,6 @@
 from typing import Annotated
-import stripe
 
+import stripe
 from asyncpg import Connection
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -97,16 +97,16 @@ async def submit_otp_validation(
         return RedirectResponse(url="/sorry", status_code=303)
 
     logger.debug(f"Looking for existing user {otpass.email}")
-    user = await users.fetch_by_email(otpass.email, db)
+    user = await users.User.fetch_by_email(otpass.email, db)
 
     if not user:
-        user = await users.create(otpass.email, db)
+        user = await users.User.create(otpass.email, db)
         logger.info(f"New user created for {otpass.email}")
 
-        # TODO: This should probably happen in a background task
+        # TODO: This should probably happen in a background task unless asyncio.Queue handles it
         await lucy.publish(UserCreated(user_id=user.id, db=db))
 
-        # should this be an event handler to let the response come back timely?
+        # TODO: should this be an event handler to let the response come back timely?
         await stripe.Customer.create_async(name="", email=user.email)
 
     _ = await sessions.create(user.id, otpass.id, db)

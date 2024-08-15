@@ -1,0 +1,43 @@
+<div _="on closeModal remove me">
+  <!-- modal underlay -->
+  <div id="accounts-create-modal-backdrop" 
+    style="z-index: 79;" 
+    class="transition duration fixed inset-0 bg-gray-950 bg-opacity-20 hs-overlay-backdrop"
+    aria-hidden="false" 
+    tabindex="-1"
+    _="on click trigger closeModal">
+  </div>
+  <!-- end modal underlay -->
+
+  <!-- budget create modal -->
+  <div id="accounts-create-modal"
+    class="hs-overlay size-full open fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none"
+    aria-hidden="false" 
+    tabindex="-1">
+
+    <div>
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center justify-center">
+        <div class="flex flex-col w-2/6 h-full py-4 px-4 border shadow-lg rounded-lg pointer-events-auto bg-gray-950 border-slate-800 shadow-gray-950">
+          <div class="flex flex-col gap-y-5 w-full h-1/2 p-4">
+            <div class="flex flex-row justify-between mb-4">
+              <span class="text-base text-slate-400">What type of account would you like to connect?</span>
+              <svg viewBox="0 0 24 24" class="size-4 stroke-slate-500 stroke-[2.5px] fill-current">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div hx-get="/accounts/connect" class="flex justify-center text-slate-300 text-sm rounded border border-slate-800 bg-slate-900/50 p-2">
+              Accounts
+            </div>
+            <div class="flex justify-center text-slate-300 text-sm rounded border border-slate-800 bg-slate-900/50 p-2">
+              Real estate
+            </div>
+            <div class="flex justify-center text-slate-300 text-sm rounded border border-slate-800 bg-slate-900/50 p-2">
+              Vehicles
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- end budget create modal -->
+</div>

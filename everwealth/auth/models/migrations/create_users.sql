@@ -3,6 +3,7 @@ CREATE TABLE users(
     first VARCHAR(64),
     last VARCHAR(64),
     email VARCHAR(64),
+    stripe_customer_id VARCHAR(18),
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );

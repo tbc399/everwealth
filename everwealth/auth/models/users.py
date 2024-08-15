@@ -18,35 +18,43 @@ class User(BaseModel, BaseUser):
     first: Optional[str] = None
     last: Optional[str] = None
     email: EmailStr  # TODO: is this necessary?
+    stripe_customer_id: Optional[str] = None  # to connect to Stripe Customer object
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    @staticmethod
+    async def fetch(id: str, conn: Connection):
+        row = await conn.fetchrow(f"SELECT * FROM users WHERE id = '{id}'")
+        if row:
+            return User.model_validate(dict(row))
+        return None
 
-async def fetch(id: str, conn: Connection):
-    row = await conn.fetchrow(f"SELECT * FROM users WHERE id = '{id}'")
-    if row:
-        return User.model_validate(dict(row))
-    return None
+    @staticmethod
+    async def fetch_by_email(email: str, db: Connection):
+        row = await db.fetchrow(f"SELECT * FROM users WHERE email = '{email}'")
+        if row:
+            return User.model_validate(dict(row))
+        return None
 
+    @staticmethod
+    async def fetch_by_stripe_id(stripe_id: str, db: Connection):
+        row = await db.fetchrow(f"SELECT * FROM users WHERE stripe_customer_id = '{stripe_id}'")
+        if row:
+            return User.model_validate(dict(row))
+        return None
 
-async def fetch_by_email(email: str, db: Connection):
-    row = await db.fetchrow(f"SELECT * FROM users WHERE email = '{email}'")
-    if row:
-        return User.model_validate(dict(row))
-    return None
-
-
-async def create(email: str, conn: Connection, first: str = None, last: str = None):
-    user = User(email=email)
-    dump = user.model_dump()
-    columns = ",".join(dump.keys())
-    values = dump.values()
-    place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-    sql = f"INSERT INTO users ({columns}) VALUES ({place_holders})"
-    logger.debug(f"Running sql {sql}")
-    async with conn.transaction():
-        await conn.execute(sql, *values)
-    return user
+    @staticmethod
+    async def create(email: str, conn: Connection, first: str = None, last: str = None):
+        user = User(email=email)
+        dump = user.model_dump()
+        columns = ",".join(dump.keys())
+        values = dump.values()
+        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
+        sql = f"INSERT INTO users ({columns}) VALUES ({place_holders})"
+        logger.debug(f"Running sql {sql}")
+        async with conn.transaction():
+            await conn.execute(sql, *values)
+        return user
 
 
 # maybe split this out to its own file?
