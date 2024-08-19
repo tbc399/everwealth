@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from asyncpg import Connection
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from shortuuid import uuid
 
 
@@ -36,6 +36,8 @@ class AccountType(Enum):
 
 
 class Account(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     id: str = Field(min_length=22, max_length=22, default_factory=uuid)
     name: str
     type: AccountType
@@ -46,8 +48,8 @@ class Account(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @staticmethod
-    async def fetch_by_type(user_id: str, type: str, db: Connection) -> List["Account"]:
-        sql = f"SELECT * FROM accounts WHERE user_id = '{user_id}' and type = '{type}'"
+    async def fetch_all(user_id: str, db: Connection) -> List["Account"]:
+        sql = f"SELECT * FROM accounts WHERE user_id = '{user_id}'"
         logger.debug(f"Executing sql {sql}")
         records = await db.fetch(sql)
         if not records:

@@ -22,6 +22,7 @@ async def create_account(event):
         user = await User.fetch_by_stripe_id(event.data.object.account_holder.customer, connection)
         new_account = Account(
             name=event.data.object.display_name,
+            type=event.data.object.category,
             user_id=user.id,
             stripe_id=event.data.object.id,
             institution_name=event.data.object.institution_name,

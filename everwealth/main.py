@@ -122,4 +122,9 @@ async def exception_handler(request: Request, exc):
     await http_exception_handler(request, exc)
 
 
+@app.get("/favicon.ico")
+async def get_favicon(request: Request):
+    return
+
+
 # app.add_middleware(AuthenticationMiddleware, backend=SessionBackend())

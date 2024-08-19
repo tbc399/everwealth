@@ -1,19 +1,45 @@
 <div hx-swap-oob="outerHTML:#main-content" id="main-content" class="flex flex-col h-full bg-slate-900/5 overflow-y-auto">
   <div class="w-full flex flex-row justify-between items-center gap-x-2 border-b border-slate-800 px-3 py-2">
     <!--<div id="budgets-tab-bar" class="flex flex-row rounded-lg border border-slate-800 bg-gray-950">-->
-    <div id="accounts-partial-tabs" class="text-xs font-semibold text-slate-500">
+    <div id="accounts-tab-group" class="text-xs font-semibold text-slate-500">
       <script>
-        tabs = document.getElementById("accounts-partial-tabs")
-        console.log("Hey there")
-        console.log(tabs.children)
-        for (const child of tabs.children) {
-          console.log()   
-        }
+        htmx.on("#accounts-tab-group", "accountsTabChanged",
+          function(evt) {
+            for (const child of this.children) {
+              if (child.tagName.toLowerCase() === "button") {
+                if (child.id === evt.detail.tab_id) {
+                  child.classList.remove("text-slate-500")
+                  child.classList.remove("bg-gray-900")
+                  child.classList.remove("border-slate-900")
+                  child.classList.add("text-slate-300")
+                  child.classList.add("bg-gray-900")
+                  child.classList.add("border-slate-700")
+                } else {
+                  child.classList.remove("text-slate-300")
+                  child.classList.remove("bg-gray-900")
+                  child.classList.remove("border-slate-700")
+                }
+              }
+            }
+          }
+        )
       </script>
-      <button id="banking-tab" hx-get="/accounts/banking" class="tab-active rounded-md border border-slate-700 py-1 px-2 bg-gray-900 text-xs font-semibold text-slate-300">Banking</button>
-      <button id="debts-tab" hx-get="/accounts/debts" class="tab rounded-md border border-slate-900 py-1 px-2 text-xs font-semibold text-slate-500">Debts</button>
-      <button id="investments-tab" hx-get="/accounts/investments" class=" tab rounded-md border border-slate-900 py-1 px-2 text-xs font-semibold text-slate-500">Investments</button>
-      <button id="assets-tab" hx-get="/accounts/assets" class="tab rounded-md border border-slate-900 py-1 px-2 text-xs font-semibold text-slate-500">Assets</button>
+      <button 
+        id="accounts-tab" 
+        hx-get="/accounts/accounts" 
+        hx-push-url="/accounts"
+        hx-swap="none"
+        class="rounded-md border border-slate-700 py-1 px-2 bg-gray-900 text-xs font-semibold text-slate-300">
+        Accounts
+      </button>
+      <button 
+        id="assets-tab" 
+        hx-get="/accounts/assets" 
+        hx-push-url="/accounts/assets"
+        hx-swap="none"
+        class="rounded-md border border-slate-900 py-1 px-2 text-xs font-semibold text-slate-500">
+        Assets
+        </button>
     </div>
     <button 
       id="add-account-button"
@@ -25,7 +51,7 @@
       <svg viewBox="0 0 24 24" class="size-3 fill-none stroke-2 stroke-slate-100">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
-      Add
+      Add account
     </button>
     <script>
       htmx.on("#add-account-button", "click",
@@ -46,8 +72,8 @@
                   console.log('No accounts were linked');
                 } else {
                   //console.log(result.financialConnectionsSession.accounts)
-                  event = new CustomEvent("stripeAccountsCollected")
-                  e = document.getElementById("accounts-partial-list")
+                  event = new CustomEvent("accountsLinked")
+                  e = document.getElementById("accounts-tab-list")
                   e.dispatchEvent(event)
                 }
               });
@@ -56,5 +82,5 @@
       );
     </script>
   </div>
-  {% include "accounts/list-partial.html" %}
+  {% include "accounts/accounts-tab.html" %}
 </div>

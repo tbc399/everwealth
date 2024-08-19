@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from datetime import datetime
 from typing import Annotated
@@ -25,8 +26,8 @@ templates = Jinja2Templates(directory="everwealth/templates")
 async def get_accounts(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    # the to level accounts page should land on the "Banking" tab
-    accounts = await Account.fetch_by_type(user_id, "cash", db)
+    # the top level accounts page should land on the "Accounting" tab
+    accounts = await Account.fetch_all(user_id, db)
 
     return templates.TemplateResponse(
         request=request,
@@ -35,8 +36,6 @@ async def get_accounts(
             "accounts": accounts,
             "menu_tab": "accounts",
             "title": "Accounts",
-            "partial_template": "accounts/accounts-partial.html",
-            "partial_endpoint": "accounts/partial",
             "stripe_pub_key": settings.stripe_pub_key,
         },
     )
@@ -53,81 +52,47 @@ async def get_accounts_partial(
         name="accounts/accounts-partial.html",
         context={
             "accounts": accounts,
-            "active_tab": "banking-tab",
+            "active_tab": "accounts-tab",
             "title": "Accounts",
             "stripe_pub_key": settings.stripe_pub_key,
         },
     )
 
 
-@router.get("/accounts/banking", response_class=HTMLResponse)
-async def get_accounts_banking(
+@router.get("/accounts/accounts", response_class=HTMLResponse)
+async def get_accounts_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    accounts = await Account.fetch_all(user_id, "banking", db)
+    accounts = await Account.fetch_all(user_id, db)
 
+    header = {"accountsTabChanged": {"target": "#accounts-tab-group", "tab_id": "accounts-tab"}}
     return templates.TemplateResponse(
         request=request,
-        name="accounts/list-partial.html",
+        headers={"HX-Trigger": json.dumps(header)},
+        name="accounts/accounts-tab.html",
         context={
             "accounts": accounts,
-            "account_type": "banking",
-            "active_tab": "banking-tab",
-            "title": "Accounts",
-        },
-    )
-
-
-@router.get("/accounts/debts", response_class=HTMLResponse)
-async def get_accounts_debts(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
-):
-    accounts = await Account.fetch_all(user_id, "debt", db)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/list-partial.html",
-        context={
-            "accounts": accounts,
-            "account_type": "debts",
-            "active_tab": "debts-tab",
-            "title": "Accounts",
-        },
-    )
-
-
-@router.get("/accounts/investments", response_class=HTMLResponse)
-async def get_accounts_investments(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
-):
-    accounts = await Account.fetch_all(user_id, "investment", db)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/list-partial.html",
-        context={
-            "accounts": accounts,
-            "account_type": "investments",
-            "active_tab": "investments-tab",
+            "active_tab": "accounts-tab",
             "title": "Accounts",
         },
     )
 
 
 @router.get("/accounts/assets", response_class=HTMLResponse)
-async def get_accounts_assets(
+async def get_assets_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    accounts = await Account.fetch_all(user_id, "asset", db)
+    assets = [] #await Asset.fetch_all(user_id, db)
 
+    header = {"accountsTabChanged": {"target": "#accounts-tab-group", "tab_id": "assets-tab"}}
     return templates.TemplateResponse(
         request=request,
-        name="accounts/list-partial.html",
+        headers={"HX-Trigger": json.dumps(header)},
+        name=f"accounts/{'assets-tab' if assets else 'assets-tab-empty'}.html",
         context={
-            "accounts": accounts,
-            "account_type": "assets",
+            "assets": assets,
             "active_tab": "assets-tab",
-            "title": "Accounts",
+            "title": "Assets",
         },
     )
 
