@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Optional
 
@@ -26,6 +26,15 @@ class Asset:
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    @staticmethod
+    async def fetch_all(user_id: str, db: Connection) -> List["Asset"]:
+        sql = f"SELECT * FROM assets WHERE user_id = '{user_id}'"
+        logger.debug(f"Executing sql {sql}")
+        records = await db.fetch(sql)
+        if not records:
+            return []
+        return [Account.model_validate(dict(record)) for record in records]
+
 
 class AccountType(Enum):
     cash = "cash"
@@ -34,6 +43,14 @@ class AccountType(Enum):
     other = "other"
     manual = "manual"
 
+class AccountSubType(Enum):
+    checking = "checking"
+    savings = "savings"
+    credit_card = "credit_card"
+    line_of_credit = "line_of_credit"
+    mortgage = "mortgage"
+    other = "other"
+
 
 class Account(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
@@ -41,11 +58,26 @@ class Account(BaseModel):
     id: str = Field(min_length=22, max_length=22, default_factory=uuid)
     name: str
     type: AccountType
+    sub_type: AccountSubType
     user_id: str = Field(min_length=22, max_length=22, default_factory=uuid)
     institution_name: str
+    last4: str = Field(min_length=4, max_length=4)
     stripe_id: Optional[str] = None
+    last_sync: datetime = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @property
+    def last_sync_display(self):
+        time_since_sync = datetime.utcnow() - self.last_sync
+        if time_since_sync < timedelta(minutes=5):
+            return "a moment ago"
+        elif time_since_sync < timedelta(hours=24):
+            return "today"
+        elif time_since_sync < timedelta(days=5):
+            return "a week ago"
+        else:
+            return "over a month ago"
 
     @staticmethod
     async def fetch_all(user_id: str, db: Connection) -> List["Account"]:

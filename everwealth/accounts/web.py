@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from loguru import logger
 
 from everwealth import transactions
-from everwealth.accounts import Account
+from everwealth.accounts import Account, Asset
 from everwealth.auth import User, auth_user
 from everwealth.budgets import Budget, BudgetMonthsView, BudgetView, Category
 from everwealth.config import settings
@@ -33,9 +33,29 @@ async def get_accounts(
         request=request,
         name="accounts/accounts.html",
         context={
+            "partial": "accounts/accounts-tab.html",
             "accounts": accounts,
             "menu_tab": "accounts",
             "title": "Accounts",
+            "stripe_pub_key": settings.stripe_pub_key,
+        },
+    )
+
+
+@router.get("/accounts/assets", response_class=HTMLResponse)
+async def get_accounts_assets(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    assets = await Asset.fetch_all(user_id, db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="accounts/accounts.html",
+        context={
+            "partial": "accounts/assets-tab.html",
+            "assets": assets,
+            "menu_tab": "accounts",
+            "title": "Assets",
             "stripe_pub_key": settings.stripe_pub_key,
         },
     )
@@ -51,6 +71,7 @@ async def get_accounts_partial(
         request=request,
         name="accounts/accounts-partial.html",
         context={
+            "partial": "accounts/accounts-tab.html",
             "accounts": accounts,
             "active_tab": "accounts-tab",
             "title": "Accounts",
@@ -59,7 +80,8 @@ async def get_accounts_partial(
     )
 
 
-@router.get("/accounts/accounts", response_class=HTMLResponse)
+
+@router.get("/accounts/accounts-tab", response_class=HTMLResponse)
 async def get_accounts_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
@@ -78,7 +100,7 @@ async def get_accounts_tab(
     )
 
 
-@router.get("/accounts/assets", response_class=HTMLResponse)
+@router.get("/accounts/assets-tab", response_class=HTMLResponse)
 async def get_assets_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):

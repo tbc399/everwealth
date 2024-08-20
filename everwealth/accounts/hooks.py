@@ -1,4 +1,5 @@
 import stripe
+from datetime import datetime
 from asyncpg import Connection
 from fastapi import BackgroundTasks, Depends, Request, Response
 from fastapi.routing import APIRouter
@@ -23,9 +24,12 @@ async def create_account(event):
         new_account = Account(
             name=event.data.object.display_name,
             type=event.data.object.category,
+            sub_type=event.data.object.subcategory,
             user_id=user.id,
             stripe_id=event.data.object.id,
+            last_sync=datetime.utcnow(),
             institution_name=event.data.object.institution_name,
+            last4=event.data.object.last4
         )
         await new_account.save(connection)
         logger.info(f"New account {new_account.id} created for user {user.id}")
