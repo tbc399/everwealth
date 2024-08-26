@@ -22,6 +22,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
 
 
+# Top level routes
 @router.get("/accounts", response_class=HTMLResponse)
 async def get_accounts(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
@@ -33,9 +34,10 @@ async def get_accounts(
         request=request,
         name="accounts/accounts.html",
         context={
+            "tab": "accounts",
             "partial": "accounts/accounts-tab.html",
             "accounts": accounts,
-            "menu_tab": "accounts",
+            "menu_selection": "accounts",
             "title": "Accounts",
             "stripe_pub_key": settings.stripe_pub_key,
         },
@@ -52,13 +54,17 @@ async def get_accounts_assets(
         request=request,
         name="accounts/accounts.html",
         context={
+            "tab": "assets",
             "partial": "accounts/assets-tab.html",
             "assets": assets,
-            "menu_tab": "accounts",
+            "menu_selection": "accounts",
             "title": "Assets",
             "stripe_pub_key": settings.stripe_pub_key,
         },
     )
+
+
+# End top level routes
 
 
 @router.get("/accounts/partial", response_class=HTMLResponse)
@@ -71,6 +77,7 @@ async def get_accounts_partial(
         request=request,
         name="accounts/accounts-partial.html",
         context={
+            "tab": "accounts",
             "partial": "accounts/accounts-tab.html",
             "accounts": accounts,
             "active_tab": "accounts-tab",
@@ -78,7 +85,6 @@ async def get_accounts_partial(
             "stripe_pub_key": settings.stripe_pub_key,
         },
     )
-
 
 
 @router.get("/accounts/accounts-tab", response_class=HTMLResponse)
@@ -104,13 +110,11 @@ async def get_accounts_tab(
 async def get_assets_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    assets = [] #await Asset.fetch_all(user_id, db)
+    assets = []  # await Asset.fetch_all(user_id, db)
 
-    header = {"accountsTabChanged": {"target": "#accounts-tab-group", "tab_id": "assets-tab"}}
     return templates.TemplateResponse(
         request=request,
-        headers={"HX-Trigger": json.dumps(header)},
-        name=f"accounts/{'assets-tab' if assets else 'assets-tab-empty'}.html",
+        name="accounts/assets-tab.html",
         context={
             "assets": assets,
             "active_tab": "assets-tab",
@@ -129,16 +133,6 @@ async def get_accounts_partial_list(
         request=request,
         name="accounts/list-partial.html",
         context={"accounts": accounts},
-    )
-
-
-@router.get("/accounts/create", response_class=HTMLResponse)
-async def get_accounts_create_modal(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
-):
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/accounts-create-modal.html",
     )
 
 

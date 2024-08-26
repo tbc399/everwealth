@@ -2,3 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+.tab {
+  @apply text-gray-500
+}
+
+.tab-active {
+  @apply text-teal-500 
+}
+
+.menu-item {
+  @apply text-gray-400 hover:bg-gray-800 hover:text-gray-100
+}
+
+.menu-item-selected {
+  @apply text-gray-100 bg-gray-800
+}
+

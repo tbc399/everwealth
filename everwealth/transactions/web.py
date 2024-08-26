@@ -27,7 +27,11 @@ async def get_transactions(
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions.html",
-        context={"transactions": list(reversed(transactions)), "active_tab": "transactions"},
+        context={
+            "menu_selection": "transactions",
+            "transactions": list(reversed(transactions)),
+            "active_tab": "transactions",
+        },
     )
 
 

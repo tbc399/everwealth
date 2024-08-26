@@ -24,7 +24,10 @@ async def run():
         for statement in statements:
             if len(statement.strip()) and not statement.startswith("--"):
                 print(f"Executing statement {statement}")
-                await connection.execute(statement)
+                try:
+                    await connection.execute(statement)
+                except asyncpg.exceptions.DuplicateObjectError:
+                    print("Object already exists")
 
     await connection.close()
 

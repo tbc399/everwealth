@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from asyncpg import Connection
 from loguru import logger
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from shortuuid import uuid
 
 
@@ -23,6 +23,7 @@ class Asset:
     name: str
     type: AssetType
     user_id: str = Field(min_length=22, max_length=22, default_factory=uuid)
+    last_sync: datetime
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -42,6 +43,7 @@ class AccountType(Enum):
     investment = "investment"
     other = "other"
     manual = "manual"
+
 
 class AccountSubType(Enum):
     checking = "checking"
