@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Iterable, List, Optional
 
 from asyncpg import Connection
@@ -10,18 +10,64 @@ from everwealth.auth import User
 from everwealth.budgets import Category
 
 
+class TransactionRefresh(BaseModel):
+    id: str = Field(min_length=22, max_length=22, default=None)
+    user_id: str = Field(min_length=22, max_length=22)
+    account_id: str = Field(min_length=22, max_length=22)
+    stripe_id: Optional[str] = None
+    completed: bool = False  # have we fetched and saved the new transactions?
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    async def create(self, db: Connection):
+        if self.id:
+            logger.error("Cannnot perform create on existing object")
+            return
+        self.id = uuid()
+        dump = self.model_dump()
+        columns = ",".join(dump.keys())
+        values = dump.values()
+        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
+        sql = f"INSERT INTO transaction_refreshes ({columns}) VALUES ({place_holders})"
+        logger.debug(f"Executing sql {sql}")
+        async with db.transaction():
+            await db.execute(sql, *values)
+
+    async def update(self, db: Connection):
+        if not self.id:
+            logger.error("Cannnot perform update on non-existing object")
+            return
+        dump = self.model_dump()
+        columns = ",".join(dump.keys())
+        values = dump.values()
+        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
+        sql = f"UPDATE transaction_refreshes SET ({columns}) = ({place_holders}) WHERE id = '{self.id}'"
+        logger.debug(f"Executing sql {sql}")
+        async with db.transaction():
+            await db.execute(sql, *values)
+
+    @staticmethod
+    async def fetch_by_stripe_id(stripe_id: str, db: Connection) -> "TransactionRefresh":
+        sql = f"SELECT * FROM transaction_refreshes WHERE stripe_id = '{stripe_id}'"
+        logger.debug(f"Executing sql {sql}")
+        record = await db.fetchrow(sql)
+        if not record:
+            return None
+        return TransactionRefresh.model_validate(dict(record))
+
+
 class TransactionRule(BaseModel):
-    pass
+    id: str = Field(min_length=22, max_length=22)
 
 
 class Transaction(BaseModel):
     """
-    TODO: should I add an original set of fields?
+    TODO: should I add an original set of fields to be able to maintain uniqueness?
     """
 
     id: str = Field(default_factory=uuid, min_length=22, max_length=22)
     source_hash: Optional[int] = Field(default=None)
-    user_id: str  # FK to the user
+    user_id: str = Field(min_length=22, max_length=22)  # FK to the user
     user: Optional[User] = None
     account_id: Optional[str] = None  # FK to the account
     description: str = Field(max_length=128)

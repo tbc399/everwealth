@@ -61,7 +61,7 @@ class Account(BaseModel):
     name: str
     type: AccountType
     sub_type: AccountSubType
-    user_id: str = Field(min_length=22, max_length=22, default_factory=uuid)
+    user_id: str = Field(min_length=22, max_length=22)
     institution_name: str
     last4: str = Field(min_length=4, max_length=4)
     stripe_id: Optional[str] = None
@@ -99,6 +99,22 @@ class Account(BaseModel):
             return None
         return Account.model_validate(dict(record))
 
+    @staticmethod
+    async def already_exists(last4: str, institution_name: str, name: str, db: Connection) -> bool:
+        sql = f"SELECT id FROM accounts WHERE last4 = '{last4}' AND institution_name = '{institution_name}' AND name = '{name}'"
+        logger.debug(f"Executing sql {sql}")
+        record = await db.fetchrow(sql)
+        return bool(record)
+
+    @staticmethod
+    async def fetch_by_user_id(user_id: str, db: Connection) -> "Account":
+        sql = f"SELECT * FROM accounts WHERE user_id = '{user_id}'"
+        logger.debug(f"Executing sql {sql}")
+        record = await db.fetchrow(sql)
+        if not record:
+            return None
+        return Account.model_validate(dict(record))
+
     async def save(self, db: Connection):
         dump = self.model_dump()
         columns = ",".join(dump.keys())
@@ -108,6 +124,13 @@ class Account(BaseModel):
         logger.debug(f"Executing sql {sql}")
         async with db.transaction():
             await db.execute(sql, *values)
+
+
+class AccountBalance(BaseModel):
+    id: str
+    account_id: str
+    balance: float
+    created_at: datetime
 
 
 """

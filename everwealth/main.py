@@ -34,6 +34,7 @@ from everwealth.auth.web import router as login_router
 from everwealth.budgets.web import router as budget_router
 from everwealth.config import settings
 from everwealth.lucy_config import lucy
+from everwealth.transactions.hooks import router as transactions_hooks_router
 
 # from everwealth.settings.categories.web import router as settings_router
 from everwealth.transactions.web import router as transaction_router
@@ -95,6 +96,7 @@ api_router.include_router(dashboard_router)
 api_router.include_router(accounts_router)
 # api_router.include_router(settings_router)
 api_router.include_router(accounts_hooks_router)
+api_router.include_router(transactions_hooks_router)
 
 app.include_router(api_router)
 

@@ -1,19 +1,15 @@
 import json
-from collections import defaultdict
-from datetime import datetime
-from typing import Annotated
 
 import stripe
 from asyncpg import Connection
-from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 
-from everwealth import transactions
 from everwealth.accounts import Account, Asset
 from everwealth.auth import User, auth_user
-from everwealth.budgets import Budget, BudgetMonthsView, BudgetView, Category
+from everwealth.budgets import Budget, BudgetMonthsView, BudgetView
 from everwealth.config import settings
 from everwealth.db import get_connection
 
@@ -38,7 +34,6 @@ async def get_accounts(
             "partial": "accounts/accounts-tab.html",
             "accounts": accounts,
             "menu_selection": "accounts",
-            "title": "Accounts",
             "stripe_pub_key": settings.stripe_pub_key,
         },
     )
@@ -93,10 +88,8 @@ async def get_accounts_tab(
 ):
     accounts = await Account.fetch_all(user_id, db)
 
-    header = {"accountsTabChanged": {"target": "#accounts-tab-group", "tab_id": "accounts-tab"}}
     return templates.TemplateResponse(
         request=request,
-        headers={"HX-Trigger": json.dumps(header)},
         name="accounts/accounts-tab.html",
         context={
             "accounts": accounts,
@@ -146,3 +139,10 @@ async def connect_account(
         permissions=["balances", "transactions"],
     )
     return {"client_secret": fc_session["client_secret"]}
+
+
+@router.delete("/accounts/{id}")
+async def disconnect_account(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    return Response(status_code=204)

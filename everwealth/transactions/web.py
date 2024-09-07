@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 from everwealth.auth import User, auth_user
 from everwealth.budgets import Category
 from everwealth.db import get_connection
-from everwealth.transactions import Transaction
+from everwealth.transactions import Transaction, TransactionRule
 
 router = APIRouter()
 
@@ -24,24 +24,88 @@ async def get_transactions(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     transactions = await Transaction.fetch_many(user_id, db)
+
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions.html",
         context={
+            "tab": "transactions",
+            "partial": "transactions/transactions-tab.html",
             "menu_selection": "transactions",
+            "title": "Transactions",
             "transactions": list(reversed(transactions)),
-            "active_tab": "transactions",
         },
     )
 
 
-@router.get("/transactions-partial", response_class=HTMLResponse)
-async def get_transactions_partial(request: Request, conn: Connection = Depends(get_connection)):
-    transactions = await Transaction.fetch_many(request.user, conn)
+@router.get("/transactions/rules", response_class=HTMLResponse)
+async def get_transaction_rules(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    rules = await TransactionRule.fetch_many(user_id, db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="transactions/transactions.html",
+        context={
+            "tab": "rules",
+            "partial": "transactions/rules-tab.html",
+            "menu_selection": "transactions",
+            "title": "Transaction Rules",
+            "transactions": rules,
+        },
+    )
+
+
+@router.get("/transactions/partial", response_class=HTMLResponse)
+async def get_transactions_partial(
+    request: Request, db: Connection = Depends(get_connection), user_id: User = Depends(auth_user)
+):
+    transactions = await Transaction.fetch_many(user_id, db)
     return templates.TemplateResponse(
         request=request,
         name="transactions/transactions-partial.html",
-        context={"transactions": reversed(transactions), "active_tab": "transactions"},
+        context={
+            "tab": "transactions",
+            "partial": "transactions/transactions-tab.html",
+            "active_tab": "transactions-tab",
+            "title": "Transactions",
+            "transactions": reversed(transactions),
+        },
+    )
+
+
+@router.get("/transactions/transactions-tab", response_class=HTMLResponse)
+async def get_transactions_tab(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    transactions = await Transaction.fetch_all(user_id, db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="transactions/transactions-tab.html",
+        context={
+            "transactions": transactions,
+            "active_tab": "transactions-tab",
+            "title": "Transactions",
+        },
+    )
+
+
+@router.get("/transactions/rules-tab", response_class=HTMLResponse)
+async def get_rules_tab(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    rules = await TransactionRule.fetch_all(user_id, db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="transactions/assets-tab.html",
+        context={
+            "rules": rules,
+            "active_tab": "rules-tab",
+            "title": "Transaction Rules",
+        },
     )
 
 
@@ -146,8 +210,3 @@ async def upload_transactions(
     await Transaction.create_many(transactions, conn)
 
     return RedirectResponse(url="/transactions", status_code=303)  # TODO: redirect to other page
-
-
-@router.get("/transactions/partial", response_class=HTMLResponse)
-async def transaction_section(request: Request):
-    return templates.TemplateResponse(request=request, name="partials/transactions.html")

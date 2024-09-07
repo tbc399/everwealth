@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .tab {
-  @apply text-gray-500
+  @apply text-gray-400 hover:text-gray-300
 }
 
 .tab-active {
@@ -11,10 +11,10 @@
 }
 
 .menu-item {
-  @apply text-gray-400 hover:bg-gray-800 hover:text-gray-100
+  @apply text-gray-300 hover:bg-gray-800
 }
 
 .menu-item-selected {
-  @apply text-gray-100 bg-gray-800
+  @apply text-gray-300 bg-gray-800
 }
 
