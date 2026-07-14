@@ -58,9 +58,7 @@ async def get_transaction_rules(
 
 
 @router.get("/transactions/partial", response_class=HTMLResponse)
-async def get_transactions_partial(
-    request: Request, db: Connection = Depends(get_connection), user_id: User = Depends(auth_user)
-):
+async def get_transactions_partial(request: Request, db: Connection = Depends(get_connection), user_id: User = Depends(auth_user)):
     transactions = await Transaction.fetch_many(user_id, db)
     return templates.TemplateResponse(
         request=request,
@@ -70,16 +68,15 @@ async def get_transactions_partial(
             "partial": "transactions/transactions-tab.html",
             "active_tab": "transactions-tab",
             "title": "Transactions",
-            "transactions": reversed(transactions),
+            "transactions": reversed(transactions)
         },
     )
-
 
 @router.get("/transactions/transactions-tab", response_class=HTMLResponse)
 async def get_transactions_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    transactions = await Transaction.fetch_all(user_id, db)
+    transactions = await Transaction.fetch_many(user_id, db)
 
     return templates.TemplateResponse(
         request=request,
@@ -96,18 +93,17 @@ async def get_transactions_tab(
 async def get_rules_tab(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
-    rules = await TransactionRule.fetch_all(user_id, db)
+    rules = await TransactionRule.fetch_many(user_id, db)
 
     return templates.TemplateResponse(
         request=request,
-        name="transactions/assets-tab.html",
+        name="transactions/rules-tab.html",
         context={
             "rules": rules,
             "active_tab": "rules-tab",
             "title": "Transaction Rules",
         },
     )
-
 
 @router.get("/transactions/{id}/edit", response_class=HTMLResponse)
 async def get_transaction_edit_section(
@@ -210,3 +206,5 @@ async def upload_transactions(
     await Transaction.create_many(transactions, conn)
 
     return RedirectResponse(url="/transactions", status_code=303)  # TODO: redirect to other page
+
+

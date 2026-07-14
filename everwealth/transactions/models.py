@@ -59,6 +59,14 @@ class TransactionRefresh(BaseModel):
 class TransactionRule(BaseModel):
     id: str = Field(min_length=22, max_length=22)
 
+    @staticmethod
+    async def fetch_many(user_id: str, db: Connection):
+        # sql = f"SELECT rules.*, categories.name as category_name FROM transactions LEFT JOIN categories ON category_id = categories.id WHERE transactions.user_id = '{user_id}'"
+        # logger.debug(f"Executing sql {sql}")
+        # rules = await db.fetch(sql)
+        rules = []
+        return [TransactionRule.model_validate(dict(x)) for x in rules]
+
 
 class Transaction(BaseModel):
     """
