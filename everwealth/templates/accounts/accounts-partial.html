@@ -52,32 +52,23 @@
       Add account
     </button>
     <script>
-      htmx.on("#add-account-button", "click",
-        async function(evt) {
-          fetch("/accounts/connect")
-            .then(async function(response) {
-              return response.json();
-            }).then(async function(json) {
-              const stripe = new Stripe("{{ stripe_pub_key }}");
-              const sessionResult = await stripe.collectFinancialConnectionsAccounts({
-                clientSecret: json["client_secret"]
-              }).then(async function(result) {
-                if (result.error) {
-                  // Inform the customer that there was an error.
-                  console.log(result.error.message);
-                // Handle next step based on length of accounts array
-                } else if (result.financialConnectionsSession.accounts.length === 0) {
-                  console.log('No accounts were linked');
-                } else {
-                  //console.log(result.financialConnectionsSession.accounts)
-                  event = new CustomEvent("accountsLinked")
-                  e = document.getElementById("accounts-tab-list")
-                  e.dispatchEvent(event)
-                }
-              });
+      document.getElementById("add-account-button").addEventListener("click", async () => {
+        const response = await fetch("/accounts/create-link", {method: "POST"});
+        const data = await response.json();
+        const handler = Plaid.create({
+          token: data.link_token,
+          onSuccess: async (publicToken) => {
+            await fetch("/accounts/exchange-token", {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({public_token: publicToken})
             });
-        }
-      );
+            document.getElementById("accounts-tab-list")
+              .dispatchEvent(new CustomEvent("accountsLinked"));
+          }
+        });
+        handler.open();
+      });
     </script>
   </div>
   {% include partial %}

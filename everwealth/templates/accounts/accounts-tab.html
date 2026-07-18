@@ -4,8 +4,10 @@
   hx-trigger="accountsLinked"
   hx-swap="outerHTML"
   >
-  {% if accounts %}
-    {% for account in accounts %}
+  {% if account_groups %}
+    {% for account_type, accounts in account_groups.items() %}
+      <h2 class="w-[600px] text-sm font-semibold text-slate-400">{{ account_type }}</h2>
+      {% for account in accounts %}
       <div class="flex flex-col rounded-lg w-[600px] border border-gray-700/50 bg-gray-900 text-gray-300 p-4 hover:bg-neutral-800/65">
         <div class="flex flex-row justify-between mb-3">
           <div class="flex flex-row gap-x-2 items-center">
@@ -23,7 +25,7 @@
 
               <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-36 z-10 shadow-md rounded-lg p-1 bg-gray-900 border border-slate-800" aria-labelledby="hs-dropdown-with-header">
                 <div class="py-2 first:pt-0 last:pb-0">
-                  <a class="flex justify-start gap-x-2 py-1.5 px-2.5 rounded-md text-xs text-gray-800 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 hover:bg-slate-800/50 dark:hover:text-slate-300 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-slate-600" href="#">
+                  <button hx-delete="/accounts/{{ account.id }}" hx-target="closest div.flex.flex-col" hx-swap="outerHTML" class="flex justify-start gap-x-2 py-1.5 px-2.5 rounded-md text-xs text-gray-400 hover:bg-slate-800/50">
                     <svg class="flex-shrink-0 size-4 fill-none stroke-gray-500 stroke-2" 
                       width="24" 
                       height="24" 
@@ -32,7 +34,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M13.181 8.68a4.503 4.503 0 0 1 1.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 0 0 6.364 6.365l3.129-3.129m5.614-5.615 1.757-1.757a4.5 4.5 0 0 0-6.364-6.365l-4.5 4.5c-.258.26-.479.541-.661.84m1.903 6.405a4.495 4.495 0 0 1-1.242-.88 4.483 4.483 0 0 1-1.062-1.683m6.587 2.345 5.907 5.907m-5.907-5.907L8.898 8.898M2.991 2.99 8.898 8.9" />
                     </svg>
                     Disconnect
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -40,6 +42,7 @@
         </div>
         <span class="text-xs font-semibold text-gray-500">{{ account.institution_name }}</span>
       </div>
+      {% endfor %}
     {% endfor %}
   {% else %}
     <span class="text-white">No Accounts</span>

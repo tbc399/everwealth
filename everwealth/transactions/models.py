@@ -1,151 +1,153 @@
 from datetime import date, datetime
-from typing import Iterable, List, Optional
+from typing import Optional
 
 from asyncpg import Connection
-from loguru import logger
-from pydantic import BaseModel, Field, PositiveFloat
+from pydantic import BaseModel, Field
 from shortuuid import uuid
-
-from everwealth.auth import User
-from everwealth.budgets import Category
 
 
 class TransactionRefresh(BaseModel):
-    id: str = Field(min_length=22, max_length=22, default=None)
-    user_id: str = Field(min_length=22, max_length=22)
-    account_id: str = Field(min_length=22, max_length=22)
+    id: Optional[str] = None
+    user_id: str
+    account_id: str
     stripe_id: Optional[str] = None
-    completed: bool = False  # have we fetched and saved the new transactions?
+    completed: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    async def create(self, db: Connection):
-        if self.id:
-            logger.error("Cannnot perform create on existing object")
-            return
-        self.id = uuid()
-        dump = self.model_dump()
-        columns = ",".join(dump.keys())
-        values = dump.values()
-        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        sql = f"INSERT INTO transaction_refreshes ({columns}) VALUES ({place_holders})"
-        logger.debug(f"Executing sql {sql}")
-        async with db.transaction():
-            await db.execute(sql, *values)
-
-    async def update(self, db: Connection):
-        if not self.id:
-            logger.error("Cannnot perform update on non-existing object")
-            return
-        dump = self.model_dump()
-        columns = ",".join(dump.keys())
-        values = dump.values()
-        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        sql = f"UPDATE transaction_refreshes SET ({columns}) = ({place_holders}) WHERE id = '{self.id}'"
-        logger.debug(f"Executing sql {sql}")
-        async with db.transaction():
-            await db.execute(sql, *values)
-
-    @staticmethod
-    async def fetch_by_stripe_id(stripe_id: str, db: Connection) -> "TransactionRefresh":
-        sql = f"SELECT * FROM transaction_refreshes WHERE stripe_id = '{stripe_id}'"
-        logger.debug(f"Executing sql {sql}")
-        record = await db.fetchrow(sql)
-        if not record:
-            return None
-        return TransactionRefresh.model_validate(dict(record))
-
 
 class TransactionRule(BaseModel):
-    id: str = Field(min_length=22, max_length=22)
+    id: str
 
     @staticmethod
-    async def fetch_many(user_id: str, db: Connection):
-        # sql = f"SELECT rules.*, categories.name as category_name FROM transactions LEFT JOIN categories ON category_id = categories.id WHERE transactions.user_id = '{user_id}'"
-        # logger.debug(f"Executing sql {sql}")
-        # rules = await db.fetch(sql)
-        rules = []
-        return [TransactionRule.model_validate(dict(x)) for x in rules]
+    async def fetch_many(user_id: str, db: Connection) -> list["TransactionRule"]:
+        return []
 
 
 class Transaction(BaseModel):
-    """
-    TODO: should I add an original set of fields to be able to maintain uniqueness?
-    """
-
-    id: str = Field(default_factory=uuid, min_length=22, max_length=22)
-    source_hash: Optional[int] = Field(default=None)
-    user_id: str = Field(min_length=22, max_length=22)  # FK to the user
-    user: Optional[User] = None
-    account_id: Optional[str] = None  # FK to the account
-    description: str = Field(max_length=128)
-    amount: float
-    category_id: Optional[str] = None  # FK to Category
+    id: str = Field(default_factory=uuid)
+    source_hash: Optional[int] = None
+    user_id: str
+    account_id: Optional[str] = None
+    orig_description: Optional[str] = None
+    description: str
+    orig_amount: Optional[int] = None
+    amount: int
+    category_id: Optional[str] = None
     category_name: Optional[str] = None
-    date: date  # unix epoch time in ns
-    notes: Optional[str] = Field(max_length=256, default=None)
-    # tags: Optional[List[Tag]] = None
-    hidden: Optional[bool] = False
+    orig_date: Optional[date] = None
+    date: date
+    notes: Optional[str] = None
+    hidden: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    def hash(self):
-        if not self.source_hash:
-            # we don't want to override the original hash in case the constituent fields have changed
-            self.source_hash = hash(f"{self.date}{self.description}{self.amount}")
+    @property
+    def display_amount(self) -> str:
+        return f"{self.amount / 100:,.2f}"
 
-    async def create(self, conn: Connection):
-        transaction = Transaction()
-        transaction.hash()
-        return transaction
+    def prepare_originals(self) -> None:
+        self.orig_description = self.orig_description or self.description
+        self.orig_amount = self.orig_amount if self.orig_amount is not None else self.amount
+        self.orig_date = self.orig_date or self.date
+        self.source_hash = self.source_hash or hash(
+            (self.user_id, self.account_id, self.orig_date, self.orig_description, self.orig_amount)
+        )
 
-    async def update(self, db: Connection):
-        dump = self.model_dump(exclude=("user", "category_name", "account"))
-        columns = ",".join(dump.keys())
-        values = dump.values()
-        print(values)
-        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        sql = f"UPDATE transactions SET ({columns}) = ({place_holders}) WHERE id = '{self.id}'"
-        logger.debug(f"Executing sql {sql}")
-        async with db.transaction():
-            await db.execute(sql, *values)
-
-    @staticmethod
-    async def create_many(transactions, db: Connection):
-        if not len(transactions):
-            return
-        # pull the first element to get the
-        dump = transactions[0].model_dump(exclude=("user", "category_name", "account"))
-        columns = ",".join(dump.keys())
-        values = dump.values()
-        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        sql = f"INSERT INTO transactions ({columns}) VALUES ({place_holders})"
-        logger.debug(f"Executing sql {sql}")
-        async with db.transaction():
-            await db.executemany(
-                sql,
-                (
-                    list(x.model_dump(exclude=("user", "category_name", "account")).values())
-                    for x in transactions
-                ),
+    async def save(self, db: Connection) -> None:
+        self.prepare_originals()
+        await db.execute(
+            """
+            INSERT INTO transactions (
+                id, source_hash, user_id, account_id, orig_description, description,
+                orig_amount, amount, category_id, orig_date, date, notes, hidden,
+                created_at, updated_at
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
             )
+            ON CONFLICT (id) DO UPDATE SET
+                description = EXCLUDED.description,
+                amount = EXCLUDED.amount,
+                category_id = EXCLUDED.category_id,
+                date = EXCLUDED.date,
+                notes = EXCLUDED.notes,
+                hidden = EXCLUDED.hidden,
+                updated_at = EXCLUDED.updated_at
+            """,
+            self.id,
+            self.source_hash,
+            self.user_id,
+            self.account_id,
+            self.orig_description,
+            self.description,
+            self.orig_amount,
+            self.amount,
+            self.category_id,
+            self.orig_date,
+            self.date,
+            self.notes,
+            self.hidden,
+            self.created_at,
+            datetime.utcnow(),
+        )
 
     @staticmethod
-    async def fetch(id: str, db: Connection):
-        sql = f"SELECT transactions.*, categories.name AS category_name FROM transactions LEFT JOIN categories ON category_id = categories.id WHERE transactions.id = '{id}'"
-        logger.debug(f"Executing sql {sql}")
-        transaction = await db.fetchrow(sql)
-        return Transaction.model_validate(dict(transaction))
+    async def create_many(transactions: list["Transaction"], db: Connection) -> None:
+        async with db.transaction():
+            for transaction in transactions:
+                transaction.prepare_originals()
+                exists = await db.fetchval(
+                    "SELECT EXISTS(SELECT 1 FROM transactions WHERE user_id = $1 AND source_hash = $2)",
+                    transaction.user_id,
+                    transaction.source_hash,
+                )
+                if not exists:
+                    await transaction.save(db)
 
     @staticmethod
-    async def fetch_many(user_id: str, db: Connection):
-        sql = f"SELECT transactions.*, categories.name as category_name FROM transactions LEFT JOIN categories ON category_id = categories.id WHERE transactions.user_id = '{user_id}'"
-        logger.debug(f"Executing sql {sql}")
-        transactions = await db.fetch(sql)
-        return [Transaction.model_validate(dict(x)) for x in transactions]
+    async def fetch(transaction_id: str, user_id: str, db: Connection) -> Optional["Transaction"]:
+        record = await db.fetchrow(
+            """
+            SELECT t.*, c.name AS category_name
+            FROM transactions t LEFT JOIN categories c ON c.id = t.category_id
+            WHERE t.id = $1 AND t.user_id = $2
+            """,
+            transaction_id,
+            user_id,
+        )
+        return Transaction.model_validate(dict(record)) if record else None
 
     @staticmethod
-    async def fetch_many_by_month(user_id: str, year: int, month: int, db: Connection):
-        # TODO: need to figure out how to index
+    async def fetch_many(
+        user_id: str, db: Connection, account_id: Optional[str] = None
+    ) -> list["Transaction"]:
+        records = await db.fetch(
+            """
+            SELECT t.*, c.name AS category_name
+            FROM transactions t LEFT JOIN categories c ON c.id = t.category_id
+            WHERE t.user_id = $1 AND ($2::varchar IS NULL OR t.account_id = $2)
+              AND COALESCE(t.hidden, FALSE) = FALSE
+            ORDER BY t.date DESC, t.created_at DESC
+            """,
+            user_id,
+            account_id,
+        )
+        return [Transaction.model_validate(dict(record)) for record in records]
 
-        sql = f"SELECT * FROM transactions WHERE user_id = '{user_id}' AND date BETWEEN  AND "
-        transactions = await db.fetch(sql)
-        return [Transaction.model_validate_json(x["data"]) for x in transactions]
+    @staticmethod
+    async def fetch_for_category_in_range(
+        user_id: str, category_id: str, start: date, end: date, db: Connection
+    ) -> list["Transaction"]:
+        records = await db.fetch(
+            """
+            SELECT t.*, c.name AS category_name
+            FROM transactions t LEFT JOIN categories c ON c.id = t.category_id
+            WHERE t.user_id = $1 AND t.category_id = $2 AND t.date BETWEEN $3 AND $4
+            ORDER BY t.date DESC
+            """,
+            user_id,
+            category_id,
+            start,
+            end,
+        )
+        return [Transaction.model_validate(dict(record)) for record in records]

@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 import asyncpg
 import lucette
-import stripe
 
 # import databases
 from fastapi import APIRouter, FastAPI, HTTPException, Request
@@ -27,11 +26,8 @@ from everwealth.accounts.web import router as accounts_router
 # from everwealth.auth.middleware import SessionBackend
 from everwealth.auth.web import router as login_router
 
-# from everwealth.config import lucy
-# from everwealth.strategies import rebalance
-# from everwealth.write.investment import api, event_store
-# from everwealth.write.investment.tasks import snapshot
 from everwealth.budgets.web import router as budget_router
+from everwealth.budgets.rollover import run_rollover_scheduler
 from everwealth.config import settings
 from everwealth.lucy_config import lucy
 from everwealth.transactions.hooks import router as transactions_hooks_router
@@ -39,6 +35,7 @@ from everwealth.transactions.hooks import router as transactions_hooks_router
 # from everwealth.settings.categories.web import router as settings_router
 from everwealth.transactions.web import router as transaction_router
 from everwealth.web.dashboard import router as dashboard_router
+from everwealth.web.settings import router as settings_router
 
 templates = Jinja2Templates(directory="everwealth/templates")
 
@@ -66,13 +63,16 @@ logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
 async def startup():
     setattr(db, "pool", await asyncpg.create_pool(settings.database_url))
-    stripe.api_key = settings.stripe_api_key
     asyncio.create_task(lucy.run())
+    setattr(db, "rollover_task", asyncio.create_task(run_rollover_scheduler(db.pool)))
 
 
 async def shutdown():
     from everwealth import db
 
+    rollover_task = getattr(db, "rollover_task", None)
+    if rollover_task:
+        rollover_task.cancel()
     await db.pool.close()
 
 
@@ -94,7 +94,7 @@ api_router.include_router(transaction_router)
 api_router.include_router(login_router)
 api_router.include_router(dashboard_router)
 api_router.include_router(accounts_router)
-# api_router.include_router(settings_router)
+api_router.include_router(settings_router)
 api_router.include_router(accounts_hooks_router)
 api_router.include_router(transactions_hooks_router)
 
@@ -103,8 +103,6 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        # "http://makeshift-web-service.herokuapp.com",
-        # "https://makeshift-web-service.herokuapp.com",
         "http://localhost",
         "http://localhost:8080",
     ],
@@ -121,7 +119,7 @@ async def exception_handler(request: Request, exc):
             return Response(status_code=200, headers={"HX-Redirect": "/login"})
         else:
             return RedirectResponse(url="/login", status_code=303)
-    await http_exception_handler(request, exc)
+    return await http_exception_handler(request, exc)
 
 
 @app.get("/favicon.ico")

@@ -1,4 +1,4 @@
-<div hx-get="/transactions/{{ transaction.id }}/edit" hx-swap="none" id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
+<div hx-get="/transactions/{{ transaction.id }}/edit" hx-target="#transaction-detail" hx-swap="outerHTML" id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
   <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-500">
     {{ transaction.date.strftime("%b %d, %Y") }}
   </div>
@@ -21,9 +21,9 @@
     ">
     <span class="w-full flex justify-end">
       {% if transaction.amount > 0 %}
-        +{{ "{:,.2f}".format(transaction.amount) }}
+        +${{ transaction.display_amount }}
       {% else %}
-        {{ "{:,.2f}".format(transaction.amount) }}
+        ${{ transaction.display_amount }}
       {% endif %}
     </span>
   </div>

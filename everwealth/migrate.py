@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 import asyncpg
-from config import settings
+from everwealth.config import settings
 
 
 async def run():
@@ -18,16 +18,8 @@ async def run():
 
     connection = await asyncpg.connect(settings.database_url)
 
-    with open(sql_file_path, "r") as f:
-        contents = f.read()
-        statements = contents.split(";")
-        for statement in statements:
-            if len(statement.strip()) and not statement.startswith("--"):
-                print(f"Executing statement {statement}")
-                try:
-                    await connection.execute(statement)
-                except asyncpg.exceptions.DuplicateObjectError:
-                    print("Object already exists")
+    contents = sql_file_path.read_text()
+    await connection.execute(contents)
 
     await connection.close()
 

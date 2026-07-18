@@ -26,14 +26,18 @@ class Category(BaseModel):
 
     @staticmethod
     async def create(name: str, user_id: str, db: Connection):
-        categories = await Category.fetch_many(user_id, db)
-        if name not in categories:
-            category = Category(name=name, user_id=user_id)
+        existing = await db.fetchrow(
+            "SELECT * FROM categories WHERE LOWER(name) = LOWER($1) AND user_id = $2",
+            name.strip(),
+            user_id,
+        )
+        if existing:
+            return Category.model_validate(dict(existing))
+        category = Category(name=name.strip(), user_id=user_id)
         dump = category.model_dump()
         columns = ",".join(dump.keys())
         values = dump.values()
         place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        category = Category(name=name, user_id=user_id)
         await db.execute(f"INSERT INTO categories ({columns}) VALUES ({place_holders})", *values)
         return category
 
@@ -48,14 +52,16 @@ class Category(BaseModel):
 
     @staticmethod
     async def fetch(id: str, user_id: str, db: Connection):
-        sql = f"SELECT * FROM categories WHERE id = '{id}' AND user_id = '{user_id}'"
+        sql = "SELECT * FROM categories WHERE id = $1 AND user_id = $2"
         logger.debug(f"Executing SQL: {sql}")
-        record = await db.fetchrow(sql)
-        return Category.model_validate(dict(record))
+        record = await db.fetchrow(sql, id, user_id)
+        return Category.model_validate(dict(record)) if record else None
 
     @staticmethod
     async def fetch_many(user_id: str, db: Connection):
         logger.debug(f"Fetching categories for {user_id}")
         # TODO: filter on user id
-        records = await db.fetch(f"SELECT * FROM categories WHERE user_id = '{user_id}'")
+        records = await db.fetch(
+            "SELECT * FROM categories WHERE user_id = $1 ORDER BY type, name", user_id
+        )
         return [Category.model_validate(dict(x)) for x in records]

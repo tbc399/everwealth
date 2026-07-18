@@ -1,0 +1,17 @@
+<div id="main-content" hx-swap-oob="outerHTML:#main-content" class="flex flex-col h-full p-8">
+  <h1 class="text-xl text-slate-200 mb-6">Account Settings</h1>
+  <form method="post" action="/settings/profile" class="max-w-xl space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <label class="text-xs text-slate-400">First name
+        <input name="first" value="{{ profile.first or '' }}" class="block w-full mt-1 rounded bg-slate-900 border border-slate-800 p-2 text-slate-200">
+      </label>
+      <label class="text-xs text-slate-400">Last name
+        <input name="last" value="{{ profile.last or '' }}" class="block w-full mt-1 rounded bg-slate-900 border border-slate-800 p-2 text-slate-200">
+      </label>
+    </div>
+    <label class="block text-xs text-slate-400">Email
+      <input value="{{ profile.email }}" disabled class="block w-full mt-1 rounded bg-slate-900 border border-slate-800 p-2 text-slate-500">
+    </label>
+    <button class="rounded bg-teal-800 px-3 py-2 text-sm text-white">Save profile</button>
+  </form>
+</div>

@@ -1,147 +1,203 @@
-from datetime import date, datetime, timedelta
-from enum import Enum
-from typing import List, Optional
+from calendar import monthrange
+from datetime import date, datetime, time
+from typing import Optional
 
 from asyncpg import Connection
-from dateutil.relativedelta import relativedelta
-from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+from pydantic import BaseModel, Field
 from shortuuid import uuid
 
-from everwealth.auth import User
 
-from .categories import Category
+class BudgetPeriod(BaseModel):
+    id: str = Field(default_factory=uuid)
+    user_id: str
+    start: datetime
+    end: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
+    @classmethod
+    def for_month(cls, user_id: str, year: int, month: int) -> "BudgetPeriod":
+        last_day = monthrange(year, month)[1]
+        return cls(
+            user_id=user_id,
+            start=datetime.combine(date(year, month, 1), time.min),
+            end=datetime.combine(date(year, month, last_day), time.max),
+        )
 
-class Frequency(Enum):
-    yearly = "yearly"
-    monthly = "monthly"
-
-
-class BudgetMonth(Enum):
-    JAN = "Jan"
-    FEB = "Feb"
-    MAR = "Mar"
-    APR = "Apr"
-    MAY = "May"
-    JUN = "Jun"
-    JUL = "Jul"
-    AUG = "Aug"
-    SEPT = "Sept"
-    OCT = "Oct"
-    NOV = "Nov"
-    DEC = "Dec"
-
-
-class BudgetMonthsView(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-
-    month: BudgetMonth
-    on_budget: Optional[bool] = None
-    current: bool = False
+    async def save(self, db: Connection) -> "BudgetPeriod":
+        await db.execute(
+            """
+            INSERT INTO budget_periods (id, user_id, start, "end", created_at)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (id) DO NOTHING
+            """,
+            self.id,
+            self.user_id,
+            self.start,
+            self.end,
+            self.created_at,
+        )
+        return self
 
     @staticmethod
-    async def fetch_by_year(user_id: str, year: int, db: Connection):
-        sql = f"""
-            SELECT budgets.month AS month, sum(coalesce(transactions.amount, 0)) AS balance, COUNT(transactions.amount) AS transaction_count
-                from budgets LEFT JOIN transactions ON budgets.category_id = transactions.category_id 
-                WHERE budgets.user_id = '{user_id}' AND year = '{year}' 
-                GROUP BY budgets.month
-        """
-        records = await db.fetch(sql)
-        records_by_month = {record.get("month"): record for record in records}
-        print(records_by_month)
-        current_month = datetime.utcnow().month
-        current_year = datetime.utcnow().year
-        months = [
-            BudgetMonthsView(
-                month=month,
-                on_budget=(
-                    records_by_month.get(n).get("balance") >= 0 if n in records_by_month else None
-                ),
-                current=bool(year == current_year and current_month == n),
-            )
-            for n, month in enumerate(BudgetMonth, start=1)
-        ]
-        for _ in months:
-            print(_)
-        return months
+    async def fetch_for_month(
+        user_id: str, year: int, month: int, db: Connection
+    ) -> Optional["BudgetPeriod"]:
+        record = await db.fetchrow(
+            """
+            SELECT * FROM budget_periods
+            WHERE user_id = $1
+              AND EXTRACT(YEAR FROM start) = $2
+              AND EXTRACT(MONTH FROM start) = $3
+            ORDER BY start DESC LIMIT 1
+            """,
+            user_id,
+            year,
+            month,
+        )
+        return BudgetPeriod.model_validate(dict(record)) if record else None
+
+    @staticmethod
+    async def current(user_id: str, db: Connection) -> "BudgetPeriod":
+        now = datetime.utcnow()
+        period = await BudgetPeriod.fetch_for_month(user_id, now.year, now.month, db)
+        if period:
+            return period
+        return await BudgetPeriod.for_month(user_id, now.year, now.month).save(db)
 
 
 class BudgetView(BaseModel):
-    """A read only model for budgets"""
-
     id: str
     user_id: str
     category_id: str
     category_name: str
-    amount: int = None
-    frequency: Frequency = Field(default=Frequency.monthly)
-    year: PositiveInt = Field(default_factory=lambda: datetime.utcnow().year)
-    month: Optional[PositiveInt] = Field(
-        ge=1, le=12, default_factory=lambda: datetime.utcnow().month
-    )
-    transactions_total: float
+    amount: int
+    rollover: bool = False
+    transactions_total: float = 0
 
     @staticmethod
-    async def fetch_all_by_month(user_id: str, year: int, month: int, db: Connection):
-        start_of_month = date(year=year, month=month, day=1)
-        end_of_month = start_of_month + relativedelta(months=+1, days=-1, day=1)
-        sql = f"""
-        SELECT budgets.*,
-            categories.name as category_name, SUM(COALESCE(transactions.amount, 0)) as transactions_total
-            FROM budgets LEFT JOIN categories ON budgets.category_id = categories.id
-            LEFT JOIN transactions ON budgets.category_id = transactions.category_id
-            WHERE budgets.user_id = '{user_id}' 
-                AND year = {year} 
-                AND month = {month} 
-                AND (transactions.date BETWEEN '{start_of_month}' AND '{end_of_month}' OR transactions.date is NULL) 
-                GROUP BY budgets.id, categories.id
-        """
-        logger.debug(f"Executing sql {sql}")
-        records = await db.fetch(sql)
+    async def fetch_all_by_month(
+        user_id: str, year: int, month: int, db: Connection
+    ) -> list["BudgetView"]:
+        records = await db.fetch(
+            """
+            SELECT b.id, b.user_id, b.category_id, c.name AS category_name,
+                   b.amount, COALESCE(b.rollover, FALSE) AS rollover,
+                   COALESCE(SUM(t.amount), 0) / 100.0 AS transactions_total
+            FROM budgets b
+            JOIN budget_periods p ON p.id = b.period_id
+            JOIN categories c ON c.id = b.category_id
+            LEFT JOIN transactions t
+              ON t.category_id = b.category_id
+             AND t.user_id = b.user_id
+             AND t.date BETWEEN p.start::date AND p."end"::date
+             AND COALESCE(t.hidden, FALSE) = FALSE
+            WHERE b.user_id = $1
+              AND EXTRACT(YEAR FROM p.start) = $2
+              AND EXTRACT(MONTH FROM p.start) = $3
+            GROUP BY b.id, c.name
+            ORDER BY c.name
+            """,
+            user_id,
+            year,
+            month,
+        )
         return [BudgetView.model_validate(dict(record)) for record in records]
+
+    @staticmethod
+    async def fetch(budget_id: str, user_id: str, db: Connection) -> Optional["BudgetView"]:
+        record = await db.fetchrow(
+            """
+            SELECT b.id, b.user_id, b.category_id, c.name AS category_name,
+                   b.amount, COALESCE(b.rollover, FALSE) AS rollover,
+                   COALESCE(SUM(t.amount), 0) / 100.0 AS transactions_total
+            FROM budgets b
+            JOIN budget_periods p ON p.id = b.period_id
+            JOIN categories c ON c.id = b.category_id
+            LEFT JOIN transactions t
+              ON t.category_id = b.category_id
+             AND t.user_id = b.user_id
+             AND t.date BETWEEN p.start::date AND p."end"::date
+            WHERE b.id = $1 AND b.user_id = $2
+            GROUP BY b.id, c.name
+            """,
+            budget_id,
+            user_id,
+        )
+        return BudgetView.model_validate(dict(record)) if record else None
 
 
 class Budget(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-
-    id: str = Field(default_factory=uuid)  # shortuuid
-    user_id: str = None
-    user: Optional[User] = None
-    category_id: str = None
-    category: Optional[Category] = None
-    amount: int = None
-    rollover: Optional[bool] = False
-    frequency: Frequency = Field(default=Frequency.monthly)
-    year: PositiveInt = Field(default_factory=lambda: datetime.utcnow().year)
-    month: Optional[PositiveInt] = Field(
-        ge=1, le=12, default_factory=lambda: datetime.utcnow().month
-    )
+    id: str = Field(default_factory=uuid)
+    period_id: str
+    user_id: str
+    category_id: str
+    amount: int
+    rollover: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @staticmethod
-    async def fetch(id: str, user_id: str, db: Connection):
-        logger.debug(f"Fetching budget for id {id} and user_id {user_id}")
-        # record = await db.fetchrow(
-        #    f'SELECT data from budgets where data @> \'{{"user_id": "{user_id}", "id": "{id}"}}\''
-        # )
+    async def fetch(budget_id: str, user_id: str, db: Connection) -> Optional["Budget"]:
         record = await db.fetchrow(
-            f"SELECT * FROM budgets WHERE user_id = '{user_id}' AND id = '{id}'"
+            "SELECT * FROM budgets WHERE id = $1 AND user_id = $2", budget_id, user_id
         )
-        return Budget.model_validate(dict(record))
+        return Budget.model_validate(dict(record)) if record else None
 
-    async def create(self, db: Connection):
-        # TODO validate that category is not already being used for a budget
-        dump = self.model_dump(
-            exclude=("user", "category"),
+    async def save(self, db: Connection) -> None:
+        await db.execute(
+            """
+            INSERT INTO budgets (
+                id, period_id, user_id, category_id, amount, rollover, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT (id) DO UPDATE SET
+                amount = EXCLUDED.amount,
+                rollover = EXCLUDED.rollover,
+                updated_at = EXCLUDED.updated_at
+            """,
+            self.id,
+            self.period_id,
+            self.user_id,
+            self.category_id,
+            self.amount,
+            self.rollover,
+            self.created_at,
+            datetime.utcnow(),
         )
-        print(dump)
-        columns = ",".join(dump.keys())
-        values = dump.values()
-        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        sql = f"INSERT INTO budgets ({columns}) VALUES ({place_holders})"
-        logger.debug(f"Executing sql {sql}")
-        async with db.transaction():
-            await db.execute(sql, *values)
+
+
+class BudgetOverview(BaseModel):
+    expected_income: float = 0
+    current_income: float = 0
+    expected_spend: float = 0
+    current_spend: float = 0
+
+    @staticmethod
+    async def fetch(user_id: str, period: BudgetPeriod, db: Connection) -> "BudgetOverview":
+        row = await db.fetchrow(
+            """
+            SELECT
+              COALESCE(SUM(CASE WHEN c.type = 'income' THEN ABS(t.amount) ELSE 0 END), 0) / 100.0 AS current_income,
+              COALESCE(SUM(CASE WHEN c.type = 'expense' OR t.category_id IS NULL THEN ABS(t.amount) ELSE 0 END), 0) / 100.0 AS current_spend
+            FROM transactions t
+            LEFT JOIN categories c ON c.id = t.category_id
+            WHERE t.user_id = $1
+              AND t.date BETWEEN $2::date AND $3::date
+              AND COALESCE(t.hidden, FALSE) = FALSE
+            """,
+            user_id,
+            period.start,
+            period.end,
+        )
+        expected = await db.fetchrow(
+            """
+            SELECT
+              COALESCE(SUM(CASE WHEN c.type = 'income' THEN b.amount ELSE 0 END), 0) AS expected_income,
+              COALESCE(SUM(CASE WHEN c.type = 'expense' THEN b.amount ELSE 0 END), 0) AS expected_spend
+            FROM budgets b
+            JOIN categories c ON c.id = b.category_id
+            WHERE b.user_id = $1 AND b.period_id = $2
+            """,
+            user_id,
+            period.id,
+        )
+        return BudgetOverview(**dict(row), **dict(expected))

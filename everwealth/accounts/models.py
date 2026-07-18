@@ -1,43 +1,38 @@
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from asyncpg import Connection
-from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 from shortuuid import uuid
 
 
-class AccountView(BaseModel):
-    pass
-
-
-class AssetType(Enum):
+class AssetType(str, Enum):
     vehicle = "vehicle"
     property = "property"
     other = "other"
 
 
-class Asset:
-    id: str = Field(min_length=22, max_length=22, default_factory=uuid)
+class Asset(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
+    id: str = Field(default_factory=uuid)
     name: str
     type: AssetType
-    user_id: str = Field(min_length=22, max_length=22, default_factory=uuid)
-    last_sync: datetime
+    user_id: str
+    last_sync: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @staticmethod
-    async def fetch_all(user_id: str, db: Connection) -> List["Asset"]:
-        sql = f"SELECT * FROM assets WHERE user_id = '{user_id}'"
-        logger.debug(f"Executing sql {sql}")
-        records = await db.fetch(sql)
-        if not records:
-            return []
-        return [Account.model_validate(dict(record)) for record in records]
+    async def fetch_all(user_id: str, db: Connection) -> list["Asset"]:
+        records = await db.fetch(
+            "SELECT * FROM assets WHERE user_id = $1 ORDER BY created_at DESC", user_id
+        )
+        return [Asset.model_validate(dict(record)) for record in records]
 
 
-class AccountType(Enum):
+class AccountType(str, Enum):
     cash = "cash"
     credit = "credit"
     investment = "investment"
@@ -45,7 +40,7 @@ class AccountType(Enum):
     manual = "manual"
 
 
-class AccountSubType(Enum):
+class AccountSubType(str, Enum):
     checking = "checking"
     savings = "savings"
     credit_card = "credit_card"
@@ -54,105 +49,98 @@ class AccountSubType(Enum):
     other = "other"
 
 
+class PlaidItem(BaseModel):
+    id: str = Field(default_factory=uuid)
+    user_id: str
+    access_token: str
+    institution_id: Optional[str] = None
+    item_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    async def save(self, db: Connection) -> None:
+        await db.execute(
+            """
+            INSERT INTO plaid_items
+                (id, user_id, access_token, institution_id, item_id, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (item_id) DO UPDATE SET
+                access_token = EXCLUDED.access_token,
+                institution_id = EXCLUDED.institution_id,
+                updated_at = EXCLUDED.updated_at
+            """,
+            self.id,
+            self.user_id,
+            self.access_token,
+            self.institution_id,
+            self.item_id,
+            self.created_at,
+            self.updated_at,
+        )
+
+
 class Account(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
-    id: str = Field(min_length=22, max_length=22, default_factory=uuid)
+    id: str = Field(default_factory=uuid)
     name: str
     type: AccountType
-    sub_type: AccountSubType
-    user_id: str = Field(min_length=22, max_length=22)
-    institution_name: str
-    last4: str = Field(min_length=4, max_length=4)
+    sub_type: AccountSubType = AccountSubType.other
+    user_id: str
+    institution_name: str = ""
+    last4: str = ""
     stripe_id: Optional[str] = None
-    last_sync: datetime = None
+    plaid_item_id: Optional[str] = None
+    last_sync: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @property
-    def last_sync_display(self):
-        time_since_sync = datetime.utcnow() - self.last_sync
-        if time_since_sync < timedelta(minutes=5):
+    def last_sync_display(self) -> str:
+        if not self.last_sync:
+            return "never"
+        elapsed = datetime.utcnow() - self.last_sync
+        if elapsed < timedelta(minutes=5):
             return "a moment ago"
-        elif time_since_sync < timedelta(hours=24):
+        if elapsed < timedelta(hours=24):
             return "today"
-        elif time_since_sync < timedelta(days=5):
-            return "a week ago"
-        else:
-            return "over a month ago"
+        if elapsed < timedelta(days=7):
+            return "this week"
+        return "over a week ago"
 
     @staticmethod
-    async def fetch_all(user_id: str, db: Connection) -> List["Account"]:
-        sql = f"SELECT * FROM accounts WHERE user_id = '{user_id}'"
-        logger.debug(f"Executing sql {sql}")
-        records = await db.fetch(sql)
-        if not records:
-            return []
+    async def fetch_all(user_id: str, db: Connection) -> list["Account"]:
+        records = await db.fetch(
+            "SELECT * FROM accounts WHERE user_id = $1 ORDER BY type, created_at", user_id
+        )
         return [Account.model_validate(dict(record)) for record in records]
 
-    @staticmethod
-    async def fetch_by_stripe_id(stripe_id: str, db: Connection) -> "Account":
-        sql = f"SELECT * FROM accounts WHERE stripe_id = '{stripe_id}'"
-        logger.debug(f"Executing sql {sql}")
-        record = await db.fetchrow(sql)
-        if not record:
-            return None
-        return Account.model_validate(dict(record))
-
-    @staticmethod
-    async def already_exists(last4: str, institution_name: str, name: str, db: Connection) -> bool:
-        sql = f"SELECT id FROM accounts WHERE last4 = '{last4}' AND institution_name = '{institution_name}' AND name = '{name}'"
-        logger.debug(f"Executing sql {sql}")
-        record = await db.fetchrow(sql)
-        return bool(record)
-
-    @staticmethod
-    async def fetch_by_user_id(user_id: str, db: Connection) -> "Account":
-        sql = f"SELECT * FROM accounts WHERE user_id = '{user_id}'"
-        logger.debug(f"Executing sql {sql}")
-        record = await db.fetchrow(sql)
-        if not record:
-            return None
-        return Account.model_validate(dict(record))
-
-    async def save(self, db: Connection):
-        dump = self.model_dump()
-        columns = ",".join(dump.keys())
-        values = dump.values()
-        place_holders = ",".join((f"${x}" for x in range(1, len(values) + 1)))
-        sql = f"INSERT INTO accounts ({columns}) VALUES ({place_holders})"
-        logger.debug(f"Executing sql {sql}")
-        async with db.transaction():
-            await db.execute(sql, *values)
-
-
-class AccountBalance(BaseModel):
-    id: str
-    account_id: str
-    balance: float
-    created_at: datetime
-
-
-"""
-stripe_account = {
-    "id": "fca_1MwVK82eZvKYlo2Cjw8FMxXf",
-    "object": "linked_account",
-    "account_holder": {"customer": "cus_9s6XI9OFIdpjIg", "type": "customer"},
-    "balance": null,
-    "balance_refresh": null,
-    "category": "cash",
-    "created": 1681412208,
-    "display_name": "Sample Checking Account",
-    "institution_name": "StripeBank",
-    "last4": "6789",
-    "livemode": false,
-    "ownership": null,
-    "ownership_refresh": null,
-    "permissions": [],
-    "status": "active",
-    "subcategory": "checking",
-    "subscriptions": [],
-    "supported_payment_method_types": ["us_bank_account"],
-    "transaction_refresh": null,
-}
-"""
+    async def save(self, db: Connection) -> None:
+        await db.execute(
+            """
+            INSERT INTO accounts (
+                id, name, type, sub_type, user_id, institution_name, last4,
+                plaid_item_id, last_sync, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                type = EXCLUDED.type,
+                sub_type = EXCLUDED.sub_type,
+                institution_name = EXCLUDED.institution_name,
+                last4 = EXCLUDED.last4,
+                plaid_item_id = EXCLUDED.plaid_item_id,
+                last_sync = EXCLUDED.last_sync,
+                updated_at = EXCLUDED.updated_at
+            """,
+            self.id,
+            self.name,
+            self.type,
+            self.sub_type,
+            self.user_id,
+            self.institution_name,
+            self.last4,
+            self.plaid_item_id,
+            self.last_sync,
+            self.created_at,
+            self.updated_at,
+        )

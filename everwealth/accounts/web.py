@@ -1,148 +1,217 @@
-import json
+from datetime import datetime
 
-import stripe
+import httpx
 from asyncpg import Connection
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from loguru import logger
+from pydantic import BaseModel
 
-from everwealth.accounts import Account, Asset
-from everwealth.auth import User, auth_user
-from everwealth.budgets import Budget, BudgetMonthsView, BudgetView
+from everwealth.accounts.models import (
+    Account,
+    AccountSubType,
+    AccountType,
+    Asset,
+    PlaidItem,
+)
+from everwealth.auth import auth_user
 from everwealth.config import settings
 from everwealth.db import get_connection
 
 router = APIRouter()
-
 templates = Jinja2Templates(directory="everwealth/templates")
 
 
-# Top level routes
+def _plaid_base_url() -> str:
+    environment = settings.plaid_env.lower()
+    if environment == "production":
+        return "https://production.plaid.com"
+    if environment == "development":
+        return "https://development.plaid.com"
+    return "https://sandbox.plaid.com"
+
+
+async def _plaid_post(path: str, payload: dict) -> dict:
+    payload.update(
+        {
+            "client_id": settings.plaid_client_id,
+            "secret": settings.plaid_secret,
+        }
+    )
+    async with httpx.AsyncClient(base_url=_plaid_base_url(), timeout=30) as client:
+        response = await client.post(path, json=payload)
+    if response.is_error:
+        raise HTTPException(status_code=502, detail=response.json())
+    return response.json()
+
+
+def _group_accounts(accounts: list[Account]) -> dict[str, list[Account]]:
+    labels = {
+        "cash": "Cash",
+        "credit": "Credit",
+        "investment": "Investment",
+        "manual": "Other",
+        "other": "Other",
+    }
+    grouped: dict[str, list[Account]] = {}
+    for account in accounts:
+        grouped.setdefault(labels.get(account.type, "Other"), []).append(account)
+    return grouped
+
+
+async def _accounts_context(user_id: str, db: Connection) -> dict:
+    accounts = await Account.fetch_all(user_id, db)
+    return {"accounts": accounts, "account_groups": _group_accounts(accounts)}
+
+
 @router.get("/accounts", response_class=HTMLResponse)
 async def get_accounts(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-    # the top level accounts page should land on the "Accounting" tab
-    accounts = await Account.fetch_all(user_id, db)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/accounts.html",
-        context={
+    context = await _accounts_context(user_id, db)
+    context.update(
+        {
+            "request": request,
             "tab": "accounts",
             "partial": "accounts/accounts-tab.html",
-            "accounts": accounts,
             "menu_selection": "accounts",
-            "stripe_pub_key": settings.stripe_pub_key,
-        },
+            "title": "Connections",
+        }
     )
+    return templates.TemplateResponse("accounts/accounts.html", context)
 
 
 @router.get("/accounts/assets", response_class=HTMLResponse)
 async def get_accounts_assets(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-    assets = await Asset.fetch_all(user_id, db)
-
     return templates.TemplateResponse(
-        request=request,
-        name="accounts/accounts.html",
-        context={
+        "accounts/accounts.html",
+        {
+            "request": request,
             "tab": "assets",
             "partial": "accounts/assets-tab.html",
-            "assets": assets,
+            "assets": await Asset.fetch_all(user_id, db),
             "menu_selection": "accounts",
             "title": "Assets",
-            "stripe_pub_key": settings.stripe_pub_key,
         },
     )
-
-
-# End top level routes
 
 
 @router.get("/accounts/partial", response_class=HTMLResponse)
 async def get_accounts_partial(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-    accounts = await Account.fetch_all(user_id, db)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/accounts-partial.html",
-        context={
+    context = await _accounts_context(user_id, db)
+    context.update(
+        {
+            "request": request,
             "tab": "accounts",
             "partial": "accounts/accounts-tab.html",
-            "accounts": accounts,
-            "active_tab": "accounts-tab",
-            "title": "Accounts",
-            "stripe_pub_key": settings.stripe_pub_key,
-        },
+            "title": "Connections",
+        }
     )
+    return templates.TemplateResponse("accounts/accounts-partial.html", context)
 
 
 @router.get("/accounts/accounts-tab", response_class=HTMLResponse)
 async def get_accounts_tab(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-    accounts = await Account.fetch_all(user_id, db)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/accounts-tab.html",
-        context={
-            "accounts": accounts,
-            "active_tab": "accounts-tab",
-            "title": "Accounts",
-        },
-    )
+    context = await _accounts_context(user_id, db)
+    context["request"] = request
+    return templates.TemplateResponse("accounts/accounts-tab.html", context)
 
 
 @router.get("/accounts/assets-tab", response_class=HTMLResponse)
 async def get_assets_tab(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-    assets = []  # await Asset.fetch_all(user_id, db)
-
     return templates.TemplateResponse(
-        request=request,
-        name="accounts/assets-tab.html",
-        context={
-            "assets": assets,
-            "active_tab": "assets-tab",
-            "title": "Assets",
+        "accounts/assets-tab.html",
+        {"request": request, "assets": await Asset.fetch_all(user_id, db)},
+    )
+
+
+@router.post("/accounts/create-link")
+async def create_link_token(user_id: str = Depends(auth_user)):
+    data = await _plaid_post(
+        "/link/token/create",
+        {
+            "client_name": settings.app_name,
+            "language": "en",
+            "country_codes": ["US"],
+            "user": {"client_user_id": user_id},
+            "products": ["auth"],
+            "optional_products": ["transactions", "investments", "liabilities"],
+            "webhook": str(settings.plaid_webhook_handler_url),
         },
     )
+    return {"link_token": data["link_token"]}
 
 
-@router.get("/accounts/partial/list", response_class=HTMLResponse)
-async def get_accounts_partial_list(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+class PublicTokenRequest(BaseModel):
+    public_token: str
+
+
+@router.post("/accounts/exchange-token", status_code=201)
+async def exchange_public_token(
+    payload: PublicTokenRequest,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
-    accounts = await Account.fetch_all(user_id, db)
+    exchange = await _plaid_post(
+        "/item/public_token/exchange", {"public_token": payload.public_token}
+    )
+    access_token = exchange["access_token"]
+    account_data = await _plaid_post("/accounts/get", {"access_token": access_token})
+    item_data = account_data["item"]
 
-    return templates.TemplateResponse(
-        request=request,
-        name="accounts/list-partial.html",
-        context={"accounts": accounts},
+    item = PlaidItem(
+        user_id=user_id,
+        access_token=access_token,
+        institution_id=item_data.get("institution_id"),
+        item_id=item_data["item_id"],
     )
 
+    async with db.transaction():
+        await item.save(db)
+        for plaid_account in account_data.get("accounts", []):
+            account_type = plaid_account.get("type", "other")
+            if account_type not in AccountType._value2member_map_:
+                account_type = "other"
+            subtype = plaid_account.get("subtype") or "other"
+            if subtype not in AccountSubType._value2member_map_:
+                subtype = "other"
+            account = Account(
+                name=plaid_account["name"],
+                type=account_type,
+                sub_type=subtype,
+                user_id=user_id,
+                institution_name=item_data.get("institution_name", ""),
+                last4=plaid_account.get("mask") or "",
+                plaid_item_id=item.id,
+                last_sync=datetime.utcnow(),
+            )
+            await account.save(db)
+    return Response(status_code=201)
 
-@router.get("/accounts/connect")
-async def connect_account(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
-):
-    user = await User.fetch(user_id, db)
-    fc_session = await stripe.financial_connections.Session.create_async(
-        account_holder={"type": "customer", "customer": user.stripe_customer_id},
-        permissions=["balances", "transactions"],
-    )
-    return {"client_secret": fc_session["client_secret"]}
 
-
-@router.delete("/accounts/{id}")
+@router.delete("/accounts/{account_id}", status_code=204)
 async def disconnect_account(
-    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+    account_id: str,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
 ):
+    await db.execute("DELETE FROM accounts WHERE id = $1 AND user_id = $2", account_id, user_id)
     return Response(status_code=204)
