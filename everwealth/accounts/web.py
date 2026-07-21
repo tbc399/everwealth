@@ -1,10 +1,10 @@
 from datetime import datetime
 
-import httpx
 from asyncpg import Connection
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from loguru import logger
 from pydantic import BaseModel
 
 from everwealth.accounts.models import (
@@ -17,32 +17,11 @@ from everwealth.accounts.models import (
 from everwealth.auth import auth_user
 from everwealth.config import settings
 from everwealth.db import get_connection
+from everwealth.plaid import plaid_post
+from everwealth.transactions.plaid_sync import sync_item_transactions
 
 router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
-
-
-def _plaid_base_url() -> str:
-    environment = settings.plaid_env.lower()
-    if environment == "production":
-        return "https://production.plaid.com"
-    if environment == "development":
-        return "https://development.plaid.com"
-    return "https://sandbox.plaid.com"
-
-
-async def _plaid_post(path: str, payload: dict) -> dict:
-    payload.update(
-        {
-            "client_id": settings.plaid_client_id,
-            "secret": settings.plaid_secret,
-        }
-    )
-    async with httpx.AsyncClient(base_url=_plaid_base_url(), timeout=30) as client:
-        response = await client.post(path, json=payload)
-    if response.is_error:
-        raise HTTPException(status_code=502, detail=response.json())
-    return response.json()
 
 
 def _group_accounts(accounts: list[Account]) -> dict[str, list[Account]]:
@@ -145,15 +124,15 @@ async def get_assets_tab(
 
 @router.post("/accounts/create-link")
 async def create_link_token(user_id: str = Depends(auth_user)):
-    data = await _plaid_post(
+    data = await plaid_post(
         "/link/token/create",
         {
             "client_name": settings.app_name,
             "language": "en",
             "country_codes": ["US"],
             "user": {"client_user_id": user_id},
-            "products": ["auth"],
-            "optional_products": ["transactions", "investments", "liabilities"],
+            "products": ["auth", "transactions"],
+            "optional_products": ["investments", "liabilities"],
             "webhook": str(settings.plaid_webhook_handler_url),
         },
     )
@@ -170,11 +149,11 @@ async def exchange_public_token(
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    exchange = await _plaid_post(
+    exchange = await plaid_post(
         "/item/public_token/exchange", {"public_token": payload.public_token}
     )
     access_token = exchange["access_token"]
-    account_data = await _plaid_post("/accounts/get", {"access_token": access_token})
+    account_data = await plaid_post("/accounts/get", {"access_token": access_token})
     item_data = account_data["item"]
 
     item = PlaidItem(
@@ -193,7 +172,12 @@ async def exchange_public_token(
             subtype = plaid_account.get("subtype") or "other"
             if subtype not in AccountSubType._value2member_map_:
                 subtype = "other"
+            existing_account = await Account.fetch_by_plaid_account_id(
+                item.id, plaid_account["account_id"], db
+            )
+            account_kwargs = {"id": existing_account.id} if existing_account else {}
             account = Account(
+                **account_kwargs,
                 name=plaid_account["name"],
                 type=account_type,
                 sub_type=subtype,
@@ -201,9 +185,18 @@ async def exchange_public_token(
                 institution_name=item_data.get("institution_name", ""),
                 last4=plaid_account.get("mask") or "",
                 plaid_item_id=item.id,
+                plaid_account_id=plaid_account["account_id"],
                 last_sync=datetime.utcnow(),
             )
             await account.save(db)
+    try:
+        await sync_item_transactions(item.item_id, db)
+    except HTTPException as error:
+        # Plaid may still be preparing initial transaction data immediately after Link.
+        logger.warning(
+            "Initial Plaid transaction sync skipped for item {}: {}", item.item_id, error
+        )
+        pass
     return Response(status_code=201)
 
 

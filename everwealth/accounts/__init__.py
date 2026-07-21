@@ -1,1 +1,1 @@
-from .models import Account, Asset
+from .models import Account, Asset, PlaidItem

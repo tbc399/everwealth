@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 import stripe
@@ -9,6 +10,7 @@ from loguru import logger
 from pydantic import EmailStr
 
 from everwealth.auth.models import otp, sessions, users
+from everwealth.auth.tokens import create_auth_token
 from everwealth.db import get_connection
 from everwealth.lucy_config import lucy
 
@@ -17,6 +19,10 @@ from .events import UserCreated
 router = APIRouter()
 
 templates = Jinja2Templates(directory="everwealth/templates")
+
+
+def _session_cookie_max_age(session: sessions.Session) -> int:
+    return max(0, int((session.expiry - datetime.utcnow()).total_seconds()))
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -109,12 +115,20 @@ async def submit_otp_validation(
         # TODO: should this be an event handler to let the response come back timely?
         await stripe.Customer.create_async(name="", email=user.email)
 
-    _ = await sessions.create(user.id, otpass.id, db)
-
-    return templates.TemplateResponse(
+    session = await sessions.create(user.id, otpass.id, db)
+    response = templates.TemplateResponse(
         request=request,
         name="auth/login-success.html",
     )
+    response.set_cookie(
+        key="session",
+        value=create_auth_token(user.id, session.id, session.expiry),
+        httponly=True,
+        samesite="lax",
+        max_age=_session_cookie_max_age(session),
+    )
+
+    return response
 
 
 @router.get("/login/{otp_id}", response_class=HTMLResponse)
@@ -151,17 +165,23 @@ async def check_login_status(
     if session:
         logger.info(f"Found session {session}")
         response = Response(status_code=200, headers={"HX-Redirect": "/dashboard"})
-        response.set_cookie(key="session", value=session.id)
+        response.set_cookie(
+            key="session",
+            value=create_auth_token(session.user_id, session.id, session.expiry),
+            httponly=True,
+            samesite="lax",
+            max_age=_session_cookie_max_age(session),
+        )
         return response
 
     return Response(status_code=401)
 
 
 @router.post("/logout", response_class=HTMLResponse)
-async def submit_logout(request: Request, conn: Connection = Depends(get_connection)):
-    # Need to invalidate session and notify the browser to invalidate its session cookie
-    sessions.invalidate("", conn)
-    return
+async def submit_logout(request: Request):
+    response = RedirectResponse(url="/login", status_code=303)
+    response.delete_cookie(key="session")
+    return response
 
 
 @router.get("/sorry", response_class=HTMLResponse)

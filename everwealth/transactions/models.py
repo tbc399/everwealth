@@ -27,6 +27,7 @@ class TransactionRule(BaseModel):
 class Transaction(BaseModel):
     id: str = Field(default_factory=uuid)
     source_hash: Optional[int] = None
+    plaid_transaction_id: Optional[str] = None
     user_id: str
     account_id: Optional[str] = None
     orig_description: Optional[str] = None
@@ -59,11 +60,12 @@ class Transaction(BaseModel):
         await db.execute(
             """
             INSERT INTO transactions (
-                id, source_hash, user_id, account_id, orig_description, description,
+                id, source_hash, plaid_transaction_id, user_id, account_id,
+                orig_description, description,
                 orig_amount, amount, category_id, orig_date, date, notes, hidden,
                 created_at, updated_at
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
             )
             ON CONFLICT (id) DO UPDATE SET
                 description = EXCLUDED.description,
@@ -76,6 +78,7 @@ class Transaction(BaseModel):
             """,
             self.id,
             self.source_hash,
+            self.plaid_transaction_id,
             self.user_id,
             self.account_id,
             self.orig_description,
@@ -105,6 +108,78 @@ class Transaction(BaseModel):
                     await transaction.save(db)
 
     @staticmethod
+    async def upsert_plaid_many(transactions: list["Transaction"], db: Connection) -> None:
+        async with db.transaction():
+            for transaction in transactions:
+                transaction.prepare_originals()
+                await db.execute(
+                    """
+                    INSERT INTO transactions (
+                        id, source_hash, plaid_transaction_id, user_id, account_id,
+                        orig_description, description, orig_amount, amount, category_id,
+                        orig_date, date, notes, hidden, created_at, updated_at
+                    ) VALUES (
+                        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+                    )
+                    ON CONFLICT (plaid_transaction_id) WHERE plaid_transaction_id IS NOT NULL
+                    DO UPDATE SET
+                        source_hash = EXCLUDED.source_hash,
+                        account_id = EXCLUDED.account_id,
+                        orig_description = EXCLUDED.orig_description,
+                        orig_amount = EXCLUDED.orig_amount,
+                        orig_date = EXCLUDED.orig_date,
+                        description = CASE
+                            WHEN transactions.description = transactions.orig_description
+                            THEN EXCLUDED.description
+                            ELSE transactions.description
+                        END,
+                        amount = CASE
+                            WHEN transactions.amount = transactions.orig_amount
+                            THEN EXCLUDED.amount
+                            ELSE transactions.amount
+                        END,
+                        date = CASE
+                            WHEN transactions.date = transactions.orig_date
+                            THEN EXCLUDED.date
+                            ELSE transactions.date
+                        END,
+                        updated_at = EXCLUDED.updated_at
+                    WHERE transactions.user_id = EXCLUDED.user_id
+                    """,
+                    transaction.id,
+                    transaction.source_hash,
+                    transaction.plaid_transaction_id,
+                    transaction.user_id,
+                    transaction.account_id,
+                    transaction.orig_description,
+                    transaction.description,
+                    transaction.orig_amount,
+                    transaction.amount,
+                    transaction.category_id,
+                    transaction.orig_date,
+                    transaction.date,
+                    transaction.notes,
+                    transaction.hidden,
+                    transaction.created_at,
+                    datetime.utcnow(),
+                )
+
+    @staticmethod
+    async def delete_plaid_transactions(
+        user_id: str, plaid_transaction_ids: list[str], db: Connection
+    ) -> None:
+        if not plaid_transaction_ids:
+            return
+        await db.execute(
+            """
+            DELETE FROM transactions
+            WHERE user_id = $1 AND plaid_transaction_id = ANY($2::text[])
+            """,
+            user_id,
+            plaid_transaction_ids,
+        )
+
+    @staticmethod
     async def fetch(transaction_id: str, user_id: str, db: Connection) -> Optional["Transaction"]:
         record = await db.fetchrow(
             """
@@ -119,7 +194,11 @@ class Transaction(BaseModel):
 
     @staticmethod
     async def fetch_many(
-        user_id: str, db: Connection, account_id: Optional[str] = None
+        user_id: str,
+        db: Connection,
+        account_id: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: int = 0,
     ) -> list["Transaction"]:
         records = await db.fetch(
             """
@@ -128,11 +207,27 @@ class Transaction(BaseModel):
             WHERE t.user_id = $1 AND ($2::varchar IS NULL OR t.account_id = $2)
               AND COALESCE(t.hidden, FALSE) = FALSE
             ORDER BY t.date DESC, t.created_at DESC
+            LIMIT COALESCE($3::integer, 2147483647) OFFSET $4
+            """,
+            user_id,
+            account_id,
+            limit,
+            offset,
+        )
+        return [Transaction.model_validate(dict(record)) for record in records]
+
+    @staticmethod
+    async def count_many(user_id: str, db: Connection, account_id: Optional[str] = None) -> int:
+        return await db.fetchval(
+            """
+            SELECT COUNT(*)
+            FROM transactions t
+            WHERE t.user_id = $1 AND ($2::varchar IS NULL OR t.account_id = $2)
+              AND COALESCE(t.hidden, FALSE) = FALSE
             """,
             user_id,
             account_id,
         )
-        return [Transaction.model_validate(dict(record)) for record in records]
 
     @staticmethod
     async def fetch_for_category_in_range(

@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import logging
+import time
 from contextlib import asynccontextmanager
 
 import asyncpg
@@ -110,6 +111,41 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    started_at = time.perf_counter()
+    method = request.method
+    path = request.url.path
+    query = f"?{request.url.query}" if request.url.query else ""
+    client = request.client.host if request.client else "-"
+
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed_ms = (time.perf_counter() - started_at) * 1000
+        logger.exception(
+            "HTTP {} {}{} from {} failed after {:.2f}ms",
+            method,
+            path,
+            query,
+            client,
+            elapsed_ms,
+        )
+        raise
+
+    elapsed_ms = (time.perf_counter() - started_at) * 1000
+    logger.info(
+        "HTTP {} {}{} from {} -> {} {:.2f}ms",
+        method,
+        path,
+        query,
+        client,
+        response.status_code,
+        elapsed_ms,
+    )
+    return response
 
 
 @app.exception_handler(StartletteHTTPException)

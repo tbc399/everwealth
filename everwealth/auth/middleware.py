@@ -1,31 +1,34 @@
-from fastapi import Cookie
 from fastapi.exceptions import HTTPException
 from loguru import logger
-from starlette.authentication import AuthCredentials
+from starlette.authentication import AuthCredentials, BaseUser
 from starlette.middleware.authentication import AuthenticationBackend
 from starlette.requests import HTTPConnection
 
-from everwealth.auth import User, sessions, users
+from everwealth.auth.tokens import AuthTokenError, decode_auth_token
+
+
+class TokenUser(BaseUser):
+    def __init__(self, user_id: str):
+        self.id = user_id
+
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
+    def display_name(self) -> str:
+        return self.id
 
 
 class SessionBackend(AuthenticationBackend):
     async def authenticate(self, conn: HTTPConnection):
         if "session" not in conn.cookies:
-            logger.info()
             return
 
-        from everwealth.db import pool
+        try:
+            claims = decode_auth_token(conn.cookies["session"])
+        except AuthTokenError as error:
+            logger.info("Invalid auth token: {}", error)
+            raise HTTPException(status_code=401)
 
-        async with pool.acquire() as db:
-            # TODO: should user and session be wrapped into one to save on db access? Maybe through signed sessions?
-            session_id = conn.cookies["session"]
-            session: sessions.Session = await sessions.fetch(session_id, db)
-            # TODO: bypass for now
-            # if not session or session.is_expired():
-            #    logger.info(f"Session {session_id} does not exist or is no longer valid")
-            #    raise HTTPException(status_code=401)
-
-            user = await users.fetch(session.user_id, db)
-            logger.debug(f"User {user.id} found")
-
-        return AuthCredentials(["authenticated"]), user
+        return AuthCredentials(["authenticated"]), TokenUser(claims.user_id)

@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str
+    auth_token_secret: str | None = None
     plaid_client_id: str
     plaid_secret: str
     plaid_env: str = "sandbox"

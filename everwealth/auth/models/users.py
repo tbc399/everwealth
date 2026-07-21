@@ -2,15 +2,13 @@ from datetime import datetime
 from typing import Annotated, Optional
 
 from asyncpg import Connection
-from fastapi import Cookie, Depends, HTTPException, Request
+from fastapi import Cookie, HTTPException, Request
 from loguru import logger
 from pydantic import BaseModel, EmailStr, Field
 from shortuuid import uuid
 from starlette.authentication import BaseUser
 
-from everwealth.db import get_connection
-
-from . import sessions
+from everwealth.auth.tokens import AuthTokenError, decode_auth_token
 
 
 class User(BaseModel, BaseUser):
@@ -60,23 +58,18 @@ class User(BaseModel, BaseUser):
 # maybe split this out to its own file?
 async def auth_user(
     request: Request,
-    browser_session: Annotated[str | None, Cookie(alias="session")],
-    db: Connection = Depends(get_connection),
+    browser_session: Annotated[str | None, Cookie(alias="session")] = None,
 ):
     if browser_session is None:
         logger.info("No session found")
         raise HTTPException(status_code=401)
 
-    # TODO: cache sessions here to save time
-    session: sessions.Session = await sessions.fetch(browser_session, db)
-
-    if session is None:
+    try:
+        claims = decode_auth_token(browser_session)
+    except AuthTokenError as error:
+        logger.info("Invalid auth token: {}", error)
         raise HTTPException(status_code=401)
 
-    if session.is_expired():
-        logger.info(f"Session {session.id} is no longer valid")
-        raise HTTPException(status_code=401)
+    logger.debug("Auth token for user {} is good", claims.user_id)
 
-    logger.debug(f"Session {session.id} is good")
-
-    return session.user_id
+    return claims.user_id

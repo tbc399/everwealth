@@ -1,4 +1,5 @@
 import csv
+import math
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -7,7 +8,7 @@ from typing import Annotated, Optional
 
 from asyncpg import Connection
 from dateutil import parser
-from fastapi import APIRouter, Depends, Form, HTTPException, Path, Request, UploadFile
+from fastapi import APIRouter, Depends, Form, HTTPException, Path, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
@@ -19,6 +20,7 @@ from everwealth.transactions import Transaction, TransactionRule
 
 router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
+TRANSACTIONS_PAGE_SIZE = 50
 
 
 def _group_by_date(transactions: list[Transaction]) -> list[tuple]:
@@ -29,14 +31,31 @@ def _group_by_date(transactions: list[Transaction]) -> list[tuple]:
 
 
 async def _transaction_context(
-    user_id: str, db: Connection, account_id: Optional[str] = None
+    user_id: str, db: Connection, account_id: Optional[str] = None, page: int = 1
 ) -> dict:
-    transactions = await Transaction.fetch_many(user_id, db, account_id)
+    total_transactions = await Transaction.count_many(user_id, db, account_id)
+    total_pages = max(1, math.ceil(total_transactions / TRANSACTIONS_PAGE_SIZE))
+    current_page = min(max(page, 1), total_pages)
+    offset = (current_page - 1) * TRANSACTIONS_PAGE_SIZE
+    transactions = await Transaction.fetch_many(
+        user_id, db, account_id, limit=TRANSACTIONS_PAGE_SIZE, offset=offset
+    )
+    visible_start = offset + 1 if total_transactions else 0
+    visible_end = offset + len(transactions)
+    page_start = max(1, current_page - 2)
+    page_end = min(total_pages, current_page + 2)
     return {
         "transactions": transactions,
         "transaction_groups": _group_by_date(transactions),
         "accounts": await Account.fetch_all(user_id, db),
         "selected_account": account_id,
+        "current_page": current_page,
+        "total_pages": total_pages,
+        "total_transactions": total_transactions,
+        "page_size": TRANSACTIONS_PAGE_SIZE,
+        "visible_start": visible_start,
+        "visible_end": visible_end,
+        "pagination_pages": range(page_start, page_end + 1),
     }
 
 
@@ -44,10 +63,11 @@ async def _transaction_context(
 async def get_transactions(
     request: Request,
     account: Optional[str] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    context = await _transaction_context(user_id, db, account)
+    context = await _transaction_context(user_id, db, account, page)
     context.update(
         {
             "request": request,
@@ -64,10 +84,11 @@ async def get_transactions(
 async def get_transactions_partial(
     request: Request,
     account: Optional[str] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    context = await _transaction_context(user_id, db, account)
+    context = await _transaction_context(user_id, db, account, page)
     context.update(
         {"request": request, "tab": "transactions", "partial": "transactions/transactions-tab.html"}
     )
@@ -78,10 +99,11 @@ async def get_transactions_partial(
 async def get_transactions_tab(
     request: Request,
     account: Optional[str] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    context = await _transaction_context(user_id, db, account)
+    context = await _transaction_context(user_id, db, account, page)
     context["request"] = request
     return templates.TemplateResponse("transactions/transactions-tab.html", context)
 

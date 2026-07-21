@@ -41,12 +41,18 @@ CREATE TABLE IF NOT EXISTS plaid_items (
     access_token TEXT NOT NULL,
     institution_id VARCHAR(128),
     item_id VARCHAR(128) UNIQUE NOT NULL,
+    transactions_cursor TEXT,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );
+ALTER TABLE plaid_items ADD COLUMN IF NOT EXISTS transactions_cursor TEXT;
 
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS plaid_item_id VARCHAR(22) REFERENCES plaid_items(id);
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS plaid_account_id VARCHAR(128);
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS last_sync TIMESTAMP;
+CREATE UNIQUE INDEX IF NOT EXISTS accounts_plaid_account_id_unique
+    ON accounts(plaid_item_id, plaid_account_id)
+    WHERE plaid_account_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS assets (
     id VARCHAR(22) PRIMARY KEY,
@@ -62,8 +68,12 @@ CREATE INDEX IF NOT EXISTS assets_user_id_index ON assets(user_id);
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS orig_description VARCHAR(128);
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS orig_amount INTEGER;
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS orig_date DATE;
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS plaid_transaction_id VARCHAR(128);
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS created_at TIMESTAMP;
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
+CREATE UNIQUE INDEX IF NOT EXISTS transactions_plaid_transaction_id_unique
+    ON transactions(plaid_transaction_id)
+    WHERE plaid_transaction_id IS NOT NULL;
 
 UPDATE transactions SET orig_description = description WHERE orig_description IS NULL;
 UPDATE transactions SET orig_amount = ROUND(amount * 100)::INTEGER WHERE orig_amount IS NULL;

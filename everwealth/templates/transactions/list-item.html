@@ -1,7 +1,4 @@
 <div hx-get="/transactions/{{ transaction.id }}/edit" hx-target="#transaction-detail" hx-swap="outerHTML" id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
-  <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-500">
-    {{ transaction.date.strftime("%b %d, %Y") }}
-  </div>
   <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-medium text-slate-800 dark:text-slate-300">
     {{ transaction.description }}
   </div>
@@ -26,12 +23,5 @@
         ${{ transaction.display_amount }}
       {% endif %}
     </span>
-  </div>
-  <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm text-slate-800 dark:text-slate-300">
-  </div>
-  <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-bold text-teal-700 dark:text-teal-700">
-    <button hx-target="#tran_{{ transaction.id }}" hx-swap="beforeend" hx-get="/transactions/{{ transaction.id }}/edit" class="dark:hover:text-teal-800">
-      Edit
-    </button>
   </div>
 </div>
