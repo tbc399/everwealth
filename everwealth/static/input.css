@@ -18,3 +18,323 @@
   @apply text-gray-300 bg-gray-800
 }
 
+/* Everwealth application shell */
+.ew-body {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: #0f1726;
+  color: #e5e7eb;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.ew-shell {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  width: min(1400px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
+.ew-sidebar {
+  min-height: 100vh;
+  padding: 68px 12px 24px 0;
+  border-right: 1px solid #202b3d;
+}
+
+.ew-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ew-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.ew-nav-item:hover {
+  background: rgb(30 41 59 / 45%);
+}
+
+.ew-nav-item.is-active {
+  background: #202d42;
+  color: #f8fafc;
+}
+
+.ew-nav-item svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ew-app {
+  min-width: 0;
+}
+
+.ew-page {
+  width: min(800px, calc(100% - 64px));
+  min-height: 100vh;
+  margin-left: 128px;
+  padding: 42px 0 80px;
+}
+
+.ew-page-header {
+  margin-bottom: 38px;
+}
+
+.ew-page-header h1 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.ew-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 31px;
+  padding: 8px;
+  border: 1px solid #263247;
+  border-radius: 12px;
+  background: rgb(30 41 59 / 48%);
+}
+
+.ew-overview-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 96px;
+  padding: 13px 12px 12px;
+  border-radius: 8px;
+  background: #101a2b;
+}
+
+.ew-card-heading,
+.ew-card-values {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ew-card-heading {
+  color: #f1f5f9;
+  font-size: 14px;
+}
+
+.ew-card-heading button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.ew-card-values {
+  margin-bottom: 7px;
+  color: #d1d5db;
+  font-size: 14px;
+}
+
+.ew-card-values i {
+  margin-right: 2px;
+  color: #0f9488;
+  font-style: normal;
+}
+
+.ew-card-values span:last-child i {
+  color: #64748b;
+}
+
+.ew-progress,
+.ew-budget-progress {
+  display: block;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #202d42;
+}
+
+.ew-progress {
+  height: 8px;
+}
+
+.ew-progress span,
+.ew-budget-progress i {
+  display: block;
+  height: 100%;
+}
+
+.ew-progress .income,
+.ew-budget-progress i {
+  background: #45d3a7;
+}
+
+.ew-progress .spending {
+  background: #fbbf24;
+}
+
+.ew-overview-placeholder {
+  padding: 0;
+}
+
+.ew-budget-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #202b3d;
+}
+
+.ew-primary-button,
+.ew-text-button {
+  border: 0;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.ew-primary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: 6px;
+  background: #0d9f98;
+  color: white;
+}
+
+.ew-primary-button:hover {
+  background: #0f8f89;
+}
+
+.ew-primary-button span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.ew-text-button {
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: transparent;
+  color: #9ca3af;
+}
+
+.ew-text-button:hover {
+  background: rgb(30 41 59 / 35%);
+  color: #e5e7eb;
+}
+
+.ew-budget-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ew-budget-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(180px, 1fr) 110px 110px;
+  align-items: center;
+  width: 100%;
+  padding: 13px 5px;
+  border: 0;
+  border-bottom: 1px solid rgb(38 50 71 / 55%);
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  text-align: left;
+}
+
+.ew-budget-row:hover {
+  background: rgb(30 41 59 / 25%);
+}
+
+.ew-budget-name {
+  color: #e5e7eb;
+}
+
+.ew-budget-progress {
+  height: 6px;
+  margin: 0 22px;
+}
+
+.ew-budget-progress i.over {
+  background: #ef4444;
+}
+
+.ew-budget-spent,
+.ew-budget-amount {
+  text-align: right;
+}
+
+.ew-budget-spent b {
+  color: #0f9488;
+}
+
+.ew-budget-row b {
+  margin-right: 2px;
+  font-weight: 400;
+}
+
+.ew-empty-state {
+  padding: 24px 4px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .ew-shell {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .ew-sidebar {
+    padding-right: 8px;
+  }
+
+  .ew-nav-item span {
+    display: none;
+  }
+
+  .ew-nav-item {
+    justify-content: center;
+  }
+
+  .ew-page {
+    width: calc(100% - 40px);
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 680px) {
+  .ew-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .ew-overview-placeholder {
+    display: none;
+  }
+
+  .ew-budget-row {
+    grid-template-columns: 1fr 100px;
+  }
+
+  .ew-budget-progress,
+  .ew-budget-spent {
+    display: none;
+  }
+}

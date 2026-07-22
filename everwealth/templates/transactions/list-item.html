@@ -1,27 +1,29 @@
-<div hx-get="/transactions/{{ transaction.id }}/edit" hx-target="#transaction-detail" hx-swap="outerHTML" id="tran_{{ transaction.id }}" class="table-row dark:hover:bg-slate-900/20 dark:active:bg-slate-800/20">
-  <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-medium text-slate-800 dark:text-slate-300">
-    {{ transaction.description }}
+<div 
+    hx-get="/transactions/{{ transaction.id }}/edit"
+    hx-push-url="/transactions/{{ transaction.id }}"
+    hx-swap="none"
+    id="tran_{{ transaction.id }}"
+    class="flex flex-wrap items-start gap-x-4 gap-y-1 px-4 py-3 cursor-pointer md:table-row md:p-0 hover:bg-slate-900/35 active:bg-slate-800/30">
+  <div class="w-full text-xs font-semibold text-slate-500 sm:w-auto md:table-cell md:w-32 md:px-4 md:py-3 md:align-middle md:whitespace-nowrap">
+    {{ transaction.date.strftime("%b %d, %Y") }}
   </div>
-  <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-semibold text-slate-800 dark:text-slate-300">
+  <div class="min-w-0 flex-1 basis-56 md:table-cell md:px-4 md:py-3 md:align-middle">
+    <div class="truncate text-sm font-semibold text-slate-100">
+      {{ transaction.description }}
+    </div>
+  </div>
+  <div class="basis-auto text-sm text-slate-400 md:table-cell md:w-40 md:px-4 md:py-3 md:align-middle md:truncate">
     {% if transaction.category_name %}
       {{ transaction.category_name }}
     {% else %}
       Uncategorized
     {% endif %}
   </div>
-  <div class="table-cell px-6 py-2.5 whitespace-nowrap text-sm font-semibold
+  <div class="ml-auto text-sm font-semibold tabular-nums md:table-cell md:w-28 md:px-4 md:py-3 md:text-right md:align-middle {% if transaction.amount > 0 %}text-teal-400{% else %}text-slate-200{% endif %}">
     {% if transaction.amount > 0 %}
-      dark:text-emerald-500
+      +${{ transaction.display_amount }}
     {% else %}
-      dark:text-slate-500
+      ${{ transaction.display_amount }}
     {% endif %}
-    ">
-    <span class="w-full flex justify-end">
-      {% if transaction.amount > 0 %}
-        +${{ transaction.display_amount }}
-      {% else %}
-        ${{ transaction.display_amount }}
-      {% endif %}
-    </span>
   </div>
 </div>

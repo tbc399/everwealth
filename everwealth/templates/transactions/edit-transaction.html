@@ -1,5 +1,9 @@
-<div hx-swap-oob="outerHTML:#transaction-detail" id="transaction-detail" id="transaction-detail" class="flex flex-col border border-slate-900 rounded-md bg-slate-900/25 gap-y-5 w-full min-h-32 p-4">
-  <form hx-put="/transactions/{{ transaction.id }}" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML">
+<div hx-swap-oob="outerHTML:#transaction-detail" id="transaction-detail" class="flex flex-col border border-slate-900 rounded-md bg-slate-900/25 gap-y-5 w-full min-h-32 p-4">
+  <form
+        hx-put="/transactions/{{ transaction.id }}"
+        hx-include="closest form"
+        hx-target="#tran_{{ transaction.id }}"
+        hx-swap="outerHTML">
     <div class="flex flex-row justify-between text-slate-200 text-sm font-bold mb-4">
       <span>Edit Transaction</span>
       <svg viewBox="0 0 24 24" class="size-4 stroke-slate-500 stroke-[2.5px] fill-current">
@@ -43,7 +47,9 @@
       >{{ transaction.notes }}</textarea>
     </div>
     <div class="flex justify-end mt-4">
-      <button type="submit" class="rounded-md bg-teal-800 hover:bg-teal-700 active:bg-teal-800 active:text-slate-200 py-1.5 px-2.5 text-xs font-semibold text-slate-200 hover:text-slate-100">Update</button>
+      <button
+        type="button"
+        class="rounded-md bg-teal-800 hover:bg-teal-700 active:bg-teal-800 active:text-slate-200 py-1.5 px-2.5 text-xs font-semibold text-slate-200 hover:text-slate-100">Update</button>
     </div>
   </form>
 </div>

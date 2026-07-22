@@ -15,7 +15,10 @@
     aria-hidden="false" 
     tabindex="-1">
 
-    <form hx-put="/transactions/{{ transaction.id }}/edit" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML">
+    <form
+              hx-put="/transactions/{{ transaction.id }}"
+              hx-target="#tran_{{ transaction.id }}"
+            hx-swap="outerHTML">
       <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center justify-center">
         <div class="flex flex-col w-2/5 h-full py-4 px-4 bg-white border-4 shadow-lg rounded-xl pointer-events-auto dark:bg-slate-950 dark:border-slate-900 dark:shadow-slate-950">
           <div class="flex flex-row justify-between mb-4">
@@ -64,7 +67,9 @@
             </div>
           </div>
           <div class="flex justify-end mt-4">
-            <button type="submit" class="text-sm text-slate-200 py-2 px-2.5 rounded-md bg-teal-700 hover:bg-teal-600">
+            <button
+              type="button"
+              class="text-sm text-slate-200 py-2 px-2.5 rounded-md bg-teal-700 hover:bg-teal-600">
               Update
             </button>
           </div>
