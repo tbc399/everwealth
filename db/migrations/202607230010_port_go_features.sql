@@ -1,5 +1,4 @@
-BEGIN;
-
+-- migrate:up
 CREATE TABLE IF NOT EXISTS budget_periods (
     id VARCHAR(22) PRIMARY KEY,
     user_id VARCHAR(22) REFERENCES users(id),
@@ -102,4 +101,21 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP NOT NULL
 );
 
-COMMIT;
+-- migrate:down
+DROP TABLE IF EXISTS profiles;
+DROP INDEX IF EXISTS transactions_plaid_transaction_id_unique;
+ALTER TABLE transactions DROP COLUMN IF EXISTS updated_at;
+ALTER TABLE transactions DROP COLUMN IF EXISTS created_at;
+ALTER TABLE transactions DROP COLUMN IF EXISTS plaid_transaction_id;
+ALTER TABLE transactions DROP COLUMN IF EXISTS orig_date;
+ALTER TABLE transactions DROP COLUMN IF EXISTS orig_amount;
+ALTER TABLE transactions DROP COLUMN IF EXISTS orig_description;
+DROP INDEX IF EXISTS assets_user_id_index;
+ALTER TABLE accounts DROP COLUMN IF EXISTS last_sync;
+ALTER TABLE accounts DROP COLUMN IF EXISTS plaid_account_id;
+ALTER TABLE accounts DROP COLUMN IF EXISTS plaid_item_id;
+DROP INDEX IF EXISTS accounts_plaid_account_id_unique;
+DROP TABLE IF EXISTS plaid_items;
+ALTER TABLE budgets DROP COLUMN IF EXISTS period_id;
+DROP INDEX IF EXISTS budget_periods_user_id_index;
+DROP TABLE IF EXISTS budget_periods;

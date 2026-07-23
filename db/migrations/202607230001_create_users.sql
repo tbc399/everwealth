@@ -1,4 +1,5 @@
-CREATE TABLE users(
+-- migrate:up
+CREATE TABLE users (
     id VARCHAR(22) PRIMARY KEY,
     first VARCHAR(64),
     last VARCHAR(64),
@@ -10,3 +11,8 @@ CREATE TABLE users(
 
 CREATE INDEX users_id_index ON users(id);
 CREATE INDEX users_email_index ON users(email);
+
+-- migrate:down
+DROP INDEX IF EXISTS users_email_index;
+DROP INDEX IF EXISTS users_id_index;
+DROP TABLE IF EXISTS users;

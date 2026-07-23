@@ -1,4 +1,5 @@
-CREATE TABLE transaction_refreshes(
+-- migrate:up
+CREATE TABLE transaction_refreshes (
     id VARCHAR(22) PRIMARY KEY,
     user_id VARCHAR(22) REFERENCES users(id),
     account_id VARCHAR(22) REFERENCES accounts(id),
@@ -9,3 +10,7 @@ CREATE TABLE transaction_refreshes(
 );
 
 CREATE INDEX transaction_refreshes_id_index ON transaction_refreshes(id);
+
+-- migrate:down
+DROP INDEX IF EXISTS transaction_refreshes_id_index;
+DROP TABLE IF EXISTS transaction_refreshes;

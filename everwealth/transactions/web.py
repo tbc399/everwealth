@@ -8,7 +8,16 @@ from typing import Annotated, Optional
 
 from asyncpg import Connection
 from dateutil import parser
-from fastapi import APIRouter, Depends, Form, HTTPException, Path, Query, Request, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    Form,
+    HTTPException,
+    Path,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 

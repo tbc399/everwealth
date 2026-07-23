@@ -26,9 +26,8 @@ from everwealth.accounts.web import router as accounts_router
 
 # from everwealth.auth.middleware import SessionBackend
 from everwealth.auth.web import router as login_router
-
-from everwealth.budgets.web import router as budget_router
 from everwealth.budgets.rollover import run_rollover_scheduler
+from everwealth.budgets.web import router as budget_router
 from everwealth.config import settings
 from everwealth.lucy_config import lucy
 from everwealth.transactions.hooks import router as transactions_hooks_router

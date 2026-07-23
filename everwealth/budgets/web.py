@@ -7,7 +7,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from everwealth.auth import auth_user
-from everwealth.budgets import Budget, BudgetOverview, BudgetPeriod, BudgetView, Category
+from everwealth.budgets import (
+    Budget,
+    BudgetOverview,
+    BudgetPeriod,
+    BudgetView,
+    Category,
+)
 from everwealth.db import get_connection
 from everwealth.transactions import Transaction
 
