@@ -1,0 +1,10 @@
+{% for group in category_groups %}
+<option value="{{ group.parent.id }}" {% if selected_category_id == group.parent.id %}selected{% endif %}>
+  {{ group.parent.name }}
+</option>
+{% for category in group.children %}
+<option value="{{ category.id }}" {% if selected_category_id == category.id %}selected{% endif %}>
+  &nbsp;&nbsp;{{ category.name }}
+</option>
+{% endfor %}
+{% endfor %}

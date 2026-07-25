@@ -32,9 +32,8 @@
               </div>
               <div class="flex items-end">
                 <select id="create-budget-category" name="category" class="w-52 border border-slate-800 rounded bg-slate-900/20 placeholder-slate-600 py-0.5 px-2 text-xs text-slate-400">
-                  {% for category in categories %}
-                  <option id="cat_{{ category.id }}" value="{{ category.id }}">{{ category.name }}</option>
-                  {% endfor %}
+                  {% set selected_category_id = none %}
+                  {% include "budgets/category-options.html" %}
                 </select>
               </div>
             </div>

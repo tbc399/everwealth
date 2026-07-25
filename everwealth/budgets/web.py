@@ -63,7 +63,7 @@ async def get_budget_create(
 ):
     return templates.TemplateResponse(
         "budgets/create-modal.html",
-        {"request": request, "categories": await Category.fetch_many(user_id, db)},
+        {"request": request, "category_groups": await Category.fetch_grouped(user_id, db)},
     )
 
 
@@ -151,7 +151,7 @@ async def get_categories(
         {
             "request": request,
             "active_tab": "categories",
-            "categories": await Category.fetch_many(user_id, db),
+            "category_groups": await Category.fetch_grouped(user_id, db),
             "title": "Categories",
             "menu_selection": "budgets",
             "partial_endpoint": "/categories/partial",
@@ -168,7 +168,7 @@ async def categories_partial(
         {
             "request": request,
             "active_tab": "categories",
-            "categories": await Category.fetch_many(user_id, db),
+            "category_groups": await Category.fetch_grouped(user_id, db),
         },
     )
 

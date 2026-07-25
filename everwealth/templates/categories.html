@@ -11,12 +11,24 @@
       </button>
     </form>
   </div>
-  <div>
-    <ul class="dark:text-slate-400">
-      {% for category in categories %}
-      <li>{{ category.name }}</li>
-      {% endfor %}
-    </ul>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    {% for group in category_groups %}
+    <section class="border border-slate-800 rounded-md bg-slate-950/40 p-3">
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm font-semibold text-slate-300">{{ group.parent.name }}</span>
+        <span class="text-xs uppercase text-slate-600">{{ group.parent.type }}</span>
+      </div>
+      {% if group.children %}
+      <ul class="mt-2 flex flex-wrap gap-2">
+        {% for category in group.children %}
+        <li class="rounded bg-slate-900 px-2 py-1 text-xs text-slate-400">{{ category.name }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+    {% else %}
+    <div class="text-sm text-slate-500">No categories yet.</div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

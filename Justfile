@@ -24,6 +24,9 @@ migrate-status:
 migration name:
     @{{ dbmate_cmd }} --url "{{ dbmate_url }}" --migrations-dir db/migrations new "{{ name }}"
 
+clear-db:
+    @printf 'This will truncate all public tables except schema_migrations. Type "clear" to continue: '; read -r confirm; if [[ "$confirm" != "clear" ]]; then echo "Aborted."; exit 1; fi; python -c $'import asyncio, os\nimport asyncpg\n\nasync def main():\n    conn = await asyncpg.connect(os.environ["DATABASE_URL"])\n    try:\n        tables = await conn.fetch("""\n            SELECT format(\'%I.%I\', schemaname, tablename) AS name\n            FROM pg_tables\n            WHERE schemaname = \'public\'\n              AND tablename <> \'schema_migrations\'\n            ORDER BY tablename\n        """)\n        if not tables:\n            print("No tables to truncate.")\n            return\n        async with conn.transaction():\n            await conn.execute("TRUNCATE TABLE " + ", ".join(row["name"] for row in tables) + " RESTART IDENTITY CASCADE")\n        print(f"Truncated {len(tables)} tables.")\n    finally:\n        await conn.close()\n\nasyncio.run(main())'
+
 plaid-fire-transactions-webhook access_token:
     curl --fail-with-body -sS -X POST https://sandbox.plaid.com/sandbox/item/fire_webhook \
         -H 'Content-Type: application/json' \

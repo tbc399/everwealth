@@ -28,9 +28,8 @@
          placeholder="Transaction description"
          value="{{ transaction.description }}"/>
       <select name="category" class="w-52 border border-slate-800 rounded bg-slate-900 placeholder-slate-600 py-1.5 px-2 text-xs text-slate-400" placeholder="category">
-        {% for category in categories %}
-        <option value="{{ category.id }}" {% if transaction.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
-        {% endfor %}
+        {% set selected_category_id = transaction.category_id %}
+        {% include "budgets/category-options.html" %}
       </select>
     </div>
     <div class="w-full flex gap-x-3 items-center">

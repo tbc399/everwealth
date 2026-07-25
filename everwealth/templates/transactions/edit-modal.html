@@ -53,9 +53,8 @@
               <label for="new-budget-category" class="block mb-1 text-sm text-slate-500">Category</label>
               <div class="relative w-full bg-slate-900/20">
                 <select id="new-budget-category" name="category" class="w-full bg-slate-900/20 border rounded-md text-slate-400 border-slate-800">
-                  {% for category in categories %}
-                  <option id="{{ category.id }}" value="{{ category.id }}" class="bg-slate-900/20">{{ category.name }}</option>
-                  {% endfor %}
+                  {% set selected_category_id = transaction.category_id %}
+                  {% include "budgets/category-options.html" %}
                 </select>
               </div>
             </div>

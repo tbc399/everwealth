@@ -1304,6 +1304,10 @@ select {
   max-width: 36rem;
 }
 
+.max-w-3xl {
+  max-width: 48rem;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1368,6 +1372,10 @@ select {
 
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
 .flex-row {
@@ -1806,6 +1814,10 @@ select {
 .bg-zinc-900 {
   --tw-bg-opacity: 1;
   background-color: rgb(24 24 27 / var(--tw-bg-opacity));
+}
+
+.bg-slate-950\/40 {
+  background-color: rgb(2 6 23 / 0.4);
 }
 
 .bg-opacity-0 {
@@ -3596,6 +3608,10 @@ select {
 
   .md\:border-collapse {
     border-collapse: collapse;
+  }
+
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .md\:truncate {

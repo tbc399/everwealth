@@ -1,8 +1,9 @@
 <!-- Main content window -->
 <section id="main-content" hx-swap-oob="outerHTML:#main-content" class="ew-page">
-    <header class="ew-page-header">
-        <h1>Transactions</h1>
-    </heasqqkjder>
+  <header class="ew-page-header">
+    <h1>Transactions</h1>
+  </header>
+
   <div class="w-full flex flex-row justify-between items-center gap-x-2 border-b border-slate-700/50 px-4 py-2">
     <div id="transactions-tab-group"
       class="text-xs font-semibold" 
@@ -41,9 +42,24 @@
         {% else %}
           tab
         {% endif %}
-        py-1 px-2">
+          py-1 px-2">
         Rules</button>
     </div>
+    <button
+      type="button"
+      title="Upload transactions"
+      hx-get="/transactions/upload"
+      hx-target="body"
+      hx-swap="beforeend"
+      class="py-1 ps-1 pe-1.5 inline-flex items-center gap-x-1 text-xs font-semibold rounded
+      ring-1 ring-slate-800 hover:ring-slate-700 dark:text-slate-600 hover:bg-slate-800/50 disabled:opacity-50
+      disabled:pointer-events-none dark:focus:outline-none">
+      <svg fill="none" viewBox="0 0 24 24" class="size-3.5 fill-none stroke-2 stroke-slate-500">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+      </svg>
+      <span class="dark:text-slate-400">Upload</span>
+    </button>
   </div>
+
   {% include partial %}
-</div>
+</section>

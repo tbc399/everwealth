@@ -113,7 +113,7 @@ async def submit_otp_validation(
         await lucy.publish(UserCreated(user_id=user.id, db=db))
 
         # TODO: should this be an event handler to let the response come back timely?
-        await stripe.Customer.create_async(name="", email=user.email)
+        # await stripe.Customer.create_async(name="", email=user.email)
 
     session = await sessions.create(user.id, otpass.id, db)
     response = templates.TemplateResponse(

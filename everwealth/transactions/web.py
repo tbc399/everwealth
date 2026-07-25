@@ -194,7 +194,7 @@ async def get_transaction_edit(
         {
             "request": request,
             "transaction": transaction,
-            "categories": await Category.fetch_many(user_id, db),
+            "category_groups": await Category.fetch_grouped(user_id, db),
         },
     )
 

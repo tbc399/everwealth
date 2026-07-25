@@ -22,7 +22,7 @@
               <button 
                 type="button" 
                 class="flex items-center disabled:opacity-50 disabled:pointer-events-none"
-                data-hs-overlay="#trnsaction-upload-file-modal"
+                data-hs-overlay="#transaction-upload-file-modal"
                 _="on click trigger closeUploadModal"
                 >
                 <svg class="flex-shrink-0 size-5 dark:text-slate-600 dark:hover:text-slate-500" 
@@ -59,7 +59,7 @@
             </div>
             <div class="px-10">
               <label>
-                <input name="file" type="file" class="block w-full text-sm text-gray-500
+                <input name="file" type="file" required accept=".csv,text/csv" class="block w-full text-sm text-gray-500
                   file:me-4 file:py-2 file:px-4
                   file:rounded-lg file:border-0
                   file:text-sm file:font-semibold
