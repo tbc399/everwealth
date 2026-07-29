@@ -45,7 +45,7 @@ class Transaction(BaseModel):
 
     @property
     def display_amount(self) -> str:
-        return f"{self.amount / 100:,.2f}"
+        return f"{abs(self.amount) / 100:,.2f}"
 
     def prepare_originals(self) -> None:
         self.orig_description = self.orig_description or self.description

@@ -31,3 +31,6 @@ plaid-fire-transactions-webhook access_token:
     curl --fail-with-body -sS -X POST https://sandbox.plaid.com/sandbox/item/fire_webhook \
         -H 'Content-Type: application/json' \
         -d '{"client_id":"{{ env_var("PLAID_CLIENT_ID") }}","secret":"{{ env_var("PLAID_SECRET") }}","access_token":"{{ access_token }}","webhook_type":"TRANSACTIONS","webhook_code":"SYNC_UPDATES_AVAILABLE"}'
+
+tailwatch:
+    npx tailwindcss -i everwealth/static/input.css -o everwealth/static/styles.css --watch

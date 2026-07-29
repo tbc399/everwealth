@@ -18,7 +18,7 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from everwealth.accounts import Account
@@ -57,6 +57,7 @@ async def _transaction_context(
         "transactions": transactions,
         "transaction_groups": _group_by_date(transactions),
         "accounts": await Account.fetch_all(user_id, db),
+        "category_groups": await Category.fetch_grouped(user_id, db),
         "selected_account": account_id,
         "current_page": current_page,
         "total_pages": total_pages,
@@ -128,6 +129,26 @@ async def get_transaction_rules(
     )
 
 
+@router.get("/transactions/{transaction_id}/row", response_class=HTMLResponse)
+async def get_transaction_row(
+    transaction_id: Annotated[str, Path()],
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
+):
+    transaction = await Transaction.fetch(transaction_id, user_id, db)
+    if not transaction:
+        raise HTTPException(status_code=404)
+    return templates.TemplateResponse(
+        "transactions/list-item.html",
+        {
+            "request": request,
+            "transaction": transaction,
+            "category_groups": await Category.fetch_grouped(user_id, db),
+        },
+    )
+
+
 @router.get("/transactions/upload", response_class=HTMLResponse)
 async def get_upload_modal(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
@@ -190,7 +211,7 @@ async def get_transaction_edit(
     if not transaction:
         raise HTTPException(status_code=404)
     return templates.TemplateResponse(
-        "transactions/edit-transaction.html",
+        "transactions/edit-list-item.html",
         {
             "request": request,
             "transaction": transaction,
@@ -202,6 +223,7 @@ async def get_transaction_edit(
 @router.put("/transactions/{transaction_id}")
 async def update_transaction(
     transaction_id: str,
+    request: Request,
     description: Annotated[str, Form()],
     date: Annotated[date, Form()],
     notes: Annotated[Optional[str], Form()] = None,
@@ -221,4 +243,39 @@ async def update_transaction(
     transaction.category_id = category_id
     transaction.hidden = hidden
     await transaction.save(db)
-    return Response(status_code=200, headers={"HX-Redirect": "/transactions"})
+    transaction = await Transaction.fetch(transaction_id, user_id, db)
+    return templates.TemplateResponse(
+        "transactions/list-item.html",
+        {
+            "request": request,
+            "transaction": transaction,
+            "category_groups": await Category.fetch_grouped(user_id, db),
+        },
+    )
+
+
+@router.patch("/transactions/{transaction_id}/category", response_class=HTMLResponse)
+async def update_transaction_category(
+    transaction_id: str,
+    request: Request,
+    category_id: Annotated[Optional[str], Form(alias="category")] = None,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
+):
+    transaction = await Transaction.fetch(transaction_id, user_id, db)
+    if not transaction:
+        raise HTTPException(status_code=404)
+    if category_id and not await Category.fetch(category_id, user_id, db):
+        raise HTTPException(status_code=400, detail="Invalid category")
+
+    transaction.category_id = category_id or None
+    await transaction.save(db)
+    transaction = await Transaction.fetch(transaction_id, user_id, db)
+    return templates.TemplateResponse(
+        "transactions/list-item.html",
+        {
+            "request": request,
+            "transaction": transaction,
+            "category_groups": await Category.fetch_grouped(user_id, db),
+        },
+    )
