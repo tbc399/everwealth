@@ -1,0 +1,49 @@
+<html class="h-full">
+  {% set title = "Register" %}
+  {% include "header.html" %}
+  <body class="bg-zinc-900 flex h-full py-16">
+    <main class="w-full max-w-md mx-auto p-6">
+      <div class="mt-7 rounded-xl shadow-sm bg-transparent">
+        <div class="p-4 sm:p-7">
+          <div class="text-center">
+            <span class="block text-2xl font-bold text-zinc-300">Create account</span>
+            <p class="my-2 text-sm text-gray-600 dark:text-gray-400">
+              Already have an account?
+              <a class="text-teal-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="/login">
+                Sign in
+              </a>
+            </p>
+          </div>
+
+          <form method="post" action="/register">
+            <div class="grid gap-y-4">
+              {% if error %}
+              <p class="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-300">{{ error }}</p>
+              {% endif %}
+
+              <div>
+                <label for="username" class="block text-sm mb-2 dark:text-slate-300">Username</label>
+                <input type="text" id="username" name="username" autocomplete="username" value="{{ username or '' }}" class="p-4 block w-full focus:border-zinc-700 focus:ring-zinc-700 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none bg-transparent border border-zinc-700/50 text-zinc-400" required>
+              </div>
+
+              <div>
+                <label for="email" class="block text-sm mb-2 dark:text-slate-300">Email address</label>
+                <input type="email" id="email" name="email" autocomplete="email" value="{{ email or '' }}" class="p-4 block w-full focus:border-zinc-700 focus:ring-zinc-700 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none bg-transparent border border-zinc-700/50 text-zinc-400" required placeholder="your@email.com">
+              </div>
+
+              <div>
+                <label for="password" class="block text-sm mb-2 dark:text-slate-300">Password</label>
+                <input type="password" id="password" name="password" autocomplete="new-password" class="p-4 block w-full focus:border-zinc-700 focus:ring-zinc-700 rounded-lg text-sm disabled:opacity-50 disabled:pointer-events-none bg-transparent border border-zinc-700/50 text-zinc-400" required minlength="8">
+              </div>
+
+              <button type="submit" class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-teal-900 text-white hover:bg-teal-800 active:bg-teal-900 disabled:opacity-50 disabled:pointer-events-none">
+                Create account
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-right"><path d="M18 8L22 12L18 16"/><path d="M2 12H22"/></svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -30,7 +30,7 @@
 
 .ew-shell {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-columns: 206px minmax(0, 1fr);
   width: min(1400px, 100%);
   min-height: 100vh;
   margin: 0 auto;
@@ -91,7 +91,7 @@
 .ew-page {
   width: min(800px, calc(100% - 64px));
   min-height: 100vh;
-  margin-left: 128px;
+  margin-left: 96px;
   padding: 42px 0 80px;
 }
 

@@ -15,7 +15,9 @@ class User(BaseModel, BaseUser):
     id: str = Field(default_factory=uuid)  # short uuid
     first: Optional[str] = None
     last: Optional[str] = None
+    username: Optional[str] = None
     email: EmailStr  # TODO: is this necessary?
+    password_hash: Optional[str] = None
     stripe_customer_id: Optional[str] = None  # to connect to Stripe Customer object
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -29,7 +31,29 @@ class User(BaseModel, BaseUser):
 
     @staticmethod
     async def fetch_by_email(email: str, db: Connection):
-        row = await db.fetchrow(f"SELECT * FROM users WHERE email = '{email}'")
+        row = await db.fetchrow("SELECT * FROM users WHERE lower(email) = lower($1)", email)
+        if row:
+            return User.model_validate(dict(row))
+        return None
+
+    @staticmethod
+    async def fetch_by_username(username: str, db: Connection):
+        row = await db.fetchrow("SELECT * FROM users WHERE lower(username) = lower($1)", username)
+        if row:
+            return User.model_validate(dict(row))
+        return None
+
+    @staticmethod
+    async def fetch_by_identifier(identifier: str, db: Connection):
+        row = await db.fetchrow(
+            """
+            SELECT *
+            FROM users
+            WHERE lower(email) = lower($1)
+               OR lower(username) = lower($1)
+            """,
+            identifier,
+        )
         if row:
             return User.model_validate(dict(row))
         return None
@@ -42,8 +66,15 @@ class User(BaseModel, BaseUser):
         return None
 
     @staticmethod
-    async def create(email: str, conn: Connection, first: str = None, last: str = None):
-        user = User(email=email)
+    async def create(
+        email: str,
+        conn: Connection,
+        first: str = None,
+        last: str = None,
+        username: str | None = None,
+        password_hash: str | None = None,
+    ):
+        user = User(email=email, username=username, password_hash=password_hash)
         dump = user.model_dump()
         columns = ",".join(dump.keys())
         values = dump.values()
@@ -53,6 +84,24 @@ class User(BaseModel, BaseUser):
         async with conn.transaction():
             await conn.execute(sql, *values)
         return user
+
+    async def set_basic_auth(self, username: str, password_hash: str, conn: Connection):
+        self.username = username
+        self.password_hash = password_hash
+        self.updated_at = datetime.utcnow()
+        async with conn.transaction():
+            await conn.execute(
+                """
+                UPDATE users
+                SET username = $1, password_hash = $2, updated_at = $3
+                WHERE id = $4
+                """,
+                self.username,
+                self.password_hash,
+                self.updated_at,
+                self.id,
+            )
+        return self
 
 
 # maybe split this out to its own file?

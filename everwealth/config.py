@@ -10,6 +10,12 @@ class Settings(BaseSettings):
     plaid_env: str = "sandbox"
     plaid_webhook_handler_url: HttpUrl
     app_name: str = "Everwealth"
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str = "no-reply@everwealth.local"
+    smtp_use_tls: bool = True
 
 
 settings = Settings()

@@ -19,7 +19,7 @@ from pydantic import BaseModel, EmailStr, Field, IPvAnyAddress, PositiveInt
 class Session(BaseModel):
     id: str = Field(default_factory=lambda: shortuuid.random(length=64))  # a short uuid
     expiry: datetime = Field(default_factory=lambda: datetime.utcnow() + timedelta(days=10))
-    otp_id: str  # the otp this session was generated from
+    otp_id: Optional[str] = None  # the otp this session was generated from, if any
     user_id: str
     device_id: Optional[str] = Field(default="")  # TODO: is there a way to get this??
     device_trusted: Optional[bool] = Field(default=False)
@@ -31,7 +31,7 @@ class Session(BaseModel):
         return self.expiry < datetime.utcnow()
 
 
-async def create(user_id: str, otp_id: str, conn: Connection):
+async def create(user_id: str, otp_id: str | None, conn: Connection):
     session = Session(user_id=user_id, otp_id=otp_id)
     columns = ",".join(
         [
@@ -46,11 +46,22 @@ async def create(user_id: str, otp_id: str, conn: Connection):
             "updated_at",
         ]
     )
-    values = f"'{session.id}','{session.expiry}','{session.otp_id}','{session.user_id}', \
-    '{session.device_id}',{session.device_trusted},{session.invalidated},'{session.created_at}',\
-    '{session.updated_at}'"
     async with conn.transaction():
-        await conn.execute(f"INSERT INTO sessions ({columns}) VALUES ({values})")
+        await conn.execute(
+            f"""
+            INSERT INTO sessions ({columns})
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            """,
+            session.id,
+            session.expiry,
+            session.otp_id,
+            session.user_id,
+            session.device_id,
+            session.device_trusted,
+            session.invalidated,
+            session.created_at,
+            session.updated_at,
+        )
     return session
 
 

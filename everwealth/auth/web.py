@@ -3,13 +3,14 @@ from typing import Annotated
 
 import stripe
 from asyncpg import Connection
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request, Response
+from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 from pydantic import EmailStr
 
 from everwealth.auth.models import otp, sessions, users
+from everwealth.auth.passwords import hash_password, verify_password
 from everwealth.auth.tokens import create_auth_token
 from everwealth.db import get_connection
 from everwealth.lucy_config import lucy
@@ -34,31 +35,108 @@ async def get_login_page(request: Request):
 @router.post("/login", response_class=HTMLResponse)
 async def submit_login(
     request: Request,
-    email: Annotated[EmailStr, Form()],
-    tasks: BackgroundTasks,
+    identifier: Annotated[str, Form()],
+    password: Annotated[str, Form()],
     db: Connection = Depends(get_connection),
 ):
-    # TODO: have to pull a session from the cookies or else do a new auth flow
+    user = await users.User.fetch_by_identifier(identifier.strip(), db)
+    if not user or not verify_password(password, user.password_hash):
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/login.html",
+            context={"error": "Invalid username/email or password.", "identifier": identifier},
+            status_code=401,
+        )
 
-    # user = await users.fetch(email, conn)
-    # if user:
-    #    logger.info(f"User with email {email} already exists")
-    #    session = await sessions.fetch_latest_active(user.id, conn)
-    #    if session:
-    #        logger.info(f"User {user.id} has an active session. Redirecting back to dashboard")
-    #        return RedirectResponse(url="dashboard", status_code=303)
-    #    else:
-    #        logger.info(f"user {user.id} does not currently have an active session")
-    # else:
-    #    logger.info(f"no user exists for email {email}")
+    session = await sessions.create(user.id, None, db)
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    response.set_cookie(
+        key="session",
+        value=create_auth_token(user.id, session.id, session.expiry),
+        httponly=True,
+        samesite="lax",
+        max_age=_session_cookie_max_age(session),
+    )
+    return response
 
-    # TODO: need to invalidate any currently active otps when creating a new one
-    otpass = await otp.create(email, db)
-    tasks.add_task(otp.send_email, email, otpass)
 
-    return RedirectResponse(
-        url=f"/login/{otpass.id}", status_code=303
-    )  # TODO: redirect to other page
+@router.get("/register", response_class=HTMLResponse)
+async def get_register_page(request: Request):
+    return templates.TemplateResponse(request=request, name="auth/register.html")
+
+
+@router.post("/register", response_class=HTMLResponse)
+async def submit_register(
+    request: Request,
+    username: Annotated[str, Form()],
+    email: Annotated[EmailStr, Form()],
+    password: Annotated[str, Form()],
+    db: Connection = Depends(get_connection),
+):
+    username = username.strip()
+    email = str(email).strip()
+    if len(password) < 8:
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/register.html",
+            context={
+                "error": "Password must be at least 8 characters.",
+                "username": username,
+                "email": email,
+            },
+            status_code=400,
+        )
+
+    if await users.User.fetch_by_username(username, db):
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/register.html",
+            context={
+                "error": "That username is already taken.",
+                "username": username,
+                "email": email,
+            },
+            status_code=409,
+        )
+
+    existing_user = await users.User.fetch_by_email(email, db)
+    if existing_user and existing_user.password_hash:
+        return templates.TemplateResponse(
+            request=request,
+            name="auth/register.html",
+            context={
+                "error": "That email is already registered.",
+                "username": username,
+                "email": email,
+            },
+            status_code=409,
+        )
+
+    if existing_user:
+        user = await existing_user.set_basic_auth(
+            username=username,
+            password_hash=hash_password(password),
+            conn=db,
+        )
+    else:
+        user = await users.User.create(
+            email=email,
+            username=username,
+            password_hash=hash_password(password),
+            conn=db,
+        )
+        await lucy.publish(UserCreated(user_id=user.id, db=db))
+
+    session = await sessions.create(user.id, None, db)
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    response.set_cookie(
+        key="session",
+        value=create_auth_token(user.id, session.id, session.expiry),
+        httponly=True,
+        samesite="lax",
+        max_age=_session_cookie_max_age(session),
+    )
+    return response
 
 
 # the "magic" link sent to the user's email
