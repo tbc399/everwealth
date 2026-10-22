@@ -1,0 +1,22 @@
+{% set income_progress = [overview.current_income / overview.expected_income * 100, 100]|min if overview.expected_income else 0 %}
+{% set spending_progress = [overview.current_spend / overview.expected_spend * 100, 100]|min if overview.expected_spend else 0 %}
+{% set remaining = overview.expected_spend - overview.current_spend %}
+<div class="stats stats-vertical w-full border border-base-300 bg-base-100 shadow-sm md:stats-horizontal">
+  <div class="stat min-w-0">
+    <div class="stat-title">Income</div>
+    <div class="stat-value text-2xl font-mono">${{ "{:,.0f}".format(overview.current_income) }}</div>
+    <div class="stat-desc">of ${{ "{:,.0f}".format(overview.expected_income) }} planned</div>
+    <progress class="progress progress-success mt-3 h-1.5" value="{{ income_progress }}" max="100" aria-label="Income received"></progress>
+  </div>
+  <div class="stat min-w-0">
+    <div class="stat-title">Spending</div>
+    <div class="stat-value text-2xl font-mono">${{ "{:,.0f}".format(overview.current_spend) }}</div>
+    <div class="stat-desc">of ${{ "{:,.0f}".format(overview.expected_spend) }} budgeted</div>
+    <progress class="progress progress-warning mt-3 h-1.5" value="{{ spending_progress }}" max="100" aria-label="Budget spent"></progress>
+  </div>
+  <div class="stat min-w-0">
+    <div class="stat-title">Left to spend</div>
+    <div class="stat-value text-2xl font-mono {{ 'text-error' if remaining < 0 else 'text-success' }}">{% if remaining < 0 %}&minus;{% endif %}${{ "{:,.0f}".format(remaining|abs) }}</div>
+    <div class="stat-desc">{{ "Over budget" if remaining < 0 else "Remaining this month" }}</div>
+  </div>
+</div>

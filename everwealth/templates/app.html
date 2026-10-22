@@ -1,58 +1,48 @@
-<!doctype html>
-<html lang="en" class="dark">
-  <head>
-    <title>{{ title or "Everwealth" }}</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <script src="{{ url_for('static', path='/scripts/htmx.min.js') }}"></script>
-    <script src="{{ url_for('static', path='/scripts/_hyperscript.min.js') }}"></script>
-    <script src="{{ url_for('modules', path='preline/dist/preline.js') }}"></script>
-    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-  </head>
-  <body class="ew-body">
-    <div class="ew-shell">
-      <aside class="ew-sidebar">
-        <nav id="app-menu-group" class="ew-nav" aria-label="Primary navigation">
-          <button class="ew-nav-item {% if menu_selection == 'dashboard' %}is-active{% endif %}"
-                  hx-get="/dashboard/partial" hx-push-url="/dashboard" hx-target="#main-content">
-            <svg viewBox="0 0 24 24"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25A2.25 2.25 0 0 1 8.25 10.5H6A2.25 2.25 0 0 1 3.75 8.25V6Zm0 9.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6Zm0 9.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg>
-            <span>Dashboard</span>
-          </button>
-          <button class="ew-nav-item {% if menu_selection == 'budgets' %}is-active{% endif %}"
-                  hx-get="/budgets/partial" hx-push-url="/budgets" hx-target="#main-content">
-            <svg viewBox="0 0 24 24"><path d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v9m18-10.5v.75c0 .414.336.75.75.75h.75v9.375c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 15.375M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-            <span>Budgets</span>
-          </button>
-          <button class="ew-nav-item {% if menu_selection == 'transactions' %}is-active{% endif %}"
-                  hx-get="/transactions/partial" hx-push-url="/transactions" hx-target="#main-content">
-            <svg viewBox="0 0 24 24"><path d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
-            <span>Transactions</span>
-          </button>
-          <button class="ew-nav-item {% if menu_selection == 'accounts' %}is-active{% endif %}"
-                  hx-get="/accounts/partial" hx-push-url="/accounts" hx-target="#main-content">
-            <svg viewBox="0 0 24 24"><path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/></svg>
-            <span>Connections</span>
-          </button>
-          <button class="ew-nav-item {% if menu_selection == 'settings' %}is-active{% endif %}"
-                  hx-get="/settings/partial" hx-push-url="/settings/profile" hx-target="#main-content">
-            <svg viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-            <span>Account</span>
-          </button>
-        </nav>
-      </aside>
-      <main class="ew-app">
+{% extends "base.html" %}
+{% from "partials/ui.html" import icon %}
+{% block body %}
+  {% set nav_items = [
+    ("dashboard", "Overview", "/dashboard", "/dashboard/partial", "layout-dashboard"),
+    ("budgets", "Budgets", "/budgets", "/budgets/partial", "wallet"),
+    ("transactions", "Transactions", "/transactions", "/transactions/partial", "arrow-left-right"),
+    ("accounts", "Connections", "/accounts", "/accounts/partial", "landmark"),
+    ("settings", "Settings", "/settings/profile", "/settings/partial", "settings")
+  ] %}
+  <div class="drawer mx-auto min-h-screen max-w-7xl lg:drawer-open lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-3 lg:px-6 lg:py-4">
+    <input id="navigation-drawer" type="checkbox" class="drawer-toggle" aria-label="Navigation">
+    <div class="drawer-content min-w-0 p-3 pb-12 lg:p-0">
+      <div class="navbar mb-5 rounded-box border border-base-300 bg-base-100 shadow-sm lg:hidden">
+        <label for="navigation-drawer" class="btn btn-square btn-ghost" aria-label="Open navigation" tabindex="0" role="button">{{ icon("menu") }}</label>
+        <a href="/dashboard" class="btn btn-ghost text-lg">Everwealth</a>
+      </div>
+      <main id="main-content" class="min-w-0 space-y-6" hx-history-elt>
         {% block content %}{% endblock %}
       </main>
     </div>
-    <script>
-      document.body.addEventListener("htmx:beforeRequest", (event) => {
-        const item = event.target.closest(".ew-nav-item");
-        if (!item) return;
-        document.querySelectorAll(".ew-nav-item").forEach((node) => node.classList.remove("is-active"));
-        item.classList.add("is-active");
-      });
-    </script>
-  </body>
-</html>
+    <div class="drawer-side z-30 lg:sticky lg:top-4 lg:col-start-1 lg:row-start-1 lg:h-[calc(100vh-2rem)] lg:overflow-visible">
+      <label for="navigation-drawer" class="drawer-overlay" aria-label="Close navigation"></label>
+      <aside class="flex min-h-full w-60 flex-col gap-4 border border-base-300 bg-base-100 p-4 shadow-sm lg:h-full lg:min-h-0 lg:w-full lg:rounded-box">
+        <a href="/dashboard" class="btn btn-ghost justify-start px-3 text-xl font-semibold">Everwealth</a>
+        <nav aria-label="Primary navigation">
+          <ul class="menu gap-1 p-0">
+            {% for key, label, path, partial, symbol in nav_items %}
+              <li><a href="{{ path }}" hx-get="{{ partial }}" hx-push-url="{{ path }}" hx-target="#main-content" data-nav="{{ key }}" {% if menu_selection == key %}class="active" aria-current="page"{% endif %}>{{ icon(symbol) }} {{ label }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+        <div class="mt-auto space-y-2">
+          <label class="label cursor-pointer gap-3 px-3 text-sm">
+            <span class="flex items-center gap-3">{{ icon("moon") }} Dark theme</span>
+            <input type="checkbox" class="toggle toggle-sm" data-theme-toggle aria-label="Dark theme">
+          </label>
+          <form action="/logout" method="post">
+            <button class="btn btn-ghost w-full justify-start px-3" type="submit">{{ icon("log-out") }} Log out</button>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div id="request-error" class="toast toast-end z-50 hidden" role="alert">
+    <div class="alert alert-error max-w-sm"><span data-error-message></span><button type="button" class="btn btn-ghost btn-square btn-xs" data-dismiss-error aria-label="Dismiss error">{{ icon("x") }}</button></div>
+  </div>
+{% endblock %}

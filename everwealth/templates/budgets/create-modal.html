@@ -1,85 +1,35 @@
-<div _="on closeModal remove me">
-  <!-- modal underlay -->
-  <div id="budget-create-modal-backdrop" 
-    style="z-index: 79;" 
-    class="transition duration fixed inset-0 bg-gray-950 bg-opacity-20 hs-overlay-backdrop"
-    aria-hidden="false" 
-    tabindex="-1"
-    _="on click trigger closeModal">
-  </div>
-  <!-- end modal underlay -->
-
-  <!-- budget create modal -->
-  <div id="budget-create-modal"
-    class="hs-overlay size-full open fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none"
-    aria-hidden="false" 
-    tabindex="-1">
-
-    <form action="/budgets" method="post">
-      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center justify-center">
-        <div class="flex flex-col w-2/6 h-full py-4 px-4 border shadow-lg rounded-lg pointer-events-auto bg-slate-900 border-slate-800 shadow-gray-950">
-          <div class="flex flex-col gap-y-5 w-full h-1/2 p-4">
-            <div class="flex flex-row justify-between mb-4">
-              <span class="text-base text-slate-400">Create a budget for <span class="font-bold text-base text-teal-800">Groceries</span></span>
-              <svg viewBox="0 0 24 24" class="size-4 stroke-slate-500 stroke-[2.5px] fill-current">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-              </svg>
-            </div>
-            <div class="w-full flex justify-between gap-y-2">
-              <div class="flex flex-col">
-                <span class="text-slate-300 text-sm font-semibold">Category</span>
-                <div class="text-sm font-normal text-slate-500">What is this budget for?</div>
-              </div>
-              <div class="flex items-end">
-                <select id="create-budget-category" name="category" class="w-52 border border-slate-800 rounded bg-slate-900/20 placeholder-slate-600 py-0.5 px-2 text-xs text-slate-400">
-                  {% set selected_category_id = none %}
-                  {% include "budgets/category-options.html" %}
-                </select>
-              </div>
-            </div>
-            <div class="w-full flex justify-between gap-y-2">
-              <div class="flex flex-col">
-                <span class="text-slate-300 text-sm font-semibold">Amount</span>
-                <div class="text-sm font-normal text-slate-500">How much do you plan to spend on {{ "Groceries" }}?</div>
-              </div>
-              <div class="flex items-end">
-                <span class="text-teal-700 me-2">$</span>
-                <input id="budget-amount-edit" type="text" name="amount" class="w-20 border-none ring-1 ring-slate-700 focus:border-none focus:shadow-sm focus:shadow-slate-950 focus:ring-1 focus:ring-slate-600  rounded bg-slate-900 placeholder-slate-600 py-1 px-1.5 text-sm font-normal text-slate-400 text-right" placeholder="Amount"></input>
-              </div>
-            </div>
-            <div class="w-full flex justify-between gap-y-2">
-              <div class="flex flex-col">
-                <span class="text-slate-300 text-sm font-semibold">Frequency</span>
-                <div class="text-sm font-normal text-slate-500">How often do you plan to spend on {{ "Groceries" }}?</div>
-              </div>
-              <div class="flex items-end">
-                <div id="toggle-count" class="p-0.5 inline-block bg-gray-100 rounded-lg dark:bg-neutral-700">
-                  <label for="toggle-count-monthly" class="relative inline-block py-2 px-3">
-                    <span class="inline-block relative z-10 text-sm font-medium text-gray-800 cursor-pointer dark:text-neutral-200">
-                      Monthly
-                    </span>
-                    <input id="toggle-count-monthly" name="frequency" value="monthly" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent rounded-lg cursor-pointer before:absolute before:inset-0 before:size-full before:rounded-lg focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-neutral-800 dark:focus:ring-offset-transparent" checked="">
-                  </label>
-                  <label for="toggle-count-annual" class="relative inline-block py-2 px-3">
-                    <span class="inline-block relative z-10 text-sm font-medium text-gray-800 cursor-pointer dark:text-neutral-200">
-                      Yearly
-                    </span>
-                    <input id="toggle-count-annual" name="frequency" value="yearly" type="radio" class="absolute top-0 end-0 size-full border-transparent bg-transparent bg-none text-transparent rounded-lg cursor-pointer before:absolute before:inset-0 before:size-full before:rounded-lg focus:ring-offset-0 checked:before:bg-white checked:before:shadow-sm checked:bg-none focus:ring-transparent dark:checked:before:bg-neutral-800 dark:focus:ring-offset-transparent">
-                  </label>
-                </div>
-              </div>
-              <a class="text-xs hidden font-semibold text-teal-700 hover:underline hover:underline-offset-2" href="#">Split</a>
-            </div>
-            <div class="flex justify-end mt-5">
-              <label class="me-auto flex items-center gap-2 text-xs text-slate-400">
-                <input type="checkbox" name="rollover" value="true"> Rollover
-              </label>
-              <button class="rounded-md bg-teal-800 hover:bg-teal-700 active:bg-teal-800 active:text-slate-200 py-1.5 px-2.5 text-xs font-semibold text-slate-200 hover:text-slate-100">Create</button>
-            </div>
-          </div>
+{% from "partials/ui.html" import icon %}
+<dialog id="budget-create-modal" class="modal" data-modal aria-labelledby="create-budget-heading">
+  <div class="modal-box max-w-lg">
+    <div class="flex items-center justify-between gap-3">
+      <h2 id="create-budget-heading" class="text-lg font-semibold">New budget</h2>
+      <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
+    </div>
+    <form action="/budgets" method="post" class="mt-5 space-y-4">
+      <label class="form-control">
+        <span class="label-text mb-2">Category</span>
+        <select name="category" class="select select-bordered w-full" required autofocus>
+          <option value="" disabled selected>Select a category</option>
+          {% set selected_category_id = none %}
+          {% include "budgets/category-options.html" %}
+        </select>
+      </label>
+      <div class="form-control">
+        <label for="new-budget-amount" class="label-text mb-2">Monthly amount</label>
+        <div class="input input-bordered flex items-center gap-2">
+          <span class="text-base-content/50">$</span>
+          <input id="new-budget-amount" type="number" name="amount" min="0" step="1" required placeholder="0" class="min-w-0 grow">
         </div>
+      </div>
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" name="rollover" value="true" class="checkbox checkbox-sm">
+        <span class="label-text">Copy this budget into future months</span>
+      </label>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost btn-sm" data-close-modal>Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">{{ icon("plus") }} Create budget</button>
       </div>
     </form>
   </div>
-  <!-- end budget create modal -->
-</div>
+  <form method="dialog" class="modal-backdrop"><button>Close</button></form>
+</dialog>

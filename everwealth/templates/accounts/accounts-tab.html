@@ -1,50 +1,40 @@
-<!-- List of accounts -->
-<div id="accounts-tab-list" class="p-4 flex flex-col items-center gap-y-3 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar]:bg-slate-900 [&::-webkit-scrollbar-thumb]:bg-slate-800"
-  hx-get="/accounts/accounts-tab"
-  hx-trigger="accountsLinked"
-  hx-swap="outerHTML"
-  >
-  {% if account_groups %}
-    {% for account_type, accounts in account_groups.items() %}
-      <h2 class="w-[600px] text-sm font-semibold text-slate-400">{{ account_type }}</h2>
-      {% for account in accounts %}
-      <div class="flex flex-col rounded-lg w-[600px] border border-gray-700/50 bg-gray-900 text-gray-300 p-4 hover:bg-neutral-800/65">
-        <div class="flex flex-row justify-between mb-3">
-          <div class="flex flex-row gap-x-2 items-center">
-            <div class="text-sm font-semibold">{{ account.name }}</div>
-            <div class="text-gray-400 font-semibold text-xs">****{{ account.last4 }}</div>
-          </div>
-          <div class="flex flex-row gap-x-1">
-            <div class="flex items-center text-xs text-gray-500">Synced {{ account.last_sync_display }}</div>
-            <div class="hs-dropdown relative inline-flex" data-hs-dropdown-placement="bottom-right">
-              <button id="hs-dropdown-with-header" type="button" class="hs-dropdown-toggle inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded text-gray-500 hover:bg-gray-800">
-                <svg viewBox="0 0 24 24" class="size-4 fill-none stroke-[2.5] stroke-slate-500">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
-                </svg>
-              </button>
-
-              <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-36 z-10 shadow-md rounded-lg p-1 bg-gray-900 border border-slate-800" aria-labelledby="hs-dropdown-with-header">
-                <div class="py-2 first:pt-0 last:pb-0">
-                  <button hx-delete="/accounts/{{ account.id }}" hx-target="closest div.flex.flex-col" hx-swap="outerHTML" class="flex justify-start gap-x-2 py-1.5 px-2.5 rounded-md text-xs text-gray-400 hover:bg-slate-800/50">
-                    <svg class="flex-shrink-0 size-4 fill-none stroke-gray-500 stroke-2" 
-                      width="24" 
-                      height="24" 
-                      viewBox="0 0 24 24" 
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.181 8.68a4.503 4.503 0 0 1 1.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 0 0 6.364 6.365l3.129-3.129m5.614-5.615 1.757-1.757a4.5 4.5 0 0 0-6.364-6.365l-4.5 4.5c-.258.26-.479.541-.661.84m1.903 6.405a4.495 4.495 0 0 1-1.242-.88 4.483 4.483 0 0 1-1.062-1.683m6.587 2.345 5.907 5.907m-5.907-5.907L8.898 8.898M2.991 2.99 8.898 8.9" />
-                    </svg>
-                    Disconnect
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <span class="text-xs font-semibold text-gray-500">{{ account.institution_name }}</span>
+{% from "partials/ui.html" import icon %}
+<div id="accounts-tab-list" class="space-y-5">
+  {% for account_type, group in account_groups.items() %}
+    <section class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="account-group-{{ loop.index }}">
+      <div class="flex items-center justify-between border-b border-base-300 px-5 py-4">
+        <h2 id="account-group-{{ loop.index }}" class="section-heading">{{ account_type }}</h2>
+        <span class="badge badge-ghost">{{ group|length }}</span>
       </div>
-      {% endfor %}
-    {% endfor %}
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead><tr><th>Account</th><th class="hidden sm:table-cell">Institution</th><th class="hidden sm:table-cell">Last synced</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            {% for account in group %}
+              <tr id="account-{{ account.id }}">
+                <td class="min-w-40">
+                  <div class="font-medium">{{ account.name }}</div>
+                  {% if account.last4 %}<div class="muted mt-1">&bull;&bull;&bull;&bull; {{ account.last4 }}</div>{% endif %}
+                  <div class="mt-1 text-xs text-base-content/60 sm:hidden">{{ account.institution_name or "Manual account" }} &middot; Synced {{ account.last_sync_display }}</div>
+                </td>
+                <td class="hidden sm:table-cell">{{ account.institution_name or "Manual account" }}</td>
+                <td class="hidden whitespace-nowrap text-base-content/60 sm:table-cell">{{ account.last_sync_display|capitalize }}</td>
+                <td class="text-right">
+                  <button type="button" class="btn btn-ghost btn-square btn-xs text-error" hx-delete="/accounts/{{ account.id }}" hx-confirm="Disconnect {{ account.name }}?" title="Disconnect account" aria-label="Disconnect {{ account.name }}">{{ icon("unplug") }}</button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
   {% else %}
-    <span class="text-white">No Accounts</span>
-  {% endif %}
+    <section class="card card-bordered bg-base-100 shadow-sm">
+      <div class="card-body items-center py-12 text-center">
+        <div class="text-base-content/40">{{ icon("landmark") }}</div>
+        <h2 class="section-heading">No connected accounts</h2>
+        <button type="button" class="btn btn-primary btn-sm mt-3" data-connect-account>{{ icon("plus") }} Connect account</button>
+      </div>
+    </section>
+  {% endfor %}
 </div>

@@ -1,50 +1,29 @@
-{% set income_progress = ([((overview.current_income / overview.expected_income) * 100)|round|int, 100]|min) if overview.expected_income else 0 %}
-{% set spending_progress = ([((overview.current_spend / overview.expected_spend) * 100)|round|int, 100]|min) if overview.expected_spend else 0 %}
-<section id="main-content" class="ew-page" {% if request.headers.get("HX-Request") %}hx-swap-oob="outerHTML:#main-content"{% endif %}>
-  <header class="ew-page-header">
-    <h1>Budgets</h1>
-  </header>
+{% from "partials/ui.html" import icon, page_header %}
+{% call page_header("Budgets", period.start.strftime("%B %Y")) %}
+  <a href="/categories" hx-get="/categories/partial" hx-push-url="/categories" hx-target="#main-content" class="btn btn-outline btn-sm">Categories</a>
+  <button type="button" class="btn btn-primary btn-sm" hx-get="/budgets/create" hx-target="body" hx-swap="beforeend">{{ icon("plus") }} New budget</button>
+{% endcall %}
 
-  <div class="ew-overview">
-    <article class="ew-overview-card">
-      <div class="ew-card-heading">
-        <span>Income</span>
-        <button type="button">edit</button>
-      </div>
-      <div>
-        <div class="ew-card-values">
-          <span><i>$</i>{{ "{:,.0f}".format(overview.current_income) }}</span>
-          <span><i>$</i>{{ "{:,.0f}".format(overview.expected_income) }}</span>
-        </div>
-        <div class="ew-progress"><span class="income" style="width: {{ income_progress }}%"></span></div>
-      </div>
-    </article>
-    <article class="ew-overview-card">
-      <div class="ew-card-heading"><span>Spending</span></div>
-      <div>
-        <div class="ew-card-values">
-          <span><i>$</i>{{ "{:,.0f}".format(overview.current_spend) }}</span>
-          <span><i>$</i>{{ "{:,.0f}".format(overview.expected_spend) }}</span>
-        </div>
-        <div class="ew-progress"><span class="spending" style="width: {{ spending_progress }}%"></span></div>
-      </div>
-    </article>
-    <article class="ew-overview-card ew-overview-placeholder"></article>
-  </div>
+{% include "budgets/overview.html" %}
 
-  <div class="ew-budget-actions">
-    <button class="ew-primary-button" hx-get="/budgets/create" hx-target="body" hx-swap="beforeend">
-      <span>+</span> New budget
-    </button>
-    <button class="ew-text-button" hx-get="/categories/partial" hx-push-url="/categories" hx-target="#main-content">
-      Categories
-    </button>
+<section class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="budgets-heading">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
+    <div>
+      <h2 id="budgets-heading" class="section-heading">Monthly budgets</h2>
+      <p class="muted">{{ budgets|length }} {{ "category" if budgets|length == 1 else "categories" }}</p>
+    </div>
+    <span class="badge badge-outline">{{ period.start.strftime("%b %Y") }}</span>
   </div>
-    {% for budget in budgets %}
-      {% include "budgets/list-item.html" %}
-    {% else %}
-      <div class="ew-empty-state">Create a budget to start tracking this month.</div>
-    {% endfor %}
+  <div class="overflow-x-auto">
+    <table class="table table-zebra">
+      <thead><tr><th>Category</th><th class="text-right">Spent</th><th class="text-right">Budget</th><th class="hidden text-right sm:table-cell">Remaining</th><th><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        {% for budget in budgets %}
+          {% include "budgets/list-item.html" %}
+        {% else %}
+          <tr><td colspan="5" class="empty-state">No budgets for this month.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  <div id="budget-detail"></div>
-</section
+</section>

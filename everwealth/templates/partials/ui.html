@@ -1,0 +1,13 @@
+{% macro icon(name) -%}
+  <i data-lucide="{{ name }}" aria-hidden="true"></i>
+{%- endmacro %}
+
+{% macro page_header(title, subtitle=none) -%}
+  <header class="page-header">
+    <div class="min-w-0">
+      <h1 class="page-heading">{{ title }}</h1>
+      {% if subtitle %}<p class="muted mt-1">{{ subtitle }}</p>{% endif %}
+    </div>
+    {% if caller %}<div class="flex flex-wrap items-center gap-2">{{ caller() }}</div>{% endif %}
+  </header>
+{%- endmacro %}

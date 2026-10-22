@@ -134,12 +134,12 @@ async def update_budget(
     return Response(status_code=200, headers={"HX-Redirect": "/budgets"})
 
 
-@router.delete("/budgets/{budget_id}", status_code=204)
+@router.delete("/budgets/{budget_id}")
 async def delete_budget(
     budget_id: str, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     await db.execute("DELETE FROM budgets WHERE id = $1 AND user_id = $2", budget_id, user_id)
-    return Response(status_code=204)
+    return Response(status_code=200, headers={"HX-Redirect": "/budgets"})
 
 
 @router.get("/categories", response_class=HTMLResponse)

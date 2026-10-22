@@ -1,3 +1,20 @@
+## UI assets
+
+The interface uses DaisyUI with the `corporate` and `sunset` themes. Build the
+production CSS and the bundled Lucide icons after changing templates or UI scripts:
+
+```sh
+npm install
+npm run build
+```
+
+Use `npm run dev:css` to watch template and stylesheet changes locally.
+
+To change palettes, update `themes` and `darkTheme` in `tailwind.config.js`
+and the theme attributes on `<html>` in `everwealth/templates/base.html`.
+The startup script and toggle read those attributes. Rebuild the assets and
+refresh the browser after changing themes.
+
 ## Database migrations
 
 This project uses [dbmate](https://github.com/amacneil/dbmate) with plain SQL

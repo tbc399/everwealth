@@ -122,6 +122,23 @@ async def get_assets_tab(
     )
 
 
+@router.get("/accounts/assets/partial", response_class=HTMLResponse)
+async def get_assets_partial(
+    request: Request,
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
+):
+    return templates.TemplateResponse(
+        "accounts/accounts-partial.html",
+        {
+            "request": request,
+            "tab": "assets",
+            "partial": "accounts/assets-tab.html",
+            "assets": await Asset.fetch_all(user_id, db),
+        },
+    )
+
+
 @router.post("/accounts/create-link")
 async def create_link_token(user_id: str = Depends(auth_user)):
     data = await plaid_post(
@@ -200,11 +217,11 @@ async def exchange_public_token(
     return Response(status_code=201)
 
 
-@router.delete("/accounts/{account_id}", status_code=204)
+@router.delete("/accounts/{account_id}")
 async def disconnect_account(
     account_id: str,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
     await db.execute("DELETE FROM accounts WHERE id = $1 AND user_id = $2", account_id, user_id)
-    return Response(status_code=204)
+    return Response(status_code=200, headers={"HX-Redirect": "/accounts"})

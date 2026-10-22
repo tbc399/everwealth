@@ -1,51 +1,9 @@
-<!-- Main content window -->
-<section id="main-content" hx-swap-oob="outerHTML:#main-content" class="ew-page">
-  <header class="ew-page-header">
-    <h1>Transactions</h1>
-  </header>
-
-  <div class="w-full flex flex-row justify-between items-center gap-x-2 border-b border-slate-700/50 px-4 py-2">
-    <div id="transactions-tab-group"
-      class="text-sm font-semibold" 
-      hx-target="#transactions-tab-list" 
-      hx-swap="outerHTML">
-      <script>
-        // Tab selection changing
-        htmx.on("#transactions-tab-group", "htmx:beforeRequest", function(event) {
-          let currentTab = document.querySelector('.tab-active');
-          currentTab.classList.remove('tab-active');
-          currentTab.classList.add('tab');
-          let newTab = event.target;
-          newTab.classList.remove('tab');
-          newTab.classList.add('tab-active');
-        })
-      </script>
-      <button 
-        id="transactions-tab" 
-        hx-get="/transactions/transactions-tab"
-        hx-push-url="/transactions"
-        class="
-        {% if tab == "transactions" %}
-          tab-active
-        {% else %}
-          tab
-        {% endif %}
-        py-1 px-2">
-        Transactions</button>
-      <button 
-        id="rules-tab" 
-        hx-get="/transactions/rules-tab"
-        hx-push-url="/transactions/rules"
-        class="
-        {% if tab == "rules" %}
-          tab-active
-        {% else %}
-          tab
-        {% endif %}
-          py-1 px-2">
-        Rules</button>
-    </div>
-  </div>
-
-  {% include partial %}
-</section>
+{% from "partials/ui.html" import icon, page_header %}
+{% call page_header("Transactions") %}
+  <button type="button" class="btn btn-primary btn-sm" hx-get="/transactions/upload" hx-target="body" hx-swap="beforeend">{{ icon("plus") }} Import transactions</button>
+{% endcall %}
+<div role="tablist" class="tabs tabs-bordered w-fit" aria-label="Transaction views">
+  <a role="tab" href="/transactions" hx-get="/transactions/partial" hx-target="#main-content" hx-push-url="/transactions" class="tab {{ 'tab-active' if tab == 'transactions' }}" aria-selected="{{ 'true' if tab == 'transactions' else 'false' }}">Transactions</a>
+  <a role="tab" href="/transactions/rules" hx-get="/transactions/rules-tab" hx-target="#main-content" hx-push-url="/transactions/rules" class="tab {{ 'tab-active' if tab == 'rules' }}" aria-selected="{{ 'true' if tab == 'rules' else 'false' }}">Rules</a>
+</div>
+{% include partial %}

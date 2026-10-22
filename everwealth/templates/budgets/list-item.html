@@ -1,11 +1,1 @@
-{% set progress = ([((budget.transactions_total|abs / budget.amount) * 100)|round|int, 100]|min) if budget.amount else 0 %}
-<button hx-get="/budgets/{{ budget.id }}/edit"
-        hx-target="#budget-detail"
-        hx-swap="outerHTML"
-        id="bud_{{ budget.id }}"
-        class="ew-budget-row">
-  <span class="ew-budget-name">{{ budget.category_name }}</span>
-  <span class="ew-budget-progress"><i class="{% if progress >= 100 %}over{% endif %}" style="width: {{ progress }}%"></i></span>
-  <span class="ew-budget-spent"><b>$</b>{{ "{:,.0f}".format(budget.transactions_total|abs) }}</span>
-  <span class="ew-budget-amount"><b>$</b>{{ "{:,.0f}".format(budget.amount) }}</span>
-</button>
+{% include "partials/budget.html" %}

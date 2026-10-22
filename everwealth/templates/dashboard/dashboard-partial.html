@@ -1,3 +1,47 @@
-<div id="main-content" hx-swap-oob="#main-content" class="flex flex-row overflow-y-auto">
-  <span class="p-5 text-slate-300">My dashboard</span>
+{% from "partials/ui.html" import icon, page_header %}
+{% call page_header("Overview", period.start.strftime("%B %Y")) %}
+  <a href="/budgets" hx-get="/budgets/partial" hx-target="#main-content" hx-push-url="/budgets" class="btn btn-primary btn-sm">{{ icon("wallet") }} Budgets</a>
+{% endcall %}
+{% include "budgets/overview.html" %}
+<div class="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+  <section class="card card-bordered min-w-0 bg-base-100 shadow-sm" aria-labelledby="recent-heading">
+    <div class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
+      <h2 id="recent-heading" class="section-heading">Recent transactions</h2>
+      <a href="/transactions" hx-get="/transactions/partial" hx-target="#main-content" hx-push-url="/transactions" class="btn btn-outline btn-xs">View all {{ icon("arrow-right") }}</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table table-zebra">
+        <thead><tr><th>Description</th><th class="text-right">Amount</th></tr></thead>
+        <tbody>
+          {% for transaction in transactions %}
+            <tr>
+              <td><div class="font-medium">{{ transaction.description }}</div><div class="muted mt-1">{{ transaction.date.strftime("%b %d") }}{% if transaction.category_name %} &middot; {{ transaction.category_name }}{% endif %}</div></td>
+              <td class="whitespace-nowrap text-right font-mono text-sm {{ 'text-success' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="2" class="empty-state">No transactions yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card card-bordered min-w-0 bg-base-100 shadow-sm" aria-labelledby="connections-heading">
+    <div class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
+      <h2 id="connections-heading" class="section-heading">Connections</h2>
+      <span class="badge badge-ghost">{{ accounts|length }}</span>
+    </div>
+    <ul class="divide-y divide-base-300">
+      {% for account in accounts[:4] %}
+        <li class="flex items-center gap-3 px-5 py-4">
+          <span class="text-base-content/50">{{ icon("landmark") }}</span>
+          <div class="min-w-0"><div class="break-words text-sm font-medium">{{ account.name }}</div><div class="muted">{{ account.institution_name or "Manual account" }}</div></div>
+        </li>
+      {% else %}
+        <li class="empty-state">No connected accounts.</li>
+      {% endfor %}
+    </ul>
+    <div class="mt-auto border-t border-base-300 px-5 py-4">
+      <a href="/accounts" hx-get="/accounts/partial" hx-target="#main-content" hx-push-url="/accounts" class="btn btn-outline btn-sm w-full">{{ icon("link") }} Manage connections</a>
+    </div>
+  </section>
 </div>

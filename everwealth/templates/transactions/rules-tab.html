@@ -1,9 +1,10 @@
-<div id="transactions-tab-list" class="p-4 flex flex-col items-center gap-y-3">
+<section id="transactions-tab-list" class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="rules-heading">
+  <div class="border-b border-base-300 px-5 py-4"><h2 id="rules-heading" class="section-heading">Transaction rules</h2></div>
   {% if rules %}
-    {% for rule in rules %}
-      <div>rule</div>
-    {% endfor %}
+    <ul class="divide-y divide-base-300">
+      {% for rule in rules %}<li class="px-5 py-4 text-sm">{{ rule.id }}</li>{% endfor %}
+    </ul>
   {% else %}
-    <span class="text-white">No Rules</span>
+    <div class="empty-state">No transaction rules.</div>
   {% endif %}
-</div>
+</section>

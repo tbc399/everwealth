@@ -5,6 +5,7 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 from io import StringIO
 from typing import Annotated, Optional
+from urllib.parse import urlencode
 
 from asyncpg import Connection
 from dateutil import parser
@@ -115,7 +116,13 @@ async def get_transactions_tab(
 ):
     context = await _transaction_context(user_id, db, account, page)
     context["request"] = request
-    return templates.TemplateResponse("transactions/transactions-tab.html", context)
+    response = templates.TemplateResponse("transactions/transactions-tab.html", context)
+    if "HX-Request" in request.headers:
+        query = urlencode(
+            {"page": context["current_page"], **({"account": account} if account else {})}
+        )
+        response.headers["HX-Push-Url"] = f"/transactions?{query}"
+    return response
 
 
 @router.get("/transactions/rules", response_class=HTMLResponse)
@@ -124,8 +131,17 @@ async def get_transaction_rules(
     request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
 ):
     return templates.TemplateResponse(
-        "transactions/rules-tab.html",
-        {"request": request, "rules": await TransactionRule.fetch_many(user_id, db)},
+        "transactions/transactions-partial.html"
+        if "HX-Request" in request.headers
+        else "transactions/transactions.html",
+        {
+            "request": request,
+            "rules": await TransactionRule.fetch_many(user_id, db),
+            "tab": "rules",
+            "partial": "transactions/rules-tab.html",
+            "menu_selection": "transactions",
+            "title": "Transaction rules",
+        },
     )
 
 
