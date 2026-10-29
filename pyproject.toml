@@ -24,7 +24,7 @@ asyncpg = "^0.31.0"
 pydantic-settings = "^2.10.0"
 uvloop = "^0.22.0"
 loguru = "^0.7.2"
-lucette = {path = "../lucette", develop = true}
+lucette = {path = "vendor/lucette"}
 itsdangerous = "^2.2.0"
 cryptography = "^42.0.5"
 python-dateutil = "^2.9.0.post0"

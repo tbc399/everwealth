@@ -12,6 +12,7 @@ from pydantic import EmailStr
 from everwealth.auth.models import otp, sessions, users
 from everwealth.auth.passwords import hash_password, verify_password
 from everwealth.auth.tokens import create_auth_token
+from everwealth.config import settings
 from everwealth.db import get_connection
 from everwealth.lucy_config import lucy
 
@@ -54,6 +55,7 @@ async def submit_login(
         key="session",
         value=create_auth_token(user.id, session.id, session.expiry),
         httponly=True,
+        secure=settings.session_cookie_secure,
         samesite="lax",
         max_age=_session_cookie_max_age(session),
     )
@@ -133,6 +135,7 @@ async def submit_register(
         key="session",
         value=create_auth_token(user.id, session.id, session.expiry),
         httponly=True,
+        secure=settings.session_cookie_secure,
         samesite="lax",
         max_age=_session_cookie_max_age(session),
     )
@@ -202,6 +205,7 @@ async def submit_otp_validation(
         key="session",
         value=create_auth_token(user.id, session.id, session.expiry),
         httponly=True,
+        secure=settings.session_cookie_secure,
         samesite="lax",
         max_age=_session_cookie_max_age(session),
     )
@@ -247,6 +251,7 @@ async def check_login_status(
             key="session",
             value=create_auth_token(session.user_id, session.id, session.expiry),
             httponly=True,
+            secure=settings.session_cookie_secure,
             samesite="lax",
             max_age=_session_cookie_max_age(session),
         )

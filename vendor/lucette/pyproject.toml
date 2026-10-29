@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "lucette"
+version = "0.1.0"
+description = ""
+authors = ["Travis Cammack <traviscammack@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+uvloop = "^0.22.0"
+pydantic = "^2.12.0"
+loguru = "^0.7.0"
+python-slugify = "^8.0.1"
+redis = "^4.5.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

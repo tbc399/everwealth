@@ -63,30 +63,37 @@ logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
 async def startup():
     setattr(db, "pool", await asyncpg.create_pool(settings.database_url))
-    asyncio.create_task(lucy.run())
+    setattr(db, "lucy_task", asyncio.create_task(lucy.run()))
     setattr(db, "rollover_task", asyncio.create_task(run_rollover_scheduler(db.pool)))
 
 
 async def shutdown():
     from everwealth import db
 
-    rollover_task = getattr(db, "rollover_task", None)
-    if rollover_task:
-        rollover_task.cancel()
+    tasks = [
+        task
+        for name in ("lucy_task", "rollover_task")
+        if (task := getattr(db, name, None)) is not None
+    ]
+    for task in tasks:
+        task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
     await db.pool.close()
+    db.pool = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await startup()
-    yield
-    await shutdown()
+    try:
+        yield
+    finally:
+        await shutdown()
 
 
 app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="everwealth/static"), name="static")
-app.mount("/node_modules", StaticFiles(directory="node_modules"), name="modules")
 
 api_router = APIRouter()
 api_router.include_router(budget_router)
@@ -99,6 +106,19 @@ api_router.include_router(accounts_hooks_router)
 api_router.include_router(transactions_hooks_router)
 
 app.include_router(api_router)
+
+
+@app.get("/health", include_in_schema=False)
+async def health():
+    try:
+        if db.pool is None:
+            raise RuntimeError("Database pool is not initialized")
+        async with db.pool.acquire(timeout=3) as connection:
+            await connection.fetchval("SELECT 1", timeout=3)
+    except Exception:
+        raise HTTPException(status_code=503, detail="Service unavailable") from None
+    return {"status": "ok"}
+
 
 app.add_middleware(
     CORSMiddleware,
