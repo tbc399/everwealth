@@ -4,18 +4,18 @@
   <h1 class="text-xl font-semibold">Create account</h1>
   {% if error %}<div class="alert alert-error mt-4 text-sm" role="alert">{{ error }}</div>{% endif %}
   <form method="post" action="/register" class="mt-5 space-y-4">
-    <label class="form-control">
-      <span class="label-text mb-2">Username</span>
-      <input type="text" name="username" autocomplete="username" value="{{ username or '' }}" class="input input-bordered w-full" required autofocus>
+    <label class="grid gap-2 text-sm">
+      <span class="label">Username</span>
+      <input type="text" name="username" autocomplete="username" value="{{ username or '' }}" class="input w-full" required autofocus>
     </label>
-    <label class="form-control">
-      <span class="label-text mb-2">Email address</span>
-      <input type="email" name="email" autocomplete="email" value="{{ email or '' }}" class="input input-bordered w-full" required>
+    <label class="grid gap-2 text-sm">
+      <span class="label">Email address</span>
+      <input type="email" name="email" autocomplete="email" value="{{ email or '' }}" class="input w-full" required>
     </label>
-    <label class="form-control">
-      <span class="label-text mb-2">Password</span>
-      <input type="password" name="password" autocomplete="new-password" class="input input-bordered w-full" required minlength="8">
-      <span class="label-text-alt mt-2 text-base-content/60">At least 8 characters</span>
+    <label class="grid gap-2 text-sm">
+      <span class="label">Password</span>
+      <input type="password" name="password" autocomplete="new-password" class="input w-full" required minlength="8">
+      <span class="text-xs mt-2 text-base-content/60">At least 8 characters</span>
     </label>
     <button type="submit" class="btn btn-primary w-full">Create account {{ icon("arrow-right") }}</button>
   </form>

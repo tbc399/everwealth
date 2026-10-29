@@ -1,8 +1,8 @@
 {% from "partials/ui.html" import icon %}
-<tr id="tran_{{ transaction.id }}" class="hover">
+<tr id="tran_{{ transaction.id }}" class="hover:bg-base-200">
   <td class="hidden whitespace-nowrap text-base-content/60 md:table-cell">{{ transaction.date.strftime("%b %d, %Y") }}</td>
   <td class="max-w-48">
-    <button type="button" class="link link-hover break-words text-left" hx-get="/transactions/{{ transaction.id }}/edit" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML" data-edit-transaction>{{ transaction.description }}</button>
+    <button type="button" class="link link-hover wrap-break-word text-left" hx-get="/transactions/{{ transaction.id }}/edit" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML" data-edit-transaction>{{ transaction.description }}</button>
     <div class="mt-1 text-xs text-base-content/60 md:hidden">{{ transaction.date.strftime("%b %d") }} &middot; {{ transaction.category_name or "Uncategorized" }}</div>
   </td>
   <td class="hidden min-w-40 md:table-cell">

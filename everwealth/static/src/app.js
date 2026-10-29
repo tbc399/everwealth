@@ -2,14 +2,14 @@ import {
   createIcons, ArrowLeft, ArrowLeftRight, ArrowRight,
   Check, ChevronLeft, ChevronRight, Download, FileSpreadsheet,
   Landmark, LayoutDashboard, Link, LogOut, Mail, Menu, Moon, Pencil, Plus,
-  Settings, ShieldCheck, Trash2, Unplug, Wallet, X,
+  Search, Settings, ShieldCheck, Trash2, Unplug, Wallet, X,
 } from "lucide";
 
 const icons = {
   ArrowLeft, ArrowLeftRight, ArrowRight, Check,
   ChevronLeft, ChevronRight, Download, FileSpreadsheet,
   Landmark, LayoutDashboard, Link, LogOut, Mail, Menu, Moon, Pencil, Plus,
-  Settings, ShieldCheck, Trash2, Unplug, Wallet, X,
+  Search, Settings, ShieldCheck, Trash2, Unplug, Wallet, X,
 };
 const media = matchMedia("(prefers-color-scheme: dark)");
 const { lightTheme, darkTheme } = document.documentElement.dataset;
@@ -27,7 +27,7 @@ const syncNavigation = () => {
     : path.startsWith("/settings") ? "settings" : path.split("/")[1] || "dashboard";
   document.querySelectorAll("[data-nav]").forEach((link) => {
     const selected = link.dataset.nav === active;
-    link.classList.toggle("active", selected);
+    link.classList.toggle("menu-active", selected);
     if (selected) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });

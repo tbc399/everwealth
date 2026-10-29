@@ -2,7 +2,7 @@
 {% set spent = budget.transactions_total|abs %}
 {% set progress = [spent / budget.amount * 100, 100]|min if budget.amount else 0 %}
 {% set remaining = budget.amount - spent %}
-<tr id="bud_{{ budget.id }}" class="hover">
+<tr id="bud_{{ budget.id }}" class="hover:bg-base-200">
   <td class="min-w-40">
     <a href="/budgets/{{ budget.id }}" hx-get="/budgets/{{ budget.id }}/edit" hx-target="body" hx-swap="beforeend" class="link link-hover font-medium">{{ budget.category_name }}</a>
     {% if budget.rollover %}<span class="badge badge-ghost badge-xs ml-1">Rollover</span>{% endif %}

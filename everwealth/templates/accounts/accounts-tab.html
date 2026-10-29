@@ -1,7 +1,7 @@
 {% from "partials/ui.html" import icon %}
 <div id="accounts-tab-list" class="space-y-5">
   {% for account_type, group in account_groups.items() %}
-    <section class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="account-group-{{ loop.index }}">
+    <section class="card card-border bg-base-100 shadow-xs" aria-labelledby="account-group-{{ loop.index }}">
       <div class="flex items-center justify-between border-b border-base-300 px-5 py-4">
         <h2 id="account-group-{{ loop.index }}" class="section-heading">{{ account_type }}</h2>
         <span class="badge badge-ghost">{{ group|length }}</span>
@@ -29,7 +29,7 @@
       </div>
     </section>
   {% else %}
-    <section class="card card-bordered bg-base-100 shadow-sm">
+    <section class="card card-border bg-base-100 shadow-xs">
       <div class="card-body items-center py-12 text-center">
         <div class="text-base-content/40">{{ icon("landmark") }}</div>
         <h2 class="section-heading">No connected accounts</h2>

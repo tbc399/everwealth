@@ -1,33 +1,33 @@
 {% from "partials/ui.html" import icon, page_header %}
 {{ page_header("Settings") }}
-<section class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="profile-heading">
+<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="profile-heading">
   <div class="border-b border-base-300 px-5 py-4">
     <h2 id="profile-heading" class="section-heading">Profile</h2>
     <p class="muted">{{ profile.email }}</p>
   </div>
   <form method="post" action="/settings/profile" class="card-body gap-5 p-6">
     <div class="grid max-w-xl gap-4 sm:grid-cols-2">
-      <label class="form-control">
-        <span class="label-text mb-2">First name</span>
-        <input name="first" autocomplete="given-name" value="{{ profile.first or '' }}" class="input input-bordered w-full">
+      <label class="grid gap-2 text-sm">
+        <span class="label">First name</span>
+        <input name="first" autocomplete="given-name" value="{{ profile.first or '' }}" class="input w-full">
       </label>
-      <label class="form-control">
-        <span class="label-text mb-2">Last name</span>
-        <input name="last" autocomplete="family-name" value="{{ profile.last or '' }}" class="input input-bordered w-full">
+      <label class="grid gap-2 text-sm">
+        <span class="label">Last name</span>
+        <input name="last" autocomplete="family-name" value="{{ profile.last or '' }}" class="input w-full">
       </label>
-      <label class="form-control sm:col-span-2">
-        <span class="label-text mb-2">Email</span>
-        <input type="email" autocomplete="email" value="{{ profile.email }}" disabled class="input input-bordered w-full">
+      <label class="grid gap-2 text-sm sm:col-span-2">
+        <span class="label">Email</span>
+        <input type="email" autocomplete="email" value="{{ profile.email }}" disabled class="input w-full">
       </label>
     </div>
     <div class="card-actions"><button type="submit" class="btn btn-primary btn-sm">{{ icon("check") }} Save profile</button></div>
   </form>
 </section>
-<section class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="appearance-heading">
+<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="appearance-heading">
   <div class="flex items-center justify-between gap-4 px-6 py-5">
     <h2 id="appearance-heading" class="section-heading">Appearance</h2>
-    <label class="label cursor-pointer gap-3">
-      <span class="label-text">Dark theme</span>
+    <label class="label whitespace-normal cursor-pointer gap-3">
+      <span class="text-sm">Dark theme</span>
       <input type="checkbox" class="toggle toggle-primary" data-theme-toggle aria-label="Dark theme">
     </label>
   </div>

@@ -7,34 +7,34 @@
         <span class="font-mono text-sm {{ 'text-success' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</span>
       </div>
       <div class="grid gap-4 sm:grid-cols-2">
-        <label class="form-control">
-          <span class="label-text mb-2">Description</span>
-          <input type="text" name="description" value="{{ transaction.description }}" required autofocus class="input input-bordered input-sm w-full">
+        <label class="grid gap-2 text-sm">
+          <span class="label">Description</span>
+          <input type="text" name="description" value="{{ transaction.description }}" required autofocus class="input input-sm w-full">
         </label>
-        <label class="form-control">
-          <span class="label-text mb-2">Date</span>
-          <input type="date" name="date" value="{{ transaction.date }}" required class="input input-bordered input-sm w-full">
+        <label class="grid gap-2 text-sm">
+          <span class="label">Date</span>
+          <input type="date" name="date" value="{{ transaction.date }}" required class="input input-sm w-full">
         </label>
-        <label class="form-control">
-          <span class="label-text mb-2">Category</span>
-          <select name="category" class="select select-bordered select-sm w-full">
+        <label class="grid gap-2 text-sm">
+          <span class="label">Category</span>
+          <select name="category" class="select select-sm w-full">
             <option value="">Uncategorized</option>
             {% set selected_category_id = transaction.category_id %}
             {% include "budgets/category-options.html" %}
           </select>
         </label>
-        <label class="form-control">
-          <span class="label-text mb-2">Notes</span>
-          <textarea name="notes" class="textarea textarea-bordered textarea-sm w-full" rows="2">{{ transaction.notes or "" }}</textarea>
+        <label class="grid gap-2 text-sm">
+          <span class="label">Notes</span>
+          <textarea name="notes" class="textarea textarea-sm w-full" rows="2">{{ transaction.notes or "" }}</textarea>
         </label>
       </div>
       {% if transaction.orig_description and transaction.orig_description != transaction.description %}
         <p class="muted">Original: {{ transaction.orig_description }}</p>
       {% endif %}
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <label class="label cursor-pointer justify-start gap-2">
+        <label class="label whitespace-normal cursor-pointer justify-start gap-2">
           <input type="checkbox" name="hidden" value="true" {% if transaction.hidden %}checked{% endif %} class="checkbox checkbox-sm">
-          <span class="label-text">Hide transaction</span>
+          <span class="text-sm">Hide transaction</span>
         </label>
         <div class="flex gap-2">
           <button type="button" hx-get="/transactions/{{ transaction.id }}/row" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML" class="btn btn-ghost btn-sm">Cancel</button>

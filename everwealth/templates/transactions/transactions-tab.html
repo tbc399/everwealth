@@ -1,19 +1,40 @@
 {% from "partials/ui.html" import icon %}
-<section id="transactions-tab-list" class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="transactions-heading">
+<section id="transactions-tab-list" class="card card-border bg-base-100 shadow-xs" aria-labelledby="transactions-heading">
   <div class="flex flex-wrap items-center justify-between gap-4 border-b border-base-300 px-5 py-4">
     <div>
-      <h2 id="transactions-heading" class="section-heading">All transactions</h2>
-      <p class="muted">{{ total_transactions }} total</p>
+      <h2 id="transactions-heading" class="section-heading">{{ "Filtered transactions" if filters else "All transactions" }}</h2>
+      <p class="muted">{{ total_transactions }} {{ "transaction" if total_transactions == 1 else "transactions" }}</p>
     </div>
-    <label class="form-control w-full sm:w-56">
-      <span class="sr-only">Filter by account</span>
-      <select name="account" hx-get="/transactions/transactions-tab?page=1" hx-target="#transactions-tab-list" hx-swap="outerHTML" hx-push-url="true" class="select select-bordered select-sm w-full" aria-label="Filter by account">
+    <form id="transaction-filters" action="/transactions" method="get"
+          hx-get="/transactions/transactions-tab" hx-target="#transactions-tab-list"
+          hx-swap="outerHTML" hx-push-url="true" hx-sync="this:replace"
+          class="grid w-full gap-2 sm:grid-cols-2 lg:grid-cols-[11rem_12rem_minmax(0,1fr)]">
+      <input type="hidden" name="page" value="1">
+      <select name="month" hx-get="/transactions/transactions-tab" hx-include="closest form"
+              class="select select-sm w-full" aria-label="Filter by month">
+        <option value="">All months</option>
+        {% for month in months %}
+          <option value="{{ month.value }}" {% if selected_month == month.value %}selected{% endif %}>{{ month.label }}</option>
+        {% endfor %}
+      </select>
+      <select name="account" hx-get="/transactions/transactions-tab" hx-include="closest form"
+              class="select select-sm w-full" aria-label="Filter by account">
         <option value="">All accounts</option>
         {% for account in accounts %}
           <option value="{{ account.id }}" {% if selected_account == account.id %}selected{% endif %}>{{ account.name }}</option>
         {% endfor %}
       </select>
-    </label>
+      <div class="flex min-w-0 gap-2 sm:col-span-2 lg:col-span-1">
+        <input type="search" name="q" value="{{ search }}" maxlength="200"
+               placeholder="Search descriptions" aria-label="Search descriptions"
+               class="input input-sm min-w-0 w-full">
+        <button type="submit" class="btn btn-primary btn-square btn-sm" title="Search transactions" aria-label="Search transactions">{{ icon("search") }}</button>
+        {% if filters %}
+          <a href="/transactions" hx-get="/transactions/transactions-tab" hx-params="none"
+             class="btn btn-ghost btn-square btn-sm" title="Clear filters" aria-label="Clear filters">{{ icon("x") }}</a>
+        {% endif %}
+      </div>
+    </form>
   </div>
   <div class="overflow-x-auto">
     <table class="table table-zebra">
@@ -27,15 +48,15 @@
       </tbody>
     </table>
   </div>
-  {% set account_param = "&account=" ~ (selected_account|urlencode) if selected_account else "" %}
+  {% set filter_params = "&" ~ filter_query if filter_query else "" %}
   <div class="flex flex-wrap items-center justify-between gap-3 border-t border-base-300 px-5 py-4">
     <span class="muted">Showing {{ visible_start }}&ndash;{{ visible_end }} of {{ total_transactions }}</span>
     <nav class="join" aria-label="Pagination">
-      <button type="button" {% if current_page > 1 %}hx-get="/transactions/transactions-tab?page={{ current_page - 1 }}{{ account_param }}" hx-push-url="/transactions?page={{ current_page - 1 }}{{ account_param }}"{% else %}disabled{% endif %} hx-target="#transactions-tab-list" hx-swap="outerHTML" class="join-item btn btn-sm btn-square" aria-label="Previous page" title="Previous page">{{ icon("chevron-left") }}</button>
+      <button type="button" {% if current_page > 1 %}hx-get="/transactions/transactions-tab?page={{ current_page - 1 }}{{ filter_params }}" hx-push-url="/transactions?page={{ current_page - 1 }}{{ filter_params }}"{% else %}disabled{% endif %} hx-target="#transactions-tab-list" hx-swap="outerHTML" class="join-item btn btn-sm btn-square" aria-label="Previous page" title="Previous page">{{ icon("chevron-left") }}</button>
       {% for page_number in pagination_pages %}
-        <button type="button" hx-get="/transactions/transactions-tab?page={{ page_number }}{{ account_param }}" hx-push-url="/transactions?page={{ page_number }}{{ account_param }}" hx-target="#transactions-tab-list" hx-swap="outerHTML" class="join-item btn btn-sm {{ 'btn-primary' if page_number == current_page }}" {% if page_number == current_page %}aria-current="page"{% endif %}>{{ page_number }}</button>
+        <button type="button" hx-get="/transactions/transactions-tab?page={{ page_number }}{{ filter_params }}" hx-push-url="/transactions?page={{ page_number }}{{ filter_params }}" hx-target="#transactions-tab-list" hx-swap="outerHTML" class="join-item btn btn-sm {{ 'btn-primary' if page_number == current_page }}" {% if page_number == current_page %}aria-current="page"{% endif %}>{{ page_number }}</button>
       {% endfor %}
-      <button type="button" {% if current_page < total_pages %}hx-get="/transactions/transactions-tab?page={{ current_page + 1 }}{{ account_param }}" hx-push-url="/transactions?page={{ current_page + 1 }}{{ account_param }}"{% else %}disabled{% endif %} hx-target="#transactions-tab-list" hx-swap="outerHTML" class="join-item btn btn-sm btn-square" aria-label="Next page" title="Next page">{{ icon("chevron-right") }}</button>
+      <button type="button" {% if current_page < total_pages %}hx-get="/transactions/transactions-tab?page={{ current_page + 1 }}{{ filter_params }}" hx-push-url="/transactions?page={{ current_page + 1 }}{{ filter_params }}"{% else %}disabled{% endif %} hx-target="#transactions-tab-list" hx-swap="outerHTML" class="join-item btn btn-sm btn-square" aria-label="Next page" title="Next page">{{ icon("chevron-right") }}</button>
     </nav>
   </div>
 </section>

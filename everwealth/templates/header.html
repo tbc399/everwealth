@@ -8,8 +8,8 @@
       const { lightTheme, darkTheme } = root.dataset;
       let storedTheme;
       try { storedTheme = localStorage.getItem("theme"); } catch {}
-      const theme = storedTheme === "winter" ? lightTheme
-        : storedTheme === "dim" ? darkTheme : storedTheme;
+      const theme = ["winter", "corporate"].includes(storedTheme) ? lightTheme
+        : ["dim", "sunset"].includes(storedTheme) ? darkTheme : storedTheme;
       root.dataset.theme = [lightTheme, darkTheme].includes(theme)
         ? theme : (matchMedia("(prefers-color-scheme: dark)").matches ? darkTheme : lightTheme);
       if (theme !== storedTheme) {

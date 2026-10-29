@@ -2,7 +2,7 @@
 {% call page_header("Connections") %}
   <button type="button" class="btn btn-primary btn-sm" data-connect-account>{{ icon("plus") }} Connect account</button>
 {% endcall %}
-<div role="tablist" class="tabs tabs-bordered w-fit" aria-label="Connection views">
+<div role="tablist" class="tabs tabs-border w-fit" aria-label="Connection views">
   <a role="tab" href="/accounts" hx-get="/accounts/partial" hx-target="#main-content" hx-push-url="/accounts" class="tab {{ 'tab-active' if tab == 'accounts' }}" aria-selected="{{ 'true' if tab == 'accounts' else 'false' }}">Accounts</a>
   <a role="tab" href="/accounts/assets" hx-get="/accounts/assets/partial" hx-target="#main-content" hx-push-url="/accounts/assets" class="tab {{ 'tab-active' if tab == 'assets' }}" aria-selected="{{ 'true' if tab == 'assets' else 'false' }}">Assets</a>
 </div>

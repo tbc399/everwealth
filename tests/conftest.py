@@ -79,8 +79,22 @@ def ui_app(monkeypatch):
         for index in range(55)
     ]
 
-    async def transaction_page(user_id, db, account_id=None, limit=None, offset=0):
-        return transactions[offset : offset + limit if limit is not None else None]
+    def filtered_transactions(account_id=None, start_date=None, end_date=None, search=None):
+        return [
+            item
+            for item in transactions
+            if (not account_id or item.account_id == account_id)
+            and (not start_date or item.date >= start_date)
+            and (not end_date or item.date < end_date)
+            and (not search or search.casefold() in item.description.casefold())
+        ]
+
+    async def transaction_page(user_id, db, account_id=None, limit=None, offset=0, **filters):
+        matching = filtered_transactions(account_id, **filters)
+        return matching[offset : offset + limit if limit is not None else None]
+
+    async def transaction_count(user_id, db, account_id=None, **filters):
+        return len(filtered_transactions(account_id, **filters))
 
     monkeypatch.setattr(BudgetPeriod, "current", AsyncMock(return_value=period))
     monkeypatch.setattr(
@@ -100,7 +114,17 @@ def ui_app(monkeypatch):
     monkeypatch.setattr(Category, "fetch_many", AsyncMock(return_value=categories))
     monkeypatch.setattr(Category, "fetch", AsyncMock(return_value=categories[1]))
     monkeypatch.setattr(Transaction, "fetch_many", transaction_page)
-    monkeypatch.setattr(Transaction, "count_many", AsyncMock(return_value=len(transactions)))
+    monkeypatch.setattr(Transaction, "count_many", transaction_count)
+    monkeypatch.setattr(
+        Transaction,
+        "date_bounds",
+        AsyncMock(
+            return_value=(
+                min(item.date for item in transactions),
+                max(item.date for item in transactions),
+            )
+        ),
+    )
     monkeypatch.setattr(Transaction, "fetch", AsyncMock(return_value=transactions[0]))
     monkeypatch.setattr(Transaction, "save", AsyncMock())
     monkeypatch.setattr(

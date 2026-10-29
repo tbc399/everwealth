@@ -1,6 +1,6 @@
 ## UI assets
 
-The interface uses DaisyUI with the `corporate` and `sunset` themes. Build the
+The interface uses DaisyUI with the `light` and `dark` themes. Build the
 production CSS and the bundled Lucide icons after changing templates or UI scripts:
 
 ```sh
@@ -10,7 +10,8 @@ npm run build
 
 Use `npm run dev:css` to watch template and stylesheet changes locally.
 
-To change palettes, update `themes` and `darkTheme` in `tailwind.config.js`
+Tailwind CSS 4 and DaisyUI 5 use CSS-based configuration. To change palettes,
+update `themes` in the `@plugin "daisyui"` block in `everwealth/static/input.css`
 and the theme attributes on `<html>` in `everwealth/templates/base.html`.
 The startup script and toggle read those attributes. Rebuild the assets and
 refresh the browser after changing themes.

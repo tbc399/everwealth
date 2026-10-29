@@ -2,7 +2,7 @@
 {% call page_header("Transactions") %}
   <button type="button" class="btn btn-primary btn-sm" hx-get="/transactions/upload" hx-target="body" hx-swap="beforeend">{{ icon("plus") }} Import transactions</button>
 {% endcall %}
-<div role="tablist" class="tabs tabs-bordered w-fit" aria-label="Transaction views">
+<div role="tablist" class="tabs tabs-border w-fit" aria-label="Transaction views">
   <a role="tab" href="/transactions" hx-get="/transactions/partial" hx-target="#main-content" hx-push-url="/transactions" class="tab {{ 'tab-active' if tab == 'transactions' }}" aria-selected="{{ 'true' if tab == 'transactions' else 'false' }}">Transactions</a>
   <a role="tab" href="/transactions/rules" hx-get="/transactions/rules-tab" hx-target="#main-content" hx-push-url="/transactions/rules" class="tab {{ 'tab-active' if tab == 'rules' }}" aria-selected="{{ 'true' if tab == 'rules' else 'false' }}">Rules</a>
 </div>

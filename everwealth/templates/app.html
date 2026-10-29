@@ -11,7 +11,7 @@
   <div class="drawer mx-auto min-h-screen max-w-7xl lg:drawer-open lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-3 lg:px-6 lg:py-4">
     <input id="navigation-drawer" type="checkbox" class="drawer-toggle" aria-label="Navigation">
     <div class="drawer-content min-w-0 p-3 pb-12 lg:p-0">
-      <div class="navbar mb-5 rounded-box border border-base-300 bg-base-100 shadow-sm lg:hidden">
+      <div class="navbar mb-5 rounded-box border border-base-300 bg-base-100 shadow-xs lg:hidden">
         <label for="navigation-drawer" class="btn btn-square btn-ghost" aria-label="Open navigation" tabindex="0" role="button">{{ icon("menu") }}</label>
         <a href="/dashboard" class="btn btn-ghost text-lg">Everwealth</a>
       </div>
@@ -21,17 +21,17 @@
     </div>
     <div class="drawer-side z-30 lg:sticky lg:top-4 lg:col-start-1 lg:row-start-1 lg:h-[calc(100vh-2rem)] lg:overflow-visible">
       <label for="navigation-drawer" class="drawer-overlay" aria-label="Close navigation"></label>
-      <aside class="flex min-h-full w-60 flex-col gap-4 border border-base-300 bg-base-100 p-4 shadow-sm lg:h-full lg:min-h-0 lg:w-full lg:rounded-box">
+      <aside class="flex min-h-full w-60 flex-col gap-4 border border-base-300 bg-base-100 p-4 shadow-xs lg:h-full lg:min-h-0 lg:w-full lg:rounded-box">
         <a href="/dashboard" class="btn btn-ghost justify-start px-3 text-xl font-semibold">Everwealth</a>
         <nav aria-label="Primary navigation">
-          <ul class="menu gap-1 p-0">
+          <ul class="menu w-full gap-1 p-0">
             {% for key, label, path, partial, symbol in nav_items %}
-              <li><a href="{{ path }}" hx-get="{{ partial }}" hx-push-url="{{ path }}" hx-target="#main-content" data-nav="{{ key }}" {% if menu_selection == key %}class="active" aria-current="page"{% endif %}>{{ icon(symbol) }} {{ label }}</a></li>
+              <li><a href="{{ path }}" hx-get="{{ partial }}" hx-push-url="{{ path }}" hx-target="#main-content" data-nav="{{ key }}" {% if menu_selection == key %}class="menu-active" aria-current="page"{% endif %}>{{ icon(symbol) }} {{ label }}</a></li>
             {% endfor %}
           </ul>
         </nav>
         <div class="mt-auto space-y-2">
-          <label class="label cursor-pointer gap-3 px-3 text-sm">
+          <label class="label flex w-full justify-between gap-3 px-3 text-sm">
             <span class="flex items-center gap-3">{{ icon("moon") }} Dark theme</span>
             <input type="checkbox" class="toggle toggle-sm" data-theme-toggle aria-label="Dark theme">
           </label>

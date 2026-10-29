@@ -6,16 +6,16 @@
       <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
     </div>
     <form method="post" action="/transactions/upload" enctype="multipart/form-data" class="mt-5 space-y-4">
-      <label class="form-control">
-        <span class="label-text mb-2">Account</span>
-        <select name="account" required class="select select-bordered w-full" autofocus>
+      <label class="grid gap-2 text-sm">
+        <span class="label">Account</span>
+        <select name="account" required class="select w-full" autofocus>
           <option value="">Select an account</option>
           {% for account in accounts %}<option value="{{ account.id }}">{{ account.name }}</option>{% endfor %}
         </select>
       </label>
-      <label class="form-control">
-        <span class="label-text mb-2">CSV file</span>
-        <input name="file" type="file" required accept=".csv,text/csv" class="file-input file-input-bordered file-input-primary w-full">
+      <label class="grid gap-2 text-sm">
+        <span class="label">CSV file</span>
+        <input name="file" type="file" required accept=".csv,text/csv" class="file-input file-input-primary w-full">
       </label>
       <a href="{{ url_for('static', path='/upload_template.csv') }}" download class="link link-primary inline-flex items-center gap-2 text-sm">{{ icon("download") }} CSV template</a>
       <div class="modal-action">

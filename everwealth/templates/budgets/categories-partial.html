@@ -2,11 +2,11 @@
 {% call page_header("Categories") %}
   <a href="/budgets" hx-get="/budgets/partial" hx-push-url="/budgets" hx-target="#main-content" class="btn btn-outline btn-sm">{{ icon("arrow-left") }} Budgets</a>
 {% endcall %}
-<section class="card card-bordered bg-base-100 shadow-sm" aria-labelledby="categories-heading">
+<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="categories-heading">
   <div class="flex flex-wrap items-center justify-between gap-4 border-b border-base-300 px-5 py-4">
     <h2 id="categories-heading" class="section-heading">All categories</h2>
     <form class="flex w-full gap-2 sm:w-auto" action="/categories" method="post">
-      <input type="text" name="name" class="input input-bordered input-sm min-w-0 flex-1" required placeholder="Category name" aria-label="New category name">
+      <input type="text" name="name" class="input input-sm min-w-0 flex-1" required placeholder="Category name" aria-label="New category name">
       <button type="submit" class="btn btn-primary btn-sm">{{ icon("plus") }} Add</button>
     </form>
   </div>
@@ -14,12 +14,12 @@
     {% for group in category_groups %}
       <div class="grid gap-3 px-5 py-4 sm:grid-cols-[12rem_minmax(0,1fr)]">
         <div>
-          <h3 class="break-words font-medium">{{ group.parent.name }}</h3>
+          <h3 class="wrap-break-word font-medium">{{ group.parent.name }}</h3>
           <span class="badge badge-ghost badge-sm mt-1">{{ group.parent.type|capitalize }}</span>
         </div>
         <ul class="flex flex-wrap items-center gap-2">
           {% for category in group.children %}
-            <li class="badge badge-outline h-auto max-w-full break-words py-1">{{ category.name }}</li>
+            <li class="badge badge-outline h-auto max-w-full wrap-break-word py-1">{{ category.name }}</li>
           {% else %}
             <li class="muted">No subcategories</li>
           {% endfor %}

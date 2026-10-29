@@ -6,24 +6,24 @@
       <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
     </div>
     <form action="/budgets" method="post" class="mt-5 space-y-4">
-      <label class="form-control">
-        <span class="label-text mb-2">Category</span>
-        <select name="category" class="select select-bordered w-full" required autofocus>
+      <label class="grid gap-2 text-sm">
+        <span class="label">Category</span>
+        <select name="category" class="select w-full" required autofocus>
           <option value="" disabled selected>Select a category</option>
           {% set selected_category_id = none %}
           {% include "budgets/category-options.html" %}
         </select>
       </label>
-      <div class="form-control">
-        <label for="new-budget-amount" class="label-text mb-2">Monthly amount</label>
-        <div class="input input-bordered flex items-center gap-2">
+      <div class="grid gap-2 text-sm">
+        <label for="new-budget-amount" class="label">Monthly amount</label>
+        <div class="input flex w-full items-center gap-2">
           <span class="text-base-content/50">$</span>
           <input id="new-budget-amount" type="number" name="amount" min="0" step="1" required placeholder="0" class="min-w-0 grow">
         </div>
       </div>
-      <label class="label cursor-pointer justify-start gap-3">
+      <label class="label whitespace-normal cursor-pointer justify-start gap-3">
         <input type="checkbox" name="rollover" value="true" class="checkbox checkbox-sm">
-        <span class="label-text">Copy this budget into future months</span>
+        <span class="text-sm">Copy this budget into future months</span>
       </label>
       <div class="modal-action">
         <button type="button" class="btn btn-ghost btn-sm" data-close-modal>Cancel</button>

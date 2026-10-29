@@ -199,6 +199,10 @@ class Transaction(BaseModel):
         account_id: Optional[str] = None,
         limit: Optional[int] = None,
         offset: int = 0,
+        *,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        search: Optional[str] = None,
     ) -> list["Transaction"]:
         records = await db.fetch(
             """
@@ -206,6 +210,9 @@ class Transaction(BaseModel):
             FROM transactions t LEFT JOIN categories c ON c.id = t.category_id
             WHERE t.user_id = $1 AND ($2::varchar IS NULL OR t.account_id = $2)
               AND COALESCE(t.hidden, FALSE) = FALSE
+              AND ($5::date IS NULL OR t.date >= $5)
+              AND ($6::date IS NULL OR t.date < $6)
+              AND ($7::text IS NULL OR strpos(lower(t.description), lower($7)) > 0)
             ORDER BY t.date DESC, t.created_at DESC
             LIMIT COALESCE($3::integer, 2147483647) OFFSET $4
             """,
@@ -213,21 +220,50 @@ class Transaction(BaseModel):
             account_id,
             limit,
             offset,
+            start_date,
+            end_date,
+            search,
         )
         return [Transaction.model_validate(dict(record)) for record in records]
 
     @staticmethod
-    async def count_many(user_id: str, db: Connection, account_id: Optional[str] = None) -> int:
+    async def count_many(
+        user_id: str,
+        db: Connection,
+        account_id: Optional[str] = None,
+        *,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        search: Optional[str] = None,
+    ) -> int:
         return await db.fetchval(
             """
             SELECT COUNT(*)
             FROM transactions t
             WHERE t.user_id = $1 AND ($2::varchar IS NULL OR t.account_id = $2)
               AND COALESCE(t.hidden, FALSE) = FALSE
+              AND ($3::date IS NULL OR t.date >= $3)
+              AND ($4::date IS NULL OR t.date < $4)
+              AND ($5::text IS NULL OR strpos(lower(t.description), lower($5)) > 0)
             """,
             user_id,
             account_id,
+            start_date,
+            end_date,
+            search,
         )
+
+    @staticmethod
+    async def date_bounds(user_id: str, db: Connection) -> tuple[Optional[date], Optional[date]]:
+        record = await db.fetchrow(
+            """
+            SELECT MIN(date) AS first_date, MAX(date) AS last_date
+            FROM transactions
+            WHERE user_id = $1 AND COALESCE(hidden, FALSE) = FALSE
+            """,
+            user_id,
+        )
+        return (record["first_date"], record["last_date"]) if record else (None, None)
 
     @staticmethod
     async def fetch_for_category_in_range(

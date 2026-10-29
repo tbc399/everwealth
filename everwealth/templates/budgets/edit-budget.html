@@ -6,16 +6,16 @@
       <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
     </div>
     <form hx-put="/budgets/{{ budget.id }}" class="mt-5 space-y-4">
-      <div class="form-control">
-        <label for="edit-budget-amount" class="label-text mb-2">Monthly amount</label>
-        <div class="input input-bordered flex items-center gap-2">
+      <div class="grid gap-2 text-sm">
+        <label for="edit-budget-amount" class="label">Monthly amount</label>
+        <div class="input flex w-full items-center gap-2">
           <span class="text-base-content/50">$</span>
           <input id="edit-budget-amount" name="amount" type="number" min="0" step="1" value="{{ budget.amount }}" required autofocus class="min-w-0 grow">
         </div>
       </div>
-      <label class="label cursor-pointer justify-start gap-3">
+      <label class="label whitespace-normal cursor-pointer justify-start gap-3">
         <input name="rollover" type="checkbox" value="true" class="checkbox checkbox-sm" {% if budget.rollover %}checked{% endif %}>
-        <span class="label-text">Copy this budget into future months</span>
+        <span class="text-sm">Copy this budget into future months</span>
       </label>
       <div class="modal-action justify-between">
         <button type="button" hx-delete="/budgets/{{ budget.id }}" hx-confirm="Delete this budget?" class="btn btn-error btn-outline btn-sm">{{ icon("trash-2") }} Delete</button>
@@ -28,7 +28,7 @@
       <ul class="divide-y divide-base-300">
         {% for transaction in transactions %}
           <li class="flex items-center justify-between gap-4 py-2 text-sm">
-            <span class="min-w-0 break-words">{{ transaction.description }}</span>
+            <span class="min-w-0 wrap-break-word">{{ transaction.description }}</span>
             <span class="shrink-0 font-mono">${{ transaction.display_amount }}</span>
           </li>
         {% endfor %}

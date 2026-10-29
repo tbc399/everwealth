@@ -4,7 +4,7 @@
 {% endcall %}
 {% include "budgets/overview.html" %}
 <div class="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-  <section class="card card-bordered min-w-0 bg-base-100 shadow-sm" aria-labelledby="recent-heading">
+  <section class="card card-border min-w-0 bg-base-100 shadow-xs" aria-labelledby="recent-heading">
     <div class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
       <h2 id="recent-heading" class="section-heading">Recent transactions</h2>
       <a href="/transactions" hx-get="/transactions/partial" hx-target="#main-content" hx-push-url="/transactions" class="btn btn-outline btn-xs">View all {{ icon("arrow-right") }}</a>
@@ -25,7 +25,7 @@
       </table>
     </div>
   </section>
-  <section class="card card-bordered min-w-0 bg-base-100 shadow-sm" aria-labelledby="connections-heading">
+  <section class="card card-border min-w-0 bg-base-100 shadow-xs" aria-labelledby="connections-heading">
     <div class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
       <h2 id="connections-heading" class="section-heading">Connections</h2>
       <span class="badge badge-ghost">{{ accounts|length }}</span>
@@ -34,7 +34,7 @@
       {% for account in accounts[:4] %}
         <li class="flex items-center gap-3 px-5 py-4">
           <span class="text-base-content/50">{{ icon("landmark") }}</span>
-          <div class="min-w-0"><div class="break-words text-sm font-medium">{{ account.name }}</div><div class="muted">{{ account.institution_name or "Manual account" }}</div></div>
+          <div class="min-w-0"><div class="wrap-break-word text-sm font-medium">{{ account.name }}</div><div class="muted">{{ account.institution_name or "Manual account" }}</div></div>
         </li>
       {% else %}
         <li class="empty-state">No connected accounts.</li>

@@ -4,13 +4,13 @@
   <h1 class="text-xl font-semibold">Sign in</h1>
   {% if error %}<div class="alert alert-error mt-4 text-sm" role="alert">{{ error }}</div>{% endif %}
   <form method="post" action="/login" class="mt-5 space-y-4">
-    <label class="form-control">
-      <span class="label-text mb-2">Username or email</span>
-      <input type="text" name="identifier" autocomplete="username" value="{{ identifier or '' }}" class="input input-bordered w-full" required autofocus>
+    <label class="grid gap-2 text-sm">
+      <span class="label">Username or email</span>
+      <input type="text" name="identifier" autocomplete="username" value="{{ identifier or '' }}" class="input w-full" required autofocus>
     </label>
-    <label class="form-control">
-      <span class="label-text mb-2">Password</span>
-      <input type="password" name="password" autocomplete="current-password" class="input input-bordered w-full" required>
+    <label class="grid gap-2 text-sm">
+      <span class="label">Password</span>
+      <input type="password" name="password" autocomplete="current-password" class="input w-full" required>
     </label>
     <button type="submit" class="btn btn-primary w-full">Sign in {{ icon("arrow-right") }}</button>
   </form>

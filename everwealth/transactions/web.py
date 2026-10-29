@@ -1,7 +1,7 @@
 import csv
 import math
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from io import StringIO
 from typing import Annotated, Optional
@@ -31,6 +31,41 @@ from everwealth.transactions import Transaction, TransactionRule
 router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
 TRANSACTIONS_PAGE_SIZE = 50
+MonthQuery = Annotated[str, Query(pattern=r"^(?:[0-9]{4}-(?:0[1-9]|1[0-2]))?$")]
+SearchQuery = Annotated[str, Query(max_length=200)]
+
+
+def _month_bounds(month: str) -> tuple[Optional[date], Optional[date]]:
+    if not month:
+        return None, None
+    try:
+        start = date.fromisoformat(f"{month}-01")
+        end = (
+            date(start.year + 1, 1, 1)
+            if start.month == 12
+            else date(start.year, start.month + 1, 1)
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail="Invalid calendar month") from error
+    return start, end
+
+
+def _month_options(
+    first: Optional[date], last: Optional[date], selected: Optional[date]
+) -> list[dict]:
+    today = date.today().replace(day=1)
+    earliest = min(first or today, today).replace(day=1)
+    current = max(last or today, today).replace(day=1)
+    months = []
+    while current >= earliest:
+        months.append(current)
+        if current == earliest:
+            break
+        current = (current - timedelta(days=1)).replace(day=1)
+    if selected and selected not in months:
+        months.append(selected)
+        months.sort(reverse=True)
+    return [{"value": item.isoformat()[:7], "label": item.strftime("%B %Y")} for item in months]
 
 
 def _group_by_date(transactions: list[Transaction]) -> list[tuple]:
@@ -41,25 +76,49 @@ def _group_by_date(transactions: list[Transaction]) -> list[tuple]:
 
 
 async def _transaction_context(
-    user_id: str, db: Connection, account_id: Optional[str] = None, page: int = 1
+    user_id: str,
+    db: Connection,
+    account_id: Optional[str] = None,
+    page: int = 1,
+    month: str = "",
+    search: str = "",
 ) -> dict:
-    total_transactions = await Transaction.count_many(user_id, db, account_id)
+    account_id = account_id or None
+    search = search.strip()
+    start_date, end_date = _month_bounds(month)
+    query_filters = {"start_date": start_date, "end_date": end_date, "search": search or None}
+    total_transactions = await Transaction.count_many(user_id, db, account_id, **query_filters)
     total_pages = max(1, math.ceil(total_transactions / TRANSACTIONS_PAGE_SIZE))
     current_page = min(max(page, 1), total_pages)
     offset = (current_page - 1) * TRANSACTIONS_PAGE_SIZE
     transactions = await Transaction.fetch_many(
-        user_id, db, account_id, limit=TRANSACTIONS_PAGE_SIZE, offset=offset
+        user_id, db, account_id, limit=TRANSACTIONS_PAGE_SIZE, offset=offset, **query_filters
     )
     visible_start = offset + 1 if total_transactions else 0
     visible_end = offset + len(transactions)
     page_start = max(1, current_page - 2)
     page_end = min(total_pages, current_page + 2)
+    first_date, last_date = await Transaction.date_bounds(user_id, db)
+    filters = {
+        key: value
+        for key, value in {
+            "account": account_id,
+            "month": month,
+            "q": search,
+        }.items()
+        if value
+    }
     return {
         "transactions": transactions,
         "transaction_groups": _group_by_date(transactions),
         "accounts": await Account.fetch_all(user_id, db),
         "category_groups": await Category.fetch_grouped(user_id, db),
         "selected_account": account_id,
+        "selected_month": month,
+        "search": search,
+        "months": _month_options(first_date, last_date, start_date),
+        "filters": filters,
+        "filter_query": urlencode(filters),
         "current_page": current_page,
         "total_pages": total_pages,
         "total_transactions": total_transactions,
@@ -75,10 +134,12 @@ async def get_transactions(
     request: Request,
     account: Optional[str] = None,
     page: Annotated[int, Query(ge=1)] = 1,
+    month: MonthQuery = "",
+    q: SearchQuery = "",
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    context = await _transaction_context(user_id, db, account, page)
+    context = await _transaction_context(user_id, db, account, page, month, q)
     context.update(
         {
             "request": request,
@@ -96,10 +157,12 @@ async def get_transactions_partial(
     request: Request,
     account: Optional[str] = None,
     page: Annotated[int, Query(ge=1)] = 1,
+    month: MonthQuery = "",
+    q: SearchQuery = "",
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    context = await _transaction_context(user_id, db, account, page)
+    context = await _transaction_context(user_id, db, account, page, month, q)
     context.update(
         {"request": request, "tab": "transactions", "partial": "transactions/transactions-tab.html"}
     )
@@ -111,16 +174,16 @@ async def get_transactions_tab(
     request: Request,
     account: Optional[str] = None,
     page: Annotated[int, Query(ge=1)] = 1,
+    month: MonthQuery = "",
+    q: SearchQuery = "",
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
-    context = await _transaction_context(user_id, db, account, page)
+    context = await _transaction_context(user_id, db, account, page, month, q)
     context["request"] = request
     response = templates.TemplateResponse("transactions/transactions-tab.html", context)
     if "HX-Request" in request.headers:
-        query = urlencode(
-            {"page": context["current_page"], **({"account": account} if account else {})}
-        )
+        query = urlencode({"page": context["current_page"], **context["filters"]})
         response.headers["HX-Push-Url"] = f"/transactions?{query}"
     return response
 
