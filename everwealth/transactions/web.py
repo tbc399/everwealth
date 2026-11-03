@@ -1,14 +1,10 @@
-import csv
 import math
 from collections import defaultdict
 from datetime import date, timedelta
-from decimal import Decimal, InvalidOperation
-from io import StringIO
 from typing import Annotated, Optional
 from urllib.parse import urlencode
 
 from asyncpg import Connection
-from dateutil import parser
 from fastapi import (
     APIRouter,
     Depends,
@@ -27,6 +23,7 @@ from everwealth.auth import auth_user
 from everwealth.budgets import Category
 from everwealth.db import get_connection
 from everwealth.transactions import Transaction, TransactionRule
+from everwealth.transactions.csv_import import csv_reader, parse_transactions, suggest_mapping
 
 router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
@@ -238,10 +235,23 @@ async def get_upload_modal(
     )
 
 
+@router.post("/transactions/upload/headers")
+async def get_upload_headers(file: UploadFile, user_id: str = Depends(auth_user)):
+    try:
+        reader = csv_reader(await file.read())
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return {"headers": reader.fieldnames, "mapping": suggest_mapping(reader.fieldnames)}
+
+
 @router.post("/transactions/upload")
 async def upload_transactions(
     file: UploadFile,
     account: Annotated[str, Form()],
+    date_column: Annotated[Optional[str], Form()] = None,
+    description_column: Annotated[Optional[str], Form()] = None,
+    amount_column: Annotated[Optional[str], Form()] = None,
+    direction_column: Annotated[Optional[str], Form()] = None,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
@@ -250,30 +260,20 @@ async def upload_transactions(
     )
     if not valid_account:
         raise HTTPException(status_code=400, detail="Invalid account")
-    content = (await file.read()).decode("utf-8-sig")
-    reader = csv.DictReader(StringIO(content))
-    normalized = {name.lower(): name for name in (reader.fieldnames or [])}
-    required = {"date", "description", "amount"}
-    if not required.issubset(normalized):
-        raise HTTPException(
-            status_code=400, detail="CSV needs Date, Description, and Amount columns"
+    try:
+        transactions = parse_transactions(
+            await file.read(),
+            {
+                "date": date_column,
+                "description": description_column,
+                "amount": amount_column,
+                "direction": direction_column,
+            },
+            user_id,
+            account,
         )
-    transactions = []
-    for row_number, row in enumerate(reader, start=2):
-        try:
-            amount = int(Decimal(row[normalized["amount"]].replace(",", "").replace("$", "")) * 100)
-            trans_date = parser.parse(row[normalized["date"]]).date()
-        except (InvalidOperation, ValueError, TypeError) as exc:
-            raise HTTPException(status_code=400, detail=f"Invalid CSV row {row_number}") from exc
-        transactions.append(
-            Transaction(
-                user_id=user_id,
-                account_id=account,
-                description=row[normalized["description"]].strip(),
-                amount=amount,
-                date=trans_date,
-            )
-        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
     await Transaction.create_many(transactions, db)
     return RedirectResponse("/transactions", status_code=303)
 

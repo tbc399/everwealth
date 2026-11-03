@@ -1,3 +1,5 @@
+import "./transaction-upload.js";
+
 import {
   createIcons, ArrowLeft, ArrowLeftRight, ArrowRight,
   Check, ChevronLeft, ChevronRight, Download, FileSpreadsheet,

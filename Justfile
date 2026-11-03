@@ -8,6 +8,9 @@ dbmate_url := env_var_or_default("DBMATE_DATABASE_URL", env_var("DATABASE_URL") 
 run:
     granian --interface asgi --loop uvloop --reload everwealth/main:app
 
+run-prod:
+    sh scripts/start.sh
+
 format:
     black .
     isort .

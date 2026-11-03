@@ -12,6 +12,7 @@ class BudgetPeriod(BaseModel):
     user_id: str
     start: datetime
     end: datetime
+    rollover_completed: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     @classmethod
@@ -58,11 +59,9 @@ class BudgetPeriod(BaseModel):
 
     @staticmethod
     async def current(user_id: str, db: Connection) -> "BudgetPeriod":
-        now = datetime.utcnow()
-        period = await BudgetPeriod.fetch_for_month(user_id, now.year, now.month, db)
-        if period:
-            return period
-        return await BudgetPeriod.for_month(user_id, now.year, now.month).save(db)
+        from everwealth.budgets.rollover import ensure_current_period
+
+        return await ensure_current_period(user_id, db)
 
 
 class BudgetView(BaseModel):
@@ -71,7 +70,6 @@ class BudgetView(BaseModel):
     category_id: str
     category_name: str
     amount: int
-    rollover: bool = False
     transactions_total: float = 0
 
     @staticmethod
@@ -81,7 +79,7 @@ class BudgetView(BaseModel):
         records = await db.fetch(
             """
             SELECT b.id, b.user_id, b.category_id, c.name AS category_name,
-                   b.amount, COALESCE(b.rollover, FALSE) AS rollover,
+                   b.amount,
                    COALESCE(SUM(t.amount), 0) / 100.0 AS transactions_total
             FROM budgets b
             JOIN budget_periods p ON p.id = b.period_id
@@ -108,7 +106,7 @@ class BudgetView(BaseModel):
         record = await db.fetchrow(
             """
             SELECT b.id, b.user_id, b.category_id, c.name AS category_name,
-                   b.amount, COALESCE(b.rollover, FALSE) AS rollover,
+                   b.amount,
                    COALESCE(SUM(t.amount), 0) / 100.0 AS transactions_total
             FROM budgets b
             JOIN budget_periods p ON p.id = b.period_id
@@ -132,7 +130,6 @@ class Budget(BaseModel):
     user_id: str
     category_id: str
     amount: int
-    rollover: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -147,11 +144,10 @@ class Budget(BaseModel):
         await db.execute(
             """
             INSERT INTO budgets (
-                id, period_id, user_id, category_id, amount, rollover, created_at, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                id, period_id, user_id, category_id, amount, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT (id) DO UPDATE SET
                 amount = EXCLUDED.amount,
-                rollover = EXCLUDED.rollover,
                 updated_at = EXCLUDED.updated_at
             """,
             self.id,
@@ -159,7 +155,6 @@ class Budget(BaseModel):
             self.user_id,
             self.category_id,
             self.amount,
-            self.rollover,
             self.created_at,
             datetime.utcnow(),
         )

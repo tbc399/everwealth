@@ -8,6 +8,57 @@ import pytest
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "trusted_hosts, client_ip, expected_scheme",
+    [
+        ("*", "10.0.0.5", "https"),
+        ("127.0.0.1, 10.0.0.0/8", "10.0.0.5", "https"),
+        ("127.0.0.1", "203.0.113.10", "http"),
+    ],
+)
+async def test_granian_entry_point_respects_proxy_trust(
+    ui_app, monkeypatch, trusted_hosts, client_ip, expected_scheme
+):
+    from everwealth.asgi import create_app
+
+    monkeypatch.setenv("FORWARDED_ALLOW_IPS", trusted_hosts)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=create_app(), client=(client_ip, 12345)),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/login",
+            headers={"X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.20"},
+        )
+    assert response.status_code == 200
+    assert f"{expected_scheme}://test/static/styles.css" in response.text
+
+
+@pytest.mark.asyncio
+async def test_granian_entry_point_preserves_application_lifespan(ui_app, monkeypatch):
+    from everwealth import main
+    from everwealth.asgi import create_app
+
+    start = AsyncMock()
+    stop = AsyncMock()
+    monkeypatch.setattr(main, "startup", start)
+    monkeypatch.setattr(main, "shutdown", stop)
+    events = iter([{"type": "lifespan.startup"}, {"type": "lifespan.shutdown"}])
+
+    async def receive():
+        return next(events)
+
+    send = AsyncMock()
+    await create_app()({"type": "lifespan"}, receive, send)
+    start.assert_awaited_once()
+    stop.assert_awaited_once()
+    assert [call.args[0]["type"] for call in send.await_args_list] == [
+        "lifespan.startup.complete",
+        "lifespan.shutdown.complete",
+    ]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("available", [True, False, None])
 async def test_health_checks_database_without_authentication(ui_app, monkeypatch, available):
     from everwealth import db

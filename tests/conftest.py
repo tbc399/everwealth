@@ -53,7 +53,6 @@ def ui_app(monkeypatch):
             category_name=name,
             amount=amount,
             transactions_total=spent,
-            rollover=True,
         )
         for index, (name, amount, spent) in enumerate(
             [

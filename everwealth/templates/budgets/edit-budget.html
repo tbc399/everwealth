@@ -13,10 +13,6 @@
           <input id="edit-budget-amount" name="amount" type="number" min="0" step="1" value="{{ budget.amount }}" required autofocus class="min-w-0 grow">
         </div>
       </div>
-      <label class="label whitespace-normal cursor-pointer justify-start gap-3">
-        <input name="rollover" type="checkbox" value="true" class="checkbox checkbox-sm" {% if budget.rollover %}checked{% endif %}>
-        <span class="text-sm">Copy this budget into future months</span>
-      </label>
       <div class="modal-action justify-between">
         <button type="button" hx-delete="/budgets/{{ budget.id }}" hx-confirm="Delete this budget?" class="btn btn-error btn-outline btn-sm">{{ icon("trash-2") }} Delete</button>
         <button type="submit" class="btn btn-primary btn-sm">{{ icon("check") }} Save changes</button>

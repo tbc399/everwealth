@@ -1,7 +1,7 @@
 ## Railway deployment
 
 The root `Dockerfile` builds the DaisyUI CSS and JavaScript, installs Python
-dependencies, and runs Uvicorn as a non-root user on Railway's `PORT`. Node and
+dependencies, and runs Granian as a non-root user on Railway's `PORT`. Node and
 `node_modules` are not included in the runtime image. Lucette is bundled under
 `vendor/lucette` so deployment does not depend on a sibling checkout.
 
@@ -39,7 +39,12 @@ lists local settings; Railway injects variables at runtime. Keep
 `AUTH_TOKEN_SECRET` stable across redeploys so existing sessions remain valid.
 Only trust all forwarded headers when the application is reachable exclusively
 through a trusted reverse proxy; do not use `FORWARDED_ALLOW_IPS=*` on an exposed
-Uvicorn server. Locally, leave it unset (Uvicorn trusts loopback by default).
+Granian server. Locally, leave it unset (the ASGI proxy wrapper trusts loopback
+by default). `scripts/start.sh` runs Granian with ASGI, uvloop, one worker, and
+reload disabled. Use `just run-prod` to run the same command locally, or
+`just run` for development with reload. The production ASGI entry point reads
+`FORWARDED_ALLOW_IPS` as a comma-separated list of trusted IPs or CIDR ranges,
+or `*` for Railway's trusted ingress.
 For an external TLS-enabled database, set `DBMATE_DATABASE_URL` to its appropriate
 TLS connection URL instead. If a URL already has query parameters, append further
 parameters with `&`, not a second `?`.
@@ -89,6 +94,34 @@ update `themes` in the `@plugin "daisyui"` block in `everwealth/static/input.css
 and the theme attributes on `<html>` in `everwealth/templates/base.html`.
 The startup script and toggle read those attributes. Rebuild the assets and
 refresh the browser after changing themes.
+
+## Monthly budget rollover
+
+All budgets are automatically copied with the same amount and category into
+each new calendar month (UTC). Spending and
+remaining balances are not carried forward. The hourly background job catches
+up missed months on startup, and opening Budgets or Overview initializes the
+current month immediately. Existing amounts in the new month are preserved.
+
+Apply migrations (`just migrate` or the Railway pre-deploy migration command)
+before running the updated application. The rollover completion marker lets
+the application repair previously empty or partially populated months once;
+subsequent runs do not restore budgets you delete.
+
+## Importing transactions
+
+In Transactions, choose Import, select an account, and choose a UTF-8 CSV file
+with a header row. Match the file's columns to Date, Description, and Amount;
+common headers are suggested automatically. Unmapped columns are ignored.
+
+If amounts are unsigned, select the optional Credit / debit column. Values such
+as credit, deposit, refund, and income make the amount positive; debit,
+withdrawal, payment, and expense make it negative. Matching ignores case and
+supports phrases such as "ACH deposit". This selection overrides any existing
+amount sign. Without it, amounts retain their original signs. Unknown or
+ambiguous direction values produce a row error; no transactions are saved until
+the whole file passes validation. For the UFCU export, use Book date,
+Description, Amount, and Credit/debit indicator.
 
 ## Database migrations
 

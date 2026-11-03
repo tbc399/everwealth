@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Annotated
 
 from asyncpg import Connection
@@ -22,10 +21,11 @@ templates = Jinja2Templates(directory="everwealth/templates")
 
 
 async def _budget_context(user_id: str, db: Connection) -> dict:
-    now = datetime.utcnow()
     period = await BudgetPeriod.current(user_id, db)
     return {
-        "budgets": await BudgetView.fetch_all_by_month(user_id, now.year, now.month, db),
+        "budgets": await BudgetView.fetch_all_by_month(
+            user_id, period.start.year, period.start.month, db
+        ),
         "overview": await BudgetOverview.fetch(user_id, period, db),
         "period": period,
     }
@@ -71,7 +71,6 @@ async def get_budget_create(
 async def create_budget(
     category_id: Annotated[str, Form(alias="category")],
     amount: Annotated[int, Form()],
-    rollover: Annotated[bool, Form()] = False,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
@@ -87,7 +86,6 @@ async def create_budget(
         user_id=user_id,
         category_id=category_id,
         amount=amount,
-        rollover=rollover,
     ).save(db)
     return RedirectResponse("/budgets", status_code=303)
 
@@ -121,7 +119,6 @@ async def get_budget_detail(
 async def update_budget(
     budget_id: str,
     amount: Annotated[int, Form()],
-    rollover: Annotated[bool, Form()] = False,
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
@@ -129,7 +126,6 @@ async def update_budget(
     if not budget:
         raise HTTPException(status_code=404)
     budget.amount = amount
-    budget.rollover = rollover
     await budget.save(db)
     return Response(status_code=200, headers={"HX-Redirect": "/budgets"})
 

@@ -5,7 +5,7 @@
       <h2 id="import-heading" class="text-lg font-semibold">Import transactions</h2>
       <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
     </div>
-    <form method="post" action="/transactions/upload" enctype="multipart/form-data" class="mt-5 space-y-4">
+    <form method="post" action="/transactions/upload" enctype="multipart/form-data" class="mt-5 space-y-4" data-transaction-upload>
       <label class="grid gap-2 text-sm">
         <span class="label">Account</span>
         <select name="account" required class="select w-full" autofocus>
@@ -15,12 +15,25 @@
       </label>
       <label class="grid gap-2 text-sm">
         <span class="label">CSV file</span>
-        <input name="file" type="file" required accept=".csv,text/csv" class="file-input file-input-primary w-full">
+        <input name="file" type="file" required accept=".csv,text/csv" class="file-input file-input-primary w-full" data-upload-file>
       </label>
+      <p class="text-sm text-base-content/60" data-upload-status role="status">Choose a CSV file to map its columns.</p>
+      <fieldset class="space-y-4" data-upload-mapping hidden disabled>
+        <legend class="text-sm font-semibold">Match your file columns</legend>
+        <p class="text-sm text-base-content/60">Select the column in your file for each transaction field. Other columns are ignored.</p>
+        {% for field, label in [('date', 'Date'), ('description', 'Description'), ('amount', 'Amount'), ('direction', 'Credit / debit (optional)')] %}
+        <label class="grid gap-2 text-sm">
+          <span class="label">{{ label }}</span>
+          <select name="{{ field }}_column" class="select w-full" data-upload-column="{{ field }}" {% if field != 'direction' %}required{% endif %}></select>
+        </label>
+        {% endfor %}
+        <p class="text-sm text-base-content/60">Without a credit/debit column, amounts must be signed: positive for money in, negative for money out. When selected, this column sets the sign regardless of the amount’s original sign. Credit, deposit, refund, and income mean money in; debit, withdrawal, payment, and expense mean money out. Unrecognized or ambiguous values must be corrected before importing.</p>
+      </fieldset>
+      <p class="text-sm text-error" data-upload-error role="alert" hidden></p>
       <a href="{{ url_for('static', path='/upload_template.csv') }}" download class="link link-primary inline-flex items-center gap-2 text-sm">{{ icon("download") }} CSV template</a>
       <div class="modal-action">
         <button type="button" class="btn btn-ghost btn-sm" data-close-modal>Cancel</button>
-        <button type="submit" class="btn btn-primary btn-sm">{{ icon("file-spreadsheet") }} Import</button>
+        <button type="submit" class="btn btn-primary btn-sm" disabled>{{ icon("file-spreadsheet") }} Import</button>
       </div>
     </form>
   </div>
