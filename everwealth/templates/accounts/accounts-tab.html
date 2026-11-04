@@ -1,4 +1,15 @@
 {% from "partials/ui.html" import icon %}
+<form action="/accounts" method="post" class="card card-border bg-base-100 shadow-xs">
+  <div class="card-body gap-3">
+    <h2 class="section-heading">Add a manual account</h2>
+    <p class="muted">Create an account to attach imported transactions to.</p>
+    <label for="account-name" class="label">Account name</label>
+    <div class="flex flex-wrap gap-3">
+      <input id="account-name" name="name" class="input input-bordered" placeholder="e.g. Everyday checking" required maxlength="100">
+      <button type="submit" class="btn btn-primary">{{ icon("plus") }} Create account</button>
+    </div>
+  </div>
+</form>
 <div id="accounts-tab-list" class="space-y-5">
   {% for account_type, group in account_groups.items() %}
     <section class="card card-border bg-base-100 shadow-xs" aria-labelledby="account-group-{{ loop.index }}">
@@ -13,12 +24,12 @@
             {% for account in group %}
               <tr id="account-{{ account.id }}">
                 <td class="min-w-40">
-                  <div class="font-medium">{{ account.name }}</div>
+                  <a class="link font-medium" href="/transactions?account={{ account.id }}">{{ account.name }}</a>
                   {% if account.last4 %}<div class="muted mt-1">&bull;&bull;&bull;&bull; {{ account.last4 }}</div>{% endif %}
-                  <div class="mt-1 text-xs text-base-content/60 sm:hidden">{{ account.institution_name or "Manual account" }} &middot; Synced {{ account.last_sync_display }}</div>
+                  <div class="mt-1 text-xs text-base-content/60 sm:hidden">{{ account.institution_name or "Manual account" }}{% if account.type != 'manual' %} &middot; Synced {{ account.last_sync_display }}{% endif %}</div>
                 </td>
                 <td class="hidden sm:table-cell">{{ account.institution_name or "Manual account" }}</td>
-                <td class="hidden whitespace-nowrap text-base-content/60 sm:table-cell">{{ account.last_sync_display|capitalize }}</td>
+                <td class="hidden whitespace-nowrap text-base-content/60 sm:table-cell">{{ 'Not applicable' if account.type == 'manual' else account.last_sync_display|capitalize }}</td>
                 <td class="text-right">
                   <button type="button" class="btn btn-ghost btn-square btn-xs text-error" hx-delete="/accounts/{{ account.id }}" hx-confirm="Disconnect {{ account.name }}?" title="Disconnect account" aria-label="Disconnect {{ account.name }}">{{ icon("unplug") }}</button>
                 </td>
@@ -32,8 +43,8 @@
     <section class="card card-border bg-base-100 shadow-xs">
       <div class="card-body items-center py-12 text-center">
         <div class="text-base-content/40">{{ icon("landmark") }}</div>
-        <h2 class="section-heading">No connected accounts</h2>
-        <button type="button" class="btn btn-primary btn-sm mt-3" data-connect-account>{{ icon("plus") }} Connect account</button>
+        <h2 class="section-heading">No accounts yet</h2>
+        <p class="muted">Create a manual account above to get started.</p>
       </div>
     </section>
   {% endfor %}

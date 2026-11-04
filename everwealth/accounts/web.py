@@ -1,8 +1,9 @@
 from datetime import datetime
+from typing import Annotated
 
 from asyncpg import Connection
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 from pydantic import BaseModel
@@ -56,7 +57,7 @@ async def get_accounts(
             "tab": "accounts",
             "partial": "accounts/accounts-tab.html",
             "menu_selection": "accounts",
-            "title": "Connections",
+            "title": "Accounts",
         }
     )
     return templates.TemplateResponse("accounts/accounts.html", context)
@@ -93,7 +94,7 @@ async def get_accounts_partial(
             "request": request,
             "tab": "accounts",
             "partial": "accounts/accounts-tab.html",
-            "title": "Connections",
+            "title": "Accounts",
         }
     )
     return templates.TemplateResponse("accounts/accounts-partial.html", context)
@@ -137,6 +138,19 @@ async def get_assets_partial(
             "assets": await Asset.fetch_all(user_id, db),
         },
     )
+
+
+@router.post("/accounts", status_code=201)
+async def create_manual_account(
+    name: Annotated[str, Form(min_length=1, max_length=100)],
+    db: Connection = Depends(get_connection),
+    user_id: str = Depends(auth_user),
+):
+    name = name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="Account name is required.")
+    await Account(name=name, type=AccountType.manual, user_id=user_id).save(db)
+    return RedirectResponse("/accounts", status_code=303)
 
 
 @router.post("/accounts/create-link")

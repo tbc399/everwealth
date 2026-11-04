@@ -1,7 +1,44 @@
 import re
+from unittest.mock import AsyncMock
 
 import httpx
 import pytest
+
+
+@pytest.mark.asyncio
+async def test_create_manual_account(ui_app, monkeypatch):
+    from everwealth.accounts.models import Account
+
+    save = AsyncMock()
+    monkeypatch.setattr(Account, "save", save)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
+    ) as client:
+        response = await client.post("/accounts", data={"name": "  My checking  "})
+        for name in ("", "   ", "x" * 101):
+            invalid = await client.post("/accounts", data={"name": name})
+            assert invalid.status_code == 422
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/accounts"
+    save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_manual_account_is_saved_for_authenticated_user(ui_app):
+    from everwealth.db import get_connection
+
+    connection = ui_app.dependency_overrides[get_connection]()
+    db = await anext(connection)
+    await connection.aclose()
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
+    ) as client:
+        response = await client.post("/accounts", data={"name": "  My checking  "})
+    assert response.status_code == 303
+    args = db.execute.call_args.args
+    assert args[2:6] == ("My checking", "manual", "other", "test-user")
+    assert args[8:11] == (None, None, None)
 
 
 @pytest.mark.asyncio
@@ -13,8 +50,8 @@ import pytest
         ("/categories", "Categories"),
         ("/transactions", "Transactions"),
         ("/transactions/rules", "Transactions"),
-        ("/accounts", "Connections"),
-        ("/accounts/assets", "Connections"),
+        ("/accounts", "Accounts"),
+        ("/accounts/assets", "Accounts"),
         ("/settings/profile", "Settings"),
     ],
 )
