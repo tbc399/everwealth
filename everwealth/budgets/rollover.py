@@ -5,7 +5,7 @@ from asyncpg import Connection, Pool
 from dateutil.relativedelta import relativedelta
 from loguru import logger
 
-from everwealth.budgets.models.budgets import BudgetPeriod
+from everwealth.budgets.models.budgets import Budget, BudgetPeriod
 
 
 async def ensure_current_period(
@@ -54,29 +54,29 @@ async def ensure_current_period(
                     user_id, period.start.year, period.start.month
                 ).end
                 if source:
-                    # INSERT ... SELECT otherwise infers $1 as both text (in
-                    # the comparison) and varchar (in the destination column).
-                    await connection.execute(
+                    budgets = await connection.fetch(
                         """
-                        INSERT INTO budgets (
-                            id, period_id, user_id, category_id, amount,
-                            created_at, updated_at
-                        )
-                        SELECT substr(md5(random()::text), 1, 22), $1::varchar(22), b.user_id,
-                               b.category_id, b.amount, $2::timestamp, $2::timestamp
+                        SELECT b.category_id, b.amount
                         FROM budgets b
-                        WHERE b.period_id = $3 AND b.user_id = $4
+                        WHERE b.period_id = $1 AND b.user_id = $2
                           AND NOT EXISTS (
                               SELECT 1 FROM budgets existing
-                              WHERE existing.period_id = $1::varchar(22)
+                              WHERE existing.period_id = $3
                                 AND existing.category_id = b.category_id
                           )
                         """,
-                        period.id,
-                        now,
                         source.id,
                         user_id,
+                        period.id,
                     )
+                    for budget in budgets:
+                        await Budget(
+                            period_id=period.id,
+                            user_id=user_id,
+                            category_id=budget["category_id"],
+                            amount=budget["amount"],
+                            created_at=now,
+                        ).save(connection)
                 await connection.execute(
                     'UPDATE budget_periods SET rollover_completed = TRUE, "end" = $2 WHERE id = $1',
                     period.id,

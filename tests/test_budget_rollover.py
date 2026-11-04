@@ -97,8 +97,6 @@ class RolloverDatabase:
 
     def query(self, query, args):
         query = re.sub(r"\$(\d+)", r"?\1", query)
-        query = re.sub(r"(\?\d+)::(?:varchar\(22\)|timestamp)", r"\1", query)
-        query = query.replace("substr(md5(random()::text), 1, 22)", "lower(hex(randomblob(11)))")
         query = query.replace("EXTRACT(YEAR FROM start)", "CAST(strftime('%Y', start) AS INTEGER)")
         query = query.replace("EXTRACT(MONTH FROM start)", "CAST(strftime('%m', start) AS INTEGER)")
         return self.db.execute(
