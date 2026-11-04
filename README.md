@@ -108,6 +108,11 @@ before running the updated application. The rollover completion marker lets
 the application repair previously empty or partially populated months once;
 subsequent runs do not restore budgets you delete.
 
+Rollover regression tests run with `pytest tests/test_budget_rollover.py`.
+Set `TEST_POSTGRES_DSN` to a PostgreSQL connection URL to include the native
+parameter-type regression. That test uses session-local temporary tables and
+does not change application tables.
+
 ## Importing transactions
 
 In Transactions, choose Import, select an account, and choose a UTF-8 CSV file

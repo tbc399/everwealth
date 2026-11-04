@@ -54,19 +54,21 @@ async def ensure_current_period(
                     user_id, period.start.year, period.start.month
                 ).end
                 if source:
+                    # INSERT ... SELECT otherwise infers $1 as both text (in
+                    # the comparison) and varchar (in the destination column).
                     await connection.execute(
                         """
                         INSERT INTO budgets (
                             id, period_id, user_id, category_id, amount,
                             created_at, updated_at
                         )
-                        SELECT substr(md5(random()::text), 1, 22), $1, b.user_id,
-                               b.category_id, b.amount, $2, $2
+                        SELECT substr(md5(random()::text), 1, 22), $1::varchar(22), b.user_id,
+                               b.category_id, b.amount, $2::timestamp, $2::timestamp
                         FROM budgets b
                         WHERE b.period_id = $3 AND b.user_id = $4
                           AND NOT EXISTS (
                               SELECT 1 FROM budgets existing
-                              WHERE existing.period_id = $1
+                              WHERE existing.period_id = $1::varchar(22)
                                 AND existing.category_id = b.category_id
                           )
                         """,

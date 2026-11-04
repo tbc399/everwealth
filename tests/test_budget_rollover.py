@@ -1,16 +1,69 @@
 """Exercise rollover data changes against an isolated SQL database."""
 
 import asyncio
+import os
 import re
 import sqlite3
 from contextlib import asynccontextmanager
 from datetime import datetime
 from unittest.mock import AsyncMock
 
+import asyncpg
 import pytest
 
 from everwealth.budgets import Budget, BudgetPeriod
 from everwealth.budgets.rollover import ensure_current_period, rollover_expired_periods
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(
+    not os.environ.get("TEST_POSTGRES_DSN"), reason="Set TEST_POSTGRES_DSN for PostgreSQL checks"
+)
+async def test_postgres_rollover_parameter_types_and_retry():
+    connection = await asyncpg.connect(os.environ["TEST_POSTGRES_DSN"], timeout=5)
+    try:
+        # Only session-local tables are visible to the application queries below.
+        await connection.execute(
+            """
+            SET search_path TO pg_temp;
+            CREATE TEMP TABLE budget_periods (
+                id VARCHAR(22) PRIMARY KEY, user_id VARCHAR(22),
+                start TIMESTAMP NOT NULL, "end" TIMESTAMP NOT NULL,
+                created_at TIMESTAMP NOT NULL,
+                rollover_completed BOOLEAN NOT NULL DEFAULT FALSE
+            );
+            CREATE TEMP TABLE budgets (
+                id VARCHAR(22) PRIMARY KEY, user_id VARCHAR(22),
+                period_id VARCHAR(22), category_id VARCHAR(22), amount INTEGER,
+                created_at TIMESTAMP, updated_at TIMESTAMP
+            );
+        """
+        )
+        previous = await BudgetPeriod.for_month("test-user", 2026, 10).save(connection)
+        await Budget(
+            period_id=previous.id, user_id="test-user", category_id="food", amount=500
+        ).save(connection)
+        current = await BudgetPeriod.for_month("test-user", 2026, 11).save(connection)
+        await Budget(
+            period_id=current.id, user_id="test-user", category_id="rent", amount=1600
+        ).save(connection)
+        now = datetime(2026, 11, 4)
+        await ensure_current_period("test-user", connection, now)
+        await ensure_current_period("test-user", connection, now)
+        rows = await connection.fetch(
+            "SELECT category_id, amount, created_at FROM budgets WHERE period_id = $1 ORDER BY category_id",
+            current.id,
+        )
+        assert [(row["category_id"], row["amount"]) for row in rows] == [
+            ("food", 500),
+            ("rent", 1600),
+        ]
+        assert rows[0]["created_at"] == now
+        assert (
+            await BudgetPeriod.fetch_for_month("test-user", 2026, 11, connection)
+        ).rollover_completed
+    finally:
+        await connection.close()
 
 
 class RolloverDatabase:
@@ -44,6 +97,7 @@ class RolloverDatabase:
 
     def query(self, query, args):
         query = re.sub(r"\$(\d+)", r"?\1", query)
+        query = re.sub(r"(\?\d+)::(?:varchar\(22\)|timestamp)", r"\1", query)
         query = query.replace("substr(md5(random()::text), 1, 22)", "lower(hex(randomblob(11)))")
         query = query.replace("EXTRACT(YEAR FROM start)", "CAST(strftime('%Y', start) AS INTEGER)")
         query = query.replace("EXTRACT(MONTH FROM start)", "CAST(strftime('%m', start) AS INTEGER)")
@@ -133,9 +187,9 @@ async def test_page_copies_all_budgets_regardless_of_legacy_rollover_flag(databa
 @pytest.mark.asyncio
 async def test_new_and_edited_budgets_copy_without_any_rollover_option(database):
     october = await database.period(2026, 10)
-    await Budget(
-        period_id=october.id, user_id="user", category_id="food", amount=500
-    ).save(database)
+    await Budget(period_id=october.id, user_id="user", category_id="food", amount=500).save(
+        database
+    )
     november = await ensure_current_period("user", database, datetime(2026, 11, 1))
     copied = (await database.budgets(november))[0]
     budget = await Budget.fetch(copied["id"], "user", database)
