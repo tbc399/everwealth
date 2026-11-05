@@ -186,7 +186,10 @@ class BudgetOverview(BaseModel):
         expected = await db.fetchrow(
             """
             SELECT
-              COALESCE(SUM(CASE WHEN c.type = 'income' THEN b.amount ELSE 0 END), 0) AS expected_income,
+              COALESCE(
+                SUM(b.amount) FILTER (WHERE c.type = 'income' AND c.parent_id IS NULL AND LOWER(c.name) = 'income'),
+                SUM(CASE WHEN c.type = 'income' THEN b.amount ELSE 0 END), 0
+              ) AS expected_income,
               COALESCE(SUM(CASE WHEN c.type = 'expense' THEN b.amount ELSE 0 END), 0) AS expected_spend
             FROM budgets b
             JOIN categories c ON c.id = b.category_id

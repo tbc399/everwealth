@@ -14,6 +14,7 @@ from everwealth.budgets import (
     Category,
 )
 from everwealth.db import get_connection
+from everwealth.budgets.models.categories import CategoryType
 from everwealth.transactions import Transaction
 
 router = APIRouter()
@@ -70,7 +71,7 @@ async def get_budget_create(
 @router.post("/budgets")
 async def create_budget(
     category_id: Annotated[str, Form(alias="category")],
-    amount: Annotated[int, Form()],
+    amount: Annotated[int, Form(ge=0)],
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
@@ -88,6 +89,23 @@ async def create_budget(
         amount=amount,
     ).save(db)
     return RedirectResponse("/budgets", status_code=303)
+
+
+@router.get("/budgets/income/edit", response_class=HTMLResponse)
+async def get_income_edit(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user)
+):
+    context = await _budget_context(user_id, db)
+    context.update({
+        "request": request,
+        "income_categories": [
+            category for category in await Category.fetch_many(user_id, db)
+            if category.type == "income" and not category.parent_id
+            and category.name.casefold() == "income"
+        ],
+        "budgets_by_category": {budget.category_id: budget for budget in context["budgets"]},
+    })
+    return templates.TemplateResponse("budgets/edit-income.html", context)
 
 
 @router.get("/budgets/{budget_id}", response_class=HTMLResponse)
@@ -118,7 +136,7 @@ async def get_budget_detail(
 @router.put("/budgets/{budget_id}")
 async def update_budget(
     budget_id: str,
-    amount: Annotated[int, Form()],
+    amount: Annotated[int, Form(ge=0)],
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
 ):
@@ -174,6 +192,20 @@ async def create_category(
     name: Annotated[str, Form()],
     db: Connection = Depends(get_connection),
     user_id: str = Depends(auth_user),
+    parent_id: Annotated[str, Form()] = "",
 ):
-    await Category.create(name, user_id, db)
+    name = name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="Category name is required")
+    parent = await Category.fetch(parent_id, user_id, db) if parent_id else None
+    if parent_id and (not parent or parent.parent_id):
+        raise HTTPException(status_code=400, detail="Choose a valid main category")
+    if any(category.name.casefold() == name.casefold()
+           for category in await Category.fetch_many(user_id, db)):
+        raise HTTPException(status_code=409, detail="Category already exists")
+    await Category.create(
+        name, user_id, db,
+        type=parent.type if parent else CategoryType.expense,
+        parent_id=parent.id if parent else None,
+    )
     return RedirectResponse("/categories", status_code=303)

@@ -1,0 +1,28 @@
+{% from "partials/ui.html" import icon %}
+<dialog id="income-edit-modal" class="modal" data-modal aria-labelledby="edit-income-heading">
+  <div class="modal-box max-w-lg">
+    <div class="flex items-center justify-between gap-3">
+      <h2 id="edit-income-heading" class="text-lg font-semibold">Planned income</h2>
+      <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
+    </div>
+    <p class="muted mt-2">Set overall planned income for {{ period.start.strftime("%B %Y") }}.</p>
+    {% for category in income_categories %}
+      {% set budget = budgets_by_category.get(category.id) %}
+      <form {% if budget %}hx-put="/budgets/{{ budget.id }}"{% else %}action="/budgets" method="post"{% endif %} class="mt-4 flex items-end gap-3">
+        <input type="hidden" name="category" value="{{ category.id }}">
+        <div class="grid grow gap-2 text-sm">
+          <label for="income-{{ category.id }}" class="label">{{ category.name }}</label>
+          <div class="input flex w-full items-center gap-2">
+            <span class="text-base-content/50">$</span>
+            <input id="income-{{ category.id }}" name="amount" type="number" min="0" step="1" value="{{ budget.amount if budget else 0 }}" required class="min-w-0 grow">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" aria-label="Save {{ category.name }} planned income">Save</button>
+      </form>
+    {% else %}
+      <p class="empty-state">No parent Income category available.</p>
+    {% endfor %}
+    <div class="modal-action"><button type="button" class="btn btn-ghost btn-sm" data-close-modal>Close</button></div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>Close</button></form>
+</dialog>

@@ -5,8 +5,14 @@
 <section class="card card-border bg-base-100 shadow-xs" aria-labelledby="categories-heading">
   <div class="flex flex-wrap items-center justify-between gap-4 border-b border-base-300 px-5 py-4">
     <h2 id="categories-heading" class="section-heading">All categories</h2>
-    <form class="flex w-full gap-2 sm:w-auto" action="/categories" method="post">
+    <form class="flex w-full flex-wrap gap-2 sm:w-auto" action="/categories" method="post">
       <input type="text" name="name" class="input input-sm min-w-0 flex-1" required placeholder="Category name" aria-label="New category name">
+      <select name="parent_id" class="select select-sm w-full sm:w-auto" aria-label="Category placement">
+        <option value="">Main category</option>
+        {% for group in category_groups if not group.parent.parent_id %}
+          <option value="{{ group.parent.id }}">Subcategory of {{ group.parent.name }}</option>
+        {% endfor %}
+      </select>
       <button type="submit" class="btn btn-primary btn-sm">{{ icon("plus") }} Add</button>
     </form>
   </div>

@@ -6,6 +6,98 @@ import pytest
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("parent_id", ["", "income"])
+async def test_create_main_or_subcategory(ui_app, monkeypatch, parent_id):
+    from everwealth.budgets import Category
+    from everwealth.budgets.models.categories import CategoryType
+
+    parent = Category(id="income", name="Income", type="income", user_id="test-user")
+    fetch = AsyncMock(return_value=parent)
+    create = AsyncMock()
+    monkeypatch.setattr(Category, "fetch", fetch)
+    monkeypatch.setattr(Category, "create", create)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
+    ) as client:
+        page = await client.get("/categories")
+        response = await client.post("/categories", data={"name": " Salary ", "parent_id": parent_id})
+    assert 'name="parent_id"' in page.text
+    assert 'Subcategory of Food &amp; dining' in page.text
+    assert 'value="groceries"' not in page.text
+    assert response.status_code == 303
+    assert create.call_args.args[:2] == ("Salary", "test-user")
+    assert create.call_args.kwargs == {
+        "type": "income" if parent_id else CategoryType.expense,
+        "parent_id": parent_id or None,
+    }
+    if parent_id:
+        fetch.assert_awaited_once_with(parent_id, "test-user", create.call_args.args[2])
+    else:
+        fetch.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case, status", [("missing", 400), ("nested", 400), ("blank", 422), ("duplicate", 409)])
+async def test_reject_invalid_category_creation(ui_app, monkeypatch, case, status):
+    from everwealth.budgets import Category
+
+    parent = Category(id="parent", name="Parent", parent_id="root", user_id="test-user")
+    monkeypatch.setattr(Category, "fetch", AsyncMock(return_value=parent if case == "nested" else None))
+    create = AsyncMock()
+    monkeypatch.setattr(Category, "create", create)
+    data = {"name": "New", "parent_id": "parent"}
+    if case == "blank":
+        data = {"name": "   "}
+    elif case == "duplicate":
+        data = {"name": " groceries "}
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
+    ) as client:
+        response = await client.post("/categories", data=data)
+    assert response.status_code == status
+    create.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("has_budget", [False, True])
+async def test_planned_income_editor(ui_app, monkeypatch, has_budget):
+    from everwealth.budgets import BudgetView, Category
+
+    categories = [
+        Category(id="income", name="Income", type="income", user_id="test-user"),
+        Category(id="salary", name="Salary", type="income", parent_id="income", user_id="test-user"),
+        Category(id="bonus", name="Bonus", type="income", parent_id="income", user_id="test-user"),
+        Category(id="food", name="Food", type="expense", user_id="test-user"),
+    ]
+    monkeypatch.setattr(Category, "fetch_many", AsyncMock(return_value=categories))
+    monkeypatch.setattr(BudgetView, "fetch_all_by_month", AsyncMock(return_value=[
+        BudgetView(id="income-budget", user_id="test-user", category_id="income",
+                   category_name="Income", amount=5000, transactions_total=0),
+    ] if has_budget else []))
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
+    ) as client:
+        page = await client.get("/budgets")
+        response = await client.get("/budgets/income/edit")
+        for method, path in (("post", "/budgets"), ("put", "/budgets/salary-budget")):
+            invalid = await client.request(method, path, data={"category": "salary", "amount": -1})
+            assert invalid.status_code == 422
+
+    assert 'aria-label="Edit planned income"' in page.text
+    assert response.status_code == 200
+    if has_budget:
+        assert 'hx-put="/budgets/income-budget"' in response.text
+        assert 'value="5000"' in response.text
+    else:
+        assert 'action="/budgets" method="post"' in response.text
+    assert response.text.count('name="amount"') == 1
+    assert 'value="income"' in response.text
+    assert 'value="salary"' not in response.text
+    assert 'value="bonus"' not in response.text
+    assert 'value="food"' not in response.text
+
+
+@pytest.mark.asyncio
 async def test_create_manual_account(ui_app, monkeypatch):
     from everwealth.accounts.models import Account
 
