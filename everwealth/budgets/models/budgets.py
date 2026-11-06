@@ -92,6 +92,7 @@ class BudgetView(BaseModel):
             WHERE b.user_id = $1
               AND EXTRACT(YEAR FROM p.start) = $2
               AND EXTRACT(MONTH FROM p.start) = $3
+                AND c.type = 'expense'
             GROUP BY b.id, c.name
             ORDER BY c.name
             """,
