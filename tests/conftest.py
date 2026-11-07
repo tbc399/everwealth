@@ -96,6 +96,9 @@ def ui_app(monkeypatch):
         return len(filtered_transactions(account_id, **filters))
 
     monkeypatch.setattr(BudgetPeriod, "current", AsyncMock(return_value=period))
+    monkeypatch.setattr(BudgetPeriod, "timeline", AsyncMock(return_value=[
+        {"start": period.start, "income": 480000, "spending": 241000},
+    ]))
     monkeypatch.setattr(
         BudgetOverview,
         "fetch",

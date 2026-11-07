@@ -6,6 +6,7 @@
       <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
     </div>
     <form action="/budgets" method="post" class="mt-5 space-y-4">
+      <input type="hidden" name="month" value="{{ period.start.strftime('%Y-%m') }}">
       <label class="grid gap-2 text-sm">
         <span class="label">Category</span>
         <select name="category" class="select w-full" required autofocus>

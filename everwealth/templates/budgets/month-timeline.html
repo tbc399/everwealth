@@ -1,0 +1,17 @@
+{% from "partials/ui.html" import icon %}
+<nav class="flex min-w-0 items-center gap-2" aria-label="Monthly budget timeline" data-month-timeline hx-sync="this:replace">
+  <button type="button" class="btn btn-ghost btn-square btn-sm shrink-0" data-month-scroll="-1" aria-label="Scroll to earlier months">{{ icon("chevron-left") }}</button>
+  <div class="relative flex min-w-0 flex-1 gap-2 overflow-x-auto py-2 px-1" data-month-strip tabindex="0" aria-label="Budget months">
+    {% for item in months %}
+      {% set month = item.start.strftime('%Y-%m') %}
+      {% set selected = month == period.start.strftime('%Y-%m') %}
+      {% set over_income = item.spending > item.income %}
+      <a href="/budgets?month={{ month }}" hx-get="/budgets/partial?month={{ month }}" hx-target="#main-content" hx-push-url="/budgets?month={{ month }}"
+         class="badge shrink-0 whitespace-nowrap {{ 'badge-error' if over_income else 'badge-success' }} {{ 'ring-2 ring-offset-2 ring-base-content' if selected else 'badge-outline' }}"
+         {% if selected %}aria-current="date"{% endif %}
+         aria-label="{{ item.start.strftime('%B %Y') }}: {{ 'spending exceeded income' if over_income else 'spending within income' }}"
+         title="{{ 'Spending exceeded recorded income' if over_income else 'Spending within recorded income' }}">{{ item.start.strftime('%b %Y') }}</a>
+    {% endfor %}
+  </div>
+  <button type="button" class="btn btn-ghost btn-square btn-sm shrink-0" data-month-scroll="1" aria-label="Scroll to later months">{{ icon("chevron-right") }}</button>
+</nav>

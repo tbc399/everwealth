@@ -9,6 +9,7 @@
     {% for category in income_categories %}
       {% set budget = budgets_by_category.get(category.id) %}
       <form {% if budget %}hx-put="/budgets/{{ budget.id }}"{% else %}action="/budgets" method="post"{% endif %} class="mt-4 flex items-end gap-3">
+        <input type="hidden" name="month" value="{{ period.start.strftime('%Y-%m') }}">
         <input type="hidden" name="category" value="{{ category.id }}">
         <div class="grid grow gap-2 text-sm">
           <label for="income-{{ category.id }}" class="label">{{ category.name }}</label>

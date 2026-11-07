@@ -1,9 +1,10 @@
 {% from "partials/ui.html" import icon, page_header %}
 {% call page_header("Budgets", period.start.strftime("%B %Y")) %}
   <a href="/categories" hx-get="/categories/partial" hx-push-url="/categories" hx-target="#main-content" class="btn btn-outline btn-sm">Categories</a>
-  <button type="button" class="btn btn-primary btn-sm" hx-get="/budgets/create" hx-target="body" hx-swap="beforeend">{{ icon("plus") }} New budget</button>
+  <button type="button" class="btn btn-primary btn-sm" hx-get="/budgets/create?month={{ period.start.strftime('%Y-%m') }}" hx-target="body" hx-swap="beforeend">{{ icon("plus") }} New budget</button>
 {% endcall %}
 
+{% include "budgets/month-timeline.html" %}
 {% include "budgets/overview.html" %}
 
 <section class="card card-border bg-base-100 shadow-xs" aria-labelledby="budgets-heading">

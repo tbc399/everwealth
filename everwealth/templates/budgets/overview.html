@@ -6,7 +6,7 @@
   <div class="stat min-w-0">
     <div class="stat-title flex items-center justify-between gap-2">
       <span>Income</span>
-      <button type="button" class="btn btn-ghost btn-square btn-xs" hx-get="/budgets/income/edit" hx-target="body" hx-swap="beforeend" aria-label="Edit planned income" title="Edit planned income">{{ icon("pencil") }}</button>
+      <button type="button" class="btn btn-ghost btn-square btn-xs" hx-get="/budgets/income/edit?month={{ period.start.strftime('%Y-%m') }}" hx-target="body" hx-swap="beforeend" aria-label="Edit planned income" title="Edit planned income">{{ icon("pencil") }}</button>
     </div>
     <div class="stat-value text-2xl font-mono">${{ "{:,.0f}".format(overview.current_income) }}</div>
     <div class="stat-desc">of ${{ "{:,.0f}".format(overview.expected_income) }} planned</div>

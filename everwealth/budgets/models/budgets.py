@@ -58,6 +58,28 @@ class BudgetPeriod(BaseModel):
         return BudgetPeriod.model_validate(dict(record)) if record else None
 
     @staticmethod
+    async def timeline(user_id: str, db: Connection) -> list[dict]:
+        records = await db.fetch(
+            """
+            SELECT p.start,
+                   COALESCE(SUM(ABS(t.amount)) FILTER (WHERE c.type = 'income'), 0) AS income,
+                   COALESCE(SUM(ABS(t.amount)) FILTER (
+                       WHERE c.type = 'expense' OR t.category_id IS NULL
+                   ), 0) AS spending
+            FROM budget_periods p
+            LEFT JOIN transactions t ON t.user_id = p.user_id
+                AND t.date BETWEEN p.start::date AND p."end"::date
+                AND COALESCE(t.hidden, FALSE) = FALSE
+            LEFT JOIN categories c ON c.id = t.category_id
+            WHERE p.user_id = $1
+            GROUP BY p.id, p.start
+            ORDER BY p.start
+            """,
+            user_id,
+        )
+        return [dict(record) for record in records]
+
+    @staticmethod
     async def current(user_id: str, db: Connection) -> "BudgetPeriod":
         from everwealth.budgets.rollover import ensure_current_period
 
