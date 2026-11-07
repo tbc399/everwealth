@@ -14,6 +14,11 @@ router = APIRouter()
 templates = Jinja2Templates(directory="everwealth/templates")
 
 
+@router.get("/", response_class=HTMLResponse)
+async def landing(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html")
+
+
 async def _dashboard_context(user_id: str, conn: Connection) -> dict:
     period = await BudgetPeriod.current(user_id, conn)
     return {

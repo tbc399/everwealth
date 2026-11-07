@@ -1,3 +1,5 @@
+import hashlib
+import json
 from datetime import date, datetime
 from typing import Optional
 
@@ -26,7 +28,7 @@ class TransactionRule(BaseModel):
 
 class Transaction(BaseModel):
     id: str = Field(default_factory=uuid)
-    source_hash: Optional[int] = None
+    source_id: Optional[str] = None
     plaid_transaction_id: Optional[str] = None
     user_id: str
     account_id: Optional[str] = None
@@ -51,23 +53,29 @@ class Transaction(BaseModel):
         self.orig_description = self.orig_description or self.description
         self.orig_amount = self.orig_amount if self.orig_amount is not None else self.amount
         self.orig_date = self.orig_date or self.date
-        self.source_hash = self.source_hash or hash(
-            (self.user_id, self.account_id, self.orig_date, self.orig_description, self.orig_amount)
-        )
+        if self.source_id is None:
+            fields = (
+                [self.user_id, self.account_id, "plaid", self.plaid_transaction_id]
+                if self.plaid_transaction_id
+                else [self.user_id, self.account_id, self.orig_date.isoformat(),
+                      self.orig_description, self.orig_amount]
+            )
+            payload = json.dumps(fields, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+            self.source_id = hashlib.sha256(payload).hexdigest()
 
     async def save(self, db: Connection) -> None:
         self.prepare_originals()
         await db.execute(
             """
             INSERT INTO transactions (
-                id, source_hash, plaid_transaction_id, user_id, account_id,
+                id, source_id, plaid_transaction_id, user_id, account_id,
                 orig_description, description,
                 orig_amount, amount, category_id, orig_date, date, notes, hidden,
                 created_at, updated_at
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
             )
-            ON CONFLICT (id) DO UPDATE SET
+            ON CONFLICT (source_id) DO UPDATE SET
                 description = EXCLUDED.description,
                 amount = EXCLUDED.amount,
                 category_id = EXCLUDED.category_id,
@@ -75,9 +83,10 @@ class Transaction(BaseModel):
                 notes = EXCLUDED.notes,
                 hidden = EXCLUDED.hidden,
                 updated_at = EXCLUDED.updated_at
+            WHERE transactions.id = EXCLUDED.id AND transactions.user_id = EXCLUDED.user_id
             """,
             self.id,
-            self.source_hash,
+            self.source_id,
             self.plaid_transaction_id,
             self.user_id,
             self.account_id,
@@ -98,14 +107,7 @@ class Transaction(BaseModel):
     async def create_many(transactions: list["Transaction"], db: Connection) -> None:
         async with db.transaction():
             for transaction in transactions:
-                transaction.prepare_originals()
-                exists = await db.fetchval(
-                    "SELECT EXISTS(SELECT 1 FROM transactions WHERE user_id = $1 AND source_hash = $2)",
-                    transaction.user_id,
-                    transaction.source_hash,
-                )
-                if not exists:
-                    await transaction.save(db)
+                await transaction.save(db)
 
     @staticmethod
     async def upsert_plaid_many(transactions: list["Transaction"], db: Connection) -> None:
@@ -115,7 +117,7 @@ class Transaction(BaseModel):
                 await db.execute(
                     """
                     INSERT INTO transactions (
-                        id, source_hash, plaid_transaction_id, user_id, account_id,
+                        id, source_id, plaid_transaction_id, user_id, account_id,
                         orig_description, description, orig_amount, amount, category_id,
                         orig_date, date, notes, hidden, created_at, updated_at
                     ) VALUES (
@@ -123,7 +125,7 @@ class Transaction(BaseModel):
                     )
                     ON CONFLICT (plaid_transaction_id) WHERE plaid_transaction_id IS NOT NULL
                     DO UPDATE SET
-                        source_hash = EXCLUDED.source_hash,
+                        source_id = EXCLUDED.source_id,
                         account_id = EXCLUDED.account_id,
                         orig_description = EXCLUDED.orig_description,
                         orig_amount = EXCLUDED.orig_amount,
@@ -147,7 +149,7 @@ class Transaction(BaseModel):
                     WHERE transactions.user_id = EXCLUDED.user_id
                     """,
                     transaction.id,
-                    transaction.source_hash,
+                    transaction.source_id,
                     transaction.plaid_transaction_id,
                     transaction.user_id,
                     transaction.account_id,

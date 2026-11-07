@@ -1,5 +1,5 @@
 {% extends "auth/layout.html" %}
-{% set title = "Verify sign-in | Everwealth" %}
+{% set title = "Verify sign-in | Jaxon" %}
 {% block auth_content %}
   <h1 class="text-xl font-semibold">Verify your sign-in</h1>
   <form action="/login/validate/{{ otp.magic_token }}" method="post" class="mt-5 space-y-5" data-otp>

@@ -61,7 +61,8 @@ async def test_reject_invalid_category_creation(ui_app, monkeypatch, case, statu
 @pytest.mark.asyncio
 @pytest.mark.parametrize("has_budget", [False, True])
 async def test_planned_income_editor(ui_app, monkeypatch, has_budget):
-    from everwealth.budgets import BudgetView, Category
+    from everwealth.budgets import Category
+    from everwealth.db import get_connection
 
     categories = [
         Category(id="income", name="Income", type="income", user_id="test-user"),
@@ -70,10 +71,12 @@ async def test_planned_income_editor(ui_app, monkeypatch, has_budget):
         Category(id="food", name="Food", type="expense", user_id="test-user"),
     ]
     monkeypatch.setattr(Category, "fetch_many", AsyncMock(return_value=categories))
-    monkeypatch.setattr(BudgetView, "fetch_all_by_month", AsyncMock(return_value=[
-        BudgetView(id="income-budget", user_id="test-user", category_id="income",
-                   category_name="Income", amount=5000, transactions_total=0),
-    ] if has_budget else []))
+    connection = ui_app.dependency_overrides[get_connection]()
+    db = await anext(connection)
+    await connection.aclose()
+    db.fetch.return_value = [
+        {"id": "income-budget", "category_id": "income", "amount": 5000},
+    ] if has_budget else []
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
     ) as client:
@@ -95,6 +98,36 @@ async def test_planned_income_editor(ui_app, monkeypatch, has_budget):
     assert 'value="salary"' not in response.text
     assert 'value="bonus"' not in response.text
     assert 'value="food"' not in response.text
+    assert "income-budget" not in page.text
+
+
+@pytest.mark.asyncio
+async def test_jaxon_landing_is_public_and_links_to_auth(ui_app):
+    from everwealth.auth import auth_user
+    from everwealth.db import get_connection
+
+    def unexpected_dependency():
+        pytest.fail("The landing page must not require authentication or a database")
+
+    ui_app.dependency_overrides[auth_user] = unexpected_dependency
+    ui_app.dependency_overrides[get_connection] = unexpected_dependency
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=ui_app), base_url="http://test"
+    ) as client:
+        response = await client.get("/")
+        for path in ("/login", "/register"):
+            auth_page = await client.get(path)
+            assert auth_page.status_code == 200
+            assert "Jaxon" in auth_page.text
+
+    assert response.status_code == 200
+    assert "Jaxon" in response.text
+    assert response.text.count("<h1 ") == 1
+    assert 'href="/login"' in response.text
+    assert 'href="/register"' in response.text
+    assert 'href="#how-it-works"' in response.text
+    assert 'id="how-it-works"' in response.text
+    assert "Illustrative budget" in response.text
 
 
 @pytest.mark.asyncio

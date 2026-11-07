@@ -103,7 +103,12 @@ async def get_income_edit(
             if category.type == "income" and not category.parent_id
             and category.name.casefold() == "income"
         ],
-        "budgets_by_category": {budget.category_id: budget for budget in context["budgets"]},
+        "budgets_by_category": {
+            budget["category_id"]: budget for budget in await db.fetch(
+                "SELECT id, category_id, amount FROM budgets WHERE user_id = $1 AND period_id = $2",
+                user_id, context["period"].id,
+            )
+        },
     })
     return templates.TemplateResponse("budgets/edit-income.html", context)
 

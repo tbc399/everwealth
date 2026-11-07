@@ -1,5 +1,5 @@
 {% extends "auth/layout.html" %}
-{% set title = "Sign in | Everwealth" %}
+{% set title = "Sign in | Jaxon" %}
 {% block auth_content %}
   <h1 class="text-xl font-semibold">Sign in</h1>
   {% if error %}<div class="alert alert-error mt-4 text-sm" role="alert">{{ error }}</div>{% endif %}
@@ -14,5 +14,5 @@
     </label>
     <button type="submit" class="btn btn-primary w-full">Sign in {{ icon("arrow-right") }}</button>
   </form>
-  <p class="muted mt-5">New to Everwealth? <a class="link link-primary" href="/register">Create an account</a></p>
+  <p class="muted mt-5">New to Jaxon? <a class="link link-primary" href="/register">Create an account</a></p>
 {% endblock %}
