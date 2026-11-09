@@ -17,11 +17,13 @@ from fastapi import (
 )
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 
 from everwealth.accounts import Account
 from everwealth.auth import auth_user
 from everwealth.budgets import Category
 from everwealth.db import get_connection
+from everwealth.memory import log_memory, release_memory
 from everwealth.transactions import Transaction, TransactionRule
 from everwealth.transactions.csv_import import csv_reader, parse_transactions, suggest_mapping
 
@@ -260,6 +262,7 @@ async def upload_transactions(
     )
     if not valid_account:
         raise HTTPException(status_code=400, detail="Invalid account")
+    log_memory("before CSV import")
     try:
         transactions = parse_transactions(
             await file.read(),
@@ -275,7 +278,12 @@ async def upload_transactions(
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     await Transaction.create_many(transactions, db)
-    return RedirectResponse("/transactions", status_code=303)
+    log_memory("CSV import saved")
+    del transactions
+    await file.close()
+    return RedirectResponse(
+        "/transactions", status_code=303, background=BackgroundTask(release_memory),
+    )
 
 
 @router.get("/transactions/{transaction_id}", response_class=HTMLResponse)

@@ -21,6 +21,15 @@ MAPPING = {
 }
 
 
+@pytest.fixture
+def memory_cleanup(monkeypatch):
+    from everwealth.transactions import web
+
+    cleanup = AsyncMock()
+    monkeypatch.setattr(web, "release_memory", cleanup)
+    return cleanup
+
+
 def test_ufcu_mapping_with_unsigned_amounts():
     transactions = parse_transactions(UFCU_SAMPLE, MAPPING, "user", "checking")
     assert [item.amount for item in transactions] == [-14015, 557430]
@@ -98,7 +107,7 @@ async def test_header_discovery_suggests_ufcu_mapping(ui_app):
 
 
 @pytest.mark.asyncio
-async def test_mapped_upload_and_invalid_row_do_not_partially_save(ui_app, monkeypatch):
+async def test_mapped_upload_and_invalid_row_do_not_partially_save(ui_app, monkeypatch, memory_cleanup):
     create = AsyncMock()
     monkeypatch.setattr(Transaction, "create_many", create)
     data = {"account": "checking", **{f"{key}_column": value for key, value in MAPPING.items()}}
@@ -110,6 +119,8 @@ async def test_mapped_upload_and_invalid_row_do_not_partially_save(ui_app, monke
         )
         assert response.status_code == 303
         assert [item.amount for item in create.call_args.args[0]] == [-14015, 557430]
+        memory_cleanup.assert_awaited_once()
+        memory_cleanup.reset_mock()
         create.reset_mock()
         response = await client.post(
             "/transactions/upload",
@@ -119,6 +130,7 @@ async def test_mapped_upload_and_invalid_row_do_not_partially_save(ui_app, monke
         assert response.status_code == 400
         assert "row 3" in response.json()["detail"]
         create.assert_not_awaited()
+        memory_cleanup.assert_not_awaited()
 
 
 @pytest.mark.asyncio

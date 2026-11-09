@@ -63,6 +63,18 @@ No application volume is required; durable data lives in PostgreSQL. Configure
 database backups in Railway separately. SMTP variables from the sign-in email
 section below are needed only if you use OTP email sign-in.
 
+The database pool starts with zero connections, permits four concurrent connections,
+and closes connections after 60 seconds of inactivity. The next query may need to
+reconnect; health checks and background jobs can also open connections.
+
+Worker logs include resident memory (RSS in MiB) at startup, during CSV imports,
+and before/after import cleanup. Successful imports release their parsed rows and
+upload file before a response background task runs garbage collection and, on
+Linux/glibc, `malloc_trim(0)`. This attempts to return unused heap pages to the OS;
+live objects, imported libraries, and partially occupied Python arenas remain.
+Platforms without `malloc_trim` still run garbage collection. No periodic forced
+collection or per-request cleanup is scheduled.
+
 To test the same image locally against a disposable database:
 
 ```sh

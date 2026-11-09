@@ -30,6 +30,7 @@ from everwealth.budgets.rollover import run_rollover_scheduler
 from everwealth.budgets.web import router as budget_router
 from everwealth.config import settings
 from everwealth.lucy_config import lucy
+from everwealth.memory import log_memory
 from everwealth.transactions.hooks import router as transactions_hooks_router
 
 # from everwealth.settings.categories.web import router as settings_router
@@ -62,9 +63,12 @@ logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
 
 async def startup():
-    setattr(db, "pool", await asyncpg.create_pool(settings.database_url))
+    setattr(db, "pool", await asyncpg.create_pool(
+        settings.database_url, min_size=0, max_size=4, max_inactive_connection_lifetime=60,
+    ))
     setattr(db, "lucy_task", asyncio.create_task(lucy.run()))
     setattr(db, "rollover_task", asyncio.create_task(run_rollover_scheduler(db.pool)))
+    log_memory("startup")
 
 
 async def shutdown():
