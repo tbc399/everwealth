@@ -188,6 +188,7 @@ class BudgetOverview(BaseModel):
     current_income: float = 0
     expected_spend: float = 0
     current_spend: float = 0
+    other_spending: float = 0
 
     @staticmethod
     async def fetch(user_id: str, period: BudgetPeriod, db: Connection) -> "BudgetOverview":
@@ -195,7 +196,14 @@ class BudgetOverview(BaseModel):
             """
             SELECT
               COALESCE(SUM(CASE WHEN c.type = 'income' THEN ABS(t.amount) ELSE 0 END), 0) / 100.0 AS current_income,
-              COALESCE(SUM(CASE WHEN c.type = 'expense' OR t.category_id IS NULL THEN ABS(t.amount) ELSE 0 END), 0) / 100.0 AS current_spend
+              COALESCE(SUM(CASE WHEN c.type = 'expense' OR t.category_id IS NULL THEN ABS(t.amount) ELSE 0 END), 0) / 100.0 AS current_spend,
+              COALESCE(SUM(CASE
+                WHEN (c.type = 'expense' OR t.category_id IS NULL)
+                  AND NOT EXISTS (
+                    SELECT 1 FROM budgets b
+                    WHERE b.user_id = $1 AND b.period_id = $4 AND b.category_id = t.category_id
+                  )
+                THEN ABS(t.amount) ELSE 0 END), 0) / 100.0 AS other_spending
             FROM transactions t
             LEFT JOIN categories c ON c.id = t.category_id
             WHERE t.user_id = $1
@@ -205,6 +213,7 @@ class BudgetOverview(BaseModel):
             user_id,
             period.start,
             period.end,
+            period.id,
         )
         expected = await db.fetchrow(
             """

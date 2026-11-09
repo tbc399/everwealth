@@ -24,6 +24,16 @@
         {% else %}
           <tr><td colspan="5" class="empty-state">No budgets for this month.</td></tr>
         {% endfor %}
+        <tr id="other-spending">
+          <td class="min-w-40">
+            <span class="font-medium">Other spending</span>
+            <p class="muted mt-1">Transactions outside this month's budgets</p>
+          </td>
+          <td class="text-right font-mono text-sm">${{ "{:,.0f}".format(overview.other_spending) }}</td>
+          <td class="text-right text-sm text-base-content/60">Not budgeted</td>
+          <td class="hidden text-right text-base-content/60 sm:table-cell">&mdash;</td>
+          <td></td>
+        </tr>
       </tbody>
     </table>
   </div>
