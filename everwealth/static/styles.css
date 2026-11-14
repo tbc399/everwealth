@@ -4448,7 +4448,7 @@
     transform: translateY(0);
   }
   .app-shell {
-    max-width: 1440px;
+    max-width: 1280px;
     margin-inline: auto;
   }
   .app-main {

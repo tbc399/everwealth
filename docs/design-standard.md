@@ -249,7 +249,8 @@ component in the source stylesheets. Use the existing utility classes for local
 layout. Financial values use `.amount` for Arial and tabular numerals, rather
 than a monospace font. Shared card headers use `.panel-header`.
 
-The workspace has a 224px desktop sidebar at 1024px and above and a mobile drawer
+The overall workspace is centered with a maximum width of 1280px, matching the
+app's original width. It has a 224px desktop sidebar at 1024px and above and a mobile drawer
 below that width. Desktop content has 40px padding; narrow layouts have 20px.
 App page headings scale from 32px to 40px and section headings use 22px. The
 monthly overview uses three cards on desktop, with a highlighted remaining
