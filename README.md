@@ -1,3 +1,8 @@
+# Jaxon
+
+Use the [Jaxon design standard](docs/design-standard.md) for the color palette,
+typography, layout, components, and responsive behavior of future design updates.
+
 ## Railway deployment
 
 The root `Dockerfile` builds the DaisyUI CSS and JavaScript, installs Python
