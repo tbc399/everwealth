@@ -2,8 +2,8 @@
 {% set title = "Check your email | Jaxon" %}
 {% block auth_content %}
   <div class="mb-4 text-primary">{{ icon("mail") }}</div>
-  <h1 class="text-xl font-semibold">Check your email</h1>
-  <div class="my-5 rounded-box border border-base-300 bg-base-200 p-4 text-center font-mono text-3xl font-semibold">{{ otp.code }}</div>
+  <h1 class="auth-heading">Check your email</h1>
+  <div class="my-5 rounded-box border border-base-300 bg-base-200 p-4 text-center amount text-3xl font-semibold">{{ otp.code }}</div>
   <p class="muted">Open the sign-in link in your email and enter this code.</p>
   <div hx-get="/login/{{ otp.id }}/check" hx-trigger="every 2s" hx-swap="none" class="hidden"></div>
 {% endblock %}

@@ -190,6 +190,8 @@ async def test_pages_keep_one_shared_shell(ui_app, path, heading):
     assert len(re.findall(r'id="main-content"', response.text)) == 1
     assert '<h1 class="page-heading">' + heading + "</h1>" in response.text
     assert 'aria-label="Primary navigation"' in response.text
+    assert 'data-light-theme="jaxon"' in response.text
+    assert 'href="#main-content" class="skip-link"' in response.text
 
 
 @pytest.mark.asyncio

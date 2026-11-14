@@ -1,6 +1,6 @@
 # Jaxon design standard
 
-Version 1 · Established November 14, 2026
+Version 1.1 · Established November 14, 2026
 
 This is the visual reference for future Jaxon design work. It captures the approved
 direction of the landing page: warm, calm, simple, and clear. Use it when designing
@@ -8,9 +8,9 @@ new screens and when updating the application's existing components.
 
 The current implementation is [jaxon.css](../everwealth/static/jaxon.css), with
 the composition and copy in [index.html](../everwealth/templates/index.html).
-The authenticated application still uses its existing Tailwind/DaisyUI styling;
-this document establishes the direction for its gradual redesign. Creating this
-standard does not change those screens.
+The authenticated application uses the same brand values through a custom Jaxon
+Tailwind/DaisyUI theme and shared component styles. The existing dark theme remains
+available; the Jaxon palette defines the light theme.
 
 ## Design principles
 
@@ -227,10 +227,39 @@ Start future redesigns with the core palette, font pairing, restrained surfaces,
 and spacing. Adapt the landing page's spacious composition to the task: a budget
 table needs readable density, while a marketing introduction can be expansive.
 
-Use the four existing CSS variables where the landing stylesheet applies. When
-introducing shared application theme tokens, map the same roles to these exact
-values rather than creating a second, slightly different palette. Keep business
-status colors separate from decorative brand accents.
+Shared brand values live in `everwealth/static/styles/brand.css`; both the landing
+stylesheet and the application build import them. The landing page retains its
+`--paper`, `--ink`, `--muted`, and `--line` aliases. The application maps those roles
+to DaisyUI theme colors. Keep business status colors separate from decorative
+brand accents.
+
+### Application implementation
+
+| Source | Responsibility |
+| --- | --- |
+| `static/styles/brand.css` | Exact brand colors and font families shared with marketing |
+| `static/styles/theme.css` | Jaxon light theme, existing dark theme, semantic status palette, radii |
+| `static/styles/app.css` | App shell, heading hierarchy, panels, controls, tables, summaries, responsive behavior |
+| `static/input.css` | Tailwind build entry point and template/source scanning |
+| `templates/partials/ui.html` | Shared wordmark and page header markup |
+| `templates/app.html` | Navigation, mobile drawer, skip link, and main content region |
+
+Paths in this table are relative to `everwealth/`. Keep CSS rules grouped by
+component in the source stylesheets. Use the existing utility classes for local
+layout. Financial values use `.amount` for Arial and tabular numerals, rather
+than a monospace font. Shared card headers use `.panel-header`.
+
+The workspace has a 224px desktop sidebar at 1024px and above and a mobile drawer
+below that width. Desktop content has 40px padding; narrow layouts have 20px.
+App page headings scale from 32px to 40px and section headings use 22px. The
+monthly overview uses three cards on desktop, with a highlighted remaining
+balance; at 700px and below the balance spans the full row beneath income and
+spending. Financial gains and losses retain green/red semantics, with darker
+status text on the Jaxon light background for readability.
+
+Stored light-theme preferences migrate to `jaxon`; explicit dark preferences
+are retained. Keyboard focus and reduced-motion behavior remain consistent
+across partial navigation.
 
 For each design change, check:
 

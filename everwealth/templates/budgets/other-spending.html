@@ -2,7 +2,7 @@
 <dialog id="other-spending-detail" class="modal" data-modal aria-labelledby="other-spending-heading">
   <div class="modal-box max-w-lg">
     <div class="flex items-center justify-between gap-3">
-      <h2 id="other-spending-heading" class="text-lg font-semibold">Other spending</h2>
+      <h2 id="other-spending-heading" class="section-heading">Other spending</h2>
       <button type="button" class="btn btn-ghost btn-square btn-sm" data-close-modal aria-label="Close">{{ icon("x") }}</button>
     </div>
     <p class="muted mt-2">{{ period.start.strftime('%B %Y') }} &middot; ${{ "{:,.2f}".format(total) }} total</p>
@@ -13,7 +13,7 @@
             <p class="wrap-break-word">{{ transaction.description }}</p>
             <p class="muted mt-1">{{ transaction.date.strftime('%b %d, %Y') }} &middot; {{ transaction.category_name or 'Uncategorized' }}</p>
           </div>
-          <span class="shrink-0 font-mono">${{ transaction.display_amount }}</span>
+          <span class="shrink-0 amount">${{ transaction.display_amount }}</span>
         </li>
       {% else %}
         <li class="empty-state">No other spending for this month.</li>

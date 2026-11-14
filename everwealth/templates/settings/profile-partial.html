@@ -1,7 +1,7 @@
 {% from "partials/ui.html" import icon, page_header %}
 {{ page_header("Settings") }}
-<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="profile-heading">
-  <div class="border-b border-base-300 px-5 py-4">
+<section class="card card-border bg-base-100" aria-labelledby="profile-heading">
+  <div class="panel-header">
     <h2 id="profile-heading" class="section-heading">Profile</h2>
     <p class="muted">{{ profile.email }}</p>
   </div>
@@ -23,7 +23,7 @@
     <div class="card-actions"><button type="submit" class="btn btn-primary btn-sm">{{ icon("check") }} Save profile</button></div>
   </form>
 </section>
-<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="appearance-heading">
+<section class="card card-border bg-base-100" aria-labelledby="appearance-heading">
   <div class="flex items-center justify-between gap-4 px-6 py-5">
     <h2 id="appearance-heading" class="section-heading">Appearance</h2>
     <label class="label whitespace-normal cursor-pointer gap-3">

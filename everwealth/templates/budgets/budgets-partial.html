@@ -7,8 +7,8 @@
 {% include "budgets/month-timeline.html" %}
 {% include "budgets/overview.html" %}
 
-<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="budgets-heading">
-  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
+<section class="card card-border bg-base-100" aria-labelledby="budgets-heading">
+  <div class="panel-header">
     <div>
       <h2 id="budgets-heading" class="section-heading">Monthly budgets</h2>
       <p class="muted">{{ budgets|length }} {{ "category" if budgets|length == 1 else "categories" }}</p>
@@ -29,7 +29,7 @@
             <button type="button" class="link link-hover font-medium" hx-get="/budgets/other-spending?month={{ period.start.strftime('%Y-%m') }}" hx-target="body" hx-swap="beforeend">Other spending</button>
             <p class="muted mt-1">Transactions outside this month's budgets</p>
           </td>
-          <td class="text-right font-mono text-sm">${{ "{:,.0f}".format(overview.other_spending) }}</td>
+          <td class="text-right amount text-sm">${{ "{:,.0f}".format(overview.other_spending) }}</td>
           <td class="text-right text-sm text-base-content/60">Not budgeted</td>
           <td class="hidden text-right text-base-content/60 sm:table-cell">&mdash;</td>
           <td></td>

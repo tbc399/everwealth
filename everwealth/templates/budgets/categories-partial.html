@@ -2,8 +2,8 @@
 {% call page_header("Categories") %}
   <a href="/budgets" hx-get="/budgets/partial" hx-push-url="/budgets" hx-target="#main-content" class="btn btn-outline btn-sm">{{ icon("arrow-left") }} Budgets</a>
 {% endcall %}
-<section class="card card-border bg-base-100 shadow-xs" aria-labelledby="categories-heading">
-  <div class="flex flex-wrap items-center justify-between gap-4 border-b border-base-300 px-5 py-4">
+<section class="card card-border bg-base-100" aria-labelledby="categories-heading">
+  <div class="panel-header">
     <h2 id="categories-heading" class="section-heading">All categories</h2>
     <form class="flex w-full flex-wrap gap-2 sm:w-auto" action="/categories" method="post">
       <input type="text" name="name" class="input input-sm min-w-0 flex-1" required placeholder="Category name" aria-label="New category name">

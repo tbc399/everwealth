@@ -12,7 +12,7 @@
       {% include "budgets/category-options.html" %}
     </select>
   </td>
-  <td class="whitespace-nowrap text-right font-mono text-sm {{ 'text-success' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</td>
+  <td class="whitespace-nowrap text-right amount text-sm {{ 'amount-positive' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</td>
   <td class="text-right">
     <button type="button" class="btn btn-ghost btn-square btn-xs" hx-get="/transactions/{{ transaction.id }}/edit" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML" data-edit-transaction aria-label="Edit {{ transaction.description }}" title="Edit transaction">{{ icon("pencil") }}</button>
   </td>

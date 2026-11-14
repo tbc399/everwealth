@@ -1,6 +1,6 @@
 {% from "partials/ui.html" import icon %}
-<section id="transactions-tab-list" class="card card-border bg-base-100 shadow-xs" aria-labelledby="transactions-heading">
-  <div class="flex flex-wrap items-center justify-between gap-4 border-b border-base-300 px-5 py-4">
+<section id="transactions-tab-list" class="card card-border bg-base-100" aria-labelledby="transactions-heading">
+  <div class="panel-header">
     <div>
       <h2 id="transactions-heading" class="section-heading">{{ "Filtered transactions" if filters else "All transactions" }}</h2>
       <p class="muted">{{ total_transactions }} {{ "transaction" if total_transactions == 1 else "transactions" }}</p>

@@ -1,7 +1,7 @@
 {% extends "auth/layout.html" %}
 {% set title = "Create account | Jaxon" %}
 {% block auth_content %}
-  <h1 class="text-xl font-semibold">Create account</h1>
+  <h1 class="auth-heading">Create account</h1>
   {% if error %}<div class="alert alert-error mt-4 text-sm" role="alert">{{ error }}</div>{% endif %}
   <form method="post" action="/register" class="mt-5 space-y-4">
     <label class="grid gap-2 text-sm">

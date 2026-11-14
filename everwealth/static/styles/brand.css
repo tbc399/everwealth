@@ -1,0 +1,17 @@
+/* Brand values shared by the landing page and application. */
+:root {
+    --jaxon-paper: #f8f7f2;
+    --jaxon-ink: #203c37;
+    --jaxon-muted: #626e66;
+    --jaxon-line: #dcded4;
+    --jaxon-white: #ffffff;
+    --jaxon-action-hover: #34564e;
+    --jaxon-highlight: #dbe8b8;
+    --jaxon-section: #e9eddf;
+    --jaxon-pill: #f0f3e9;
+    --jaxon-meter: #6c8d73;
+    --jaxon-focus: #597d38;
+
+    --font-body: Arial, Helvetica, sans-serif;
+    --font-editorial: Georgia, 'Times New Roman', serif;
+}

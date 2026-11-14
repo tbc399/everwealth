@@ -1,0 +1,42 @@
+@plugin "daisyui" {
+    themes: dark;
+}
+
+@plugin "daisyui/theme" {
+    name: "jaxon";
+    default: true;
+    prefersdark: false;
+    color-scheme: light;
+
+    --color-base-100: var(--jaxon-white);
+    --color-base-200: var(--jaxon-paper);
+    --color-base-300: var(--jaxon-line);
+    --color-base-content: var(--jaxon-ink);
+    --color-primary: var(--jaxon-ink);
+    --color-primary-content: var(--jaxon-white);
+    --color-secondary: var(--jaxon-section);
+    --color-secondary-content: var(--jaxon-ink);
+    --color-accent: var(--jaxon-highlight);
+    --color-accent-content: var(--jaxon-ink);
+    --color-neutral: var(--jaxon-ink);
+    --color-neutral-content: var(--jaxon-paper);
+
+    /* Keep DaisyUI's existing light-theme status palette. */
+    --color-info: oklch(74% 0.16 232.661);
+    --color-info-content: oklch(29% 0.066 243.157);
+    --color-success: oklch(76% 0.177 163.223);
+    --color-success-content: oklch(37% 0.077 168.94);
+    --color-warning: oklch(82% 0.189 84.429);
+    --color-warning-content: oklch(41% 0.112 45.904);
+    --color-error: oklch(71% 0.194 13.428);
+    --color-error-content: oklch(27% 0.105 12.094);
+
+    --radius-selector: 0.375rem;
+    --radius-field: 0.375rem;
+    --radius-box: 0.875rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}

@@ -4,8 +4,8 @@
 {% endcall %}
 {% include "budgets/overview.html" %}
 <div class="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-  <section class="card card-border min-w-0 bg-base-100 shadow-xs" aria-labelledby="recent-heading">
-    <div class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
+  <section class="card card-border min-w-0 bg-base-100" aria-labelledby="recent-heading">
+    <div class="panel-header">
       <h2 id="recent-heading" class="section-heading">Recent transactions</h2>
       <a href="/transactions" hx-get="/transactions/partial" hx-target="#main-content" hx-push-url="/transactions" class="btn btn-outline btn-xs">View all {{ icon("arrow-right") }}</a>
     </div>
@@ -16,7 +16,7 @@
           {% for transaction in transactions %}
             <tr>
               <td><div class="font-medium">{{ transaction.description }}</div><div class="muted mt-1">{{ transaction.date.strftime("%b %d") }}{% if transaction.category_name %} &middot; {{ transaction.category_name }}{% endif %}</div></td>
-              <td class="whitespace-nowrap text-right font-mono text-sm {{ 'text-success' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</td>
+              <td class="whitespace-nowrap text-right amount text-sm {{ 'amount-positive' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</td>
             </tr>
           {% else %}
             <tr><td colspan="2" class="empty-state">No transactions yet.</td></tr>
@@ -25,8 +25,8 @@
       </table>
     </div>
   </section>
-  <section class="card card-border min-w-0 bg-base-100 shadow-xs" aria-labelledby="connections-heading">
-    <div class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4">
+  <section class="card card-border min-w-0 bg-base-100" aria-labelledby="connections-heading">
+    <div class="panel-header">
       <h2 id="connections-heading" class="section-heading">Accounts</h2>
       <span class="badge badge-ghost">{{ accounts|length }}</span>
     </div>

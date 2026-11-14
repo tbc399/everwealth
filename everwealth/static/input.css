@@ -1,21 +1,7 @@
 @import "tailwindcss" source(none);
+@import "./styles/brand.css";
+@import "./styles/theme.css";
+@import "./styles/app.css";
 
 @source "../templates";
 @source "./src";
-
-@plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
-}
-
-@layer components {
-  .page-header {
-    @apply flex flex-wrap items-center justify-between gap-4 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs;
-  }
-
-  .page-heading { @apply text-2xl font-semibold; }
-  .section-heading { @apply text-base font-semibold; }
-  .muted { @apply text-sm text-base-content/60; }
-  .empty-state { @apply px-5 py-12 text-center text-sm text-base-content/60; }
-}
-
-.lucide { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }

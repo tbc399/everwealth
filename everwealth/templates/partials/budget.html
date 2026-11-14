@@ -3,13 +3,13 @@
 {% set progress = [spent / budget.amount * 100, 100]|min if budget.amount else 0 %}
 {% set remaining = budget.amount - spent %}
 <tr id="bud_{{ budget.id }}" class="hover:bg-base-200">
-  <td class="min-w-40">
+  <td class="min-w-32 sm:min-w-40">
     <a href="/budgets/{{ budget.id }}" hx-get="/budgets/{{ budget.id }}/edit" hx-target="body" hx-swap="beforeend" class="link link-hover font-medium">{{ budget.category_name }}</a>
     <progress class="progress {{ 'progress-error' if remaining < 0 else 'progress-success' }} mt-2 block h-1.5 w-full max-w-48" value="{{ progress }}" max="100" aria-label="{{ budget.category_name }} budget used"></progress>
   </td>
-  <td class="text-right font-mono text-sm">${{ "{:,.0f}".format(spent) }}</td>
-  <td class="text-right font-mono text-sm">${{ "{:,.0f}".format(budget.amount) }}</td>
-  <td class="hidden text-right font-mono text-sm sm:table-cell {{ 'text-error' if remaining < 0 else 'text-success' }}">{% if remaining < 0 %}&minus;{% endif %}${{ "{:,.0f}".format(remaining|abs) }}</td>
+  <td class="text-right amount text-sm">${{ "{:,.0f}".format(spent) }}</td>
+  <td class="text-right amount text-sm">${{ "{:,.0f}".format(budget.amount) }}</td>
+  <td class="hidden text-right amount text-sm sm:table-cell {{ 'amount-negative' if remaining < 0 else 'amount-positive' }}">{% if remaining < 0 %}&minus;{% endif %}${{ "{:,.0f}".format(remaining|abs) }}</td>
   <td class="text-right">
     <button type="button" hx-get="/budgets/{{ budget.id }}/edit" hx-target="body" hx-swap="beforeend" class="btn btn-ghost btn-square btn-xs" aria-label="Edit {{ budget.category_name }}" title="Edit budget">{{ icon("pencil") }}</button>
   </td>

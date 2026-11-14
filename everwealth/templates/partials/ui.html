@@ -2,12 +2,23 @@
   <i data-lucide="{{ name }}" aria-hidden="true"></i>
 {%- endmacro %}
 
+{% macro wordmark(href='/dashboard') -%}
+  <a href="{{ href }}" class="app-brand" aria-label="Jaxon">
+    <span class="brand-mark" aria-hidden="true">j.</span>
+    <span>jaxon</span>
+  </a>
+{%- endmacro %}
+
 {% macro page_header(title, subtitle=none) -%}
   <header class="page-header">
     <div class="min-w-0">
+      {% if subtitle %}
+        <p class="eyebrow page-subtitle">{{ subtitle }}</p>
+      {% endif %}
       <h1 class="page-heading">{{ title }}</h1>
-      {% if subtitle %}<p class="muted mt-1">{{ subtitle }}</p>{% endif %}
     </div>
-    {% if caller %}<div class="flex flex-wrap items-center gap-2">{{ caller() }}</div>{% endif %}
+    {% if caller %}
+      <div class="flex flex-wrap items-center gap-2">{{ caller() }}</div>
+    {% endif %}
   </header>
 {%- endmacro %}

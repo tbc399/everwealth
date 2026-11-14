@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% from "partials/ui.html" import icon %}
+{% from "partials/ui.html" import icon, wordmark %}
 {% block body %}
+  <a href="#main-content" class="skip-link">Skip to content</a>
   {% set nav_items = [
     ("dashboard", "Overview", "/dashboard", "/dashboard/partial", "layout-dashboard"),
     ("budgets", "Budgets", "/budgets", "/budgets/partial", "wallet"),
@@ -8,41 +9,60 @@
     ("accounts", "Accounts", "/accounts", "/accounts/partial", "landmark"),
     ("settings", "Settings", "/settings/profile", "/settings/partial", "settings")
   ] %}
-  <div class="drawer mx-auto min-h-screen max-w-7xl lg:drawer-open lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-3 lg:px-6 lg:py-4">
-    <input id="navigation-drawer" type="checkbox" class="drawer-toggle" aria-label="Navigation">
-    <div class="drawer-content min-w-0 p-3 pb-12 lg:p-0">
-      <div class="navbar mb-5 rounded-box border border-base-300 bg-base-100 shadow-xs lg:hidden">
-        <label for="navigation-drawer" class="btn btn-square btn-ghost" aria-label="Open navigation" tabindex="0" role="button">{{ icon("menu") }}</label>
-        <a href="/dashboard" class="btn btn-ghost text-lg">Jaxon</a>
+  <div class="drawer app-shell min-h-screen lg:drawer-open">
+    <input id="navigation-drawer" type="checkbox" class="drawer-toggle"
+           aria-label="Navigation">
+    <div class="drawer-content app-main">
+      <div class="app-topbar">
+        {{ wordmark() }}
+        <label for="navigation-drawer" class="btn btn-square btn-ghost"
+               aria-label="Open navigation" tabindex="0"
+               role="button">{{ icon("menu") }}</label>
       </div>
-      <main id="main-content" class="min-w-0 space-y-6" hx-history-elt>
+      <main id="main-content" class="app-content" tabindex="-1" hx-history-elt>
         {% block content %}{% endblock %}
       </main>
     </div>
-    <div class="drawer-side z-30 lg:sticky lg:top-4 lg:col-start-1 lg:row-start-1 lg:h-[calc(100vh-2rem)] lg:overflow-visible">
-      <label for="navigation-drawer" class="drawer-overlay" aria-label="Close navigation"></label>
-      <aside class="flex min-h-full w-60 flex-col gap-4 border border-base-300 bg-base-100 p-4 shadow-xs lg:h-full lg:min-h-0 lg:w-full lg:rounded-box">
-        <a href="/dashboard" class="btn btn-ghost justify-start px-3 text-xl font-semibold">Jaxon</a>
-        <nav aria-label="Primary navigation">
-          <ul class="menu w-full gap-1 p-0">
+    <div class="drawer-side app-sidebar-container z-30">
+      <label for="navigation-drawer" class="drawer-overlay"
+             aria-label="Close navigation"></label>
+      <aside class="app-sidebar">
+        {{ wordmark() }}
+        <nav class="app-navigation" aria-label="Primary navigation">
+          <p class="eyebrow mb-3 px-3">Your money</p>
+          <ul class="menu">
             {% for key, label, path, partial, symbol in nav_items %}
-              <li><a href="{{ path }}" hx-get="{{ partial }}" hx-push-url="{{ path }}" hx-target="#main-content" data-nav="{{ key }}" {% if menu_selection == key %}class="menu-active" aria-current="page"{% endif %}>{{ icon(symbol) }} {{ label }}</a></li>
+              <li>
+                <a href="{{ path }}" hx-get="{{ partial }}"
+                   hx-push-url="{{ path }}" hx-target="#main-content"
+                   data-nav="{{ key }}"
+                   class="{{ 'menu-active' if menu_selection == key else '' }}"
+                   {% if menu_selection == key %}aria-current="page"{% endif %}>
+                  {{ icon(symbol) }} {{ label }}
+                </a>
+              </li>
             {% endfor %}
           </ul>
         </nav>
-        <div class="mt-auto space-y-2">
-{#          <label class="label flex w-full justify-between gap-3 px-3 text-sm">#}
-{#            <span class="flex items-center gap-3">{{ icon("moon") }} Dark theme</span>#}
-{#            <input type="checkbox" class="toggle toggle-sm" data-theme-toggle aria-label="Dark theme">#}
-{#          </label>#}
+        <div class="app-sidebar-footer">
+          <p class="app-sidebar-note">A plan for your month.<br>Space for your life.</p>
           <form action="/logout" method="post">
-            <button class="btn btn-ghost w-full justify-start px-3" type="submit">{{ icon("log-out") }} Log out</button>
+            <button class="btn btn-ghost w-full justify-start px-3"
+                    type="submit">
+              {{ icon("log-out") }} Log out
+            </button>
           </form>
         </div>
       </aside>
     </div>
   </div>
   <div id="request-error" class="toast toast-end z-50 hidden" role="alert">
-    <div class="alert alert-error max-w-sm"><span data-error-message></span><button type="button" class="btn btn-ghost btn-square btn-xs" data-dismiss-error aria-label="Dismiss error">{{ icon("x") }}</button></div>
+    <div class="alert alert-error max-w-sm">
+      <span data-error-message></span>
+      <button type="button" class="btn btn-ghost btn-square btn-xs"
+              data-dismiss-error aria-label="Dismiss error">
+        {{ icon("x") }}
+      </button>
+    </div>
   </div>
 {% endblock %}

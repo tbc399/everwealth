@@ -41,7 +41,7 @@ const refresh = () => {
   syncNavigation();
   initBudgetTimeline();
   const heading = document.querySelector("#main-content h1");
-  if (heading) document.title = heading.textContent.trim() + " | Everwealth";
+  if (heading) document.title = heading.textContent.trim() + " | Jaxon";
   document.querySelectorAll("dialog[data-modal]:not([open])").forEach((dialog) => {
     dialog.addEventListener("close", () => dialog.remove(), { once: true });
     dialog.showModal();

@@ -4,7 +4,7 @@
     <form hx-put="/transactions/{{ transaction.id }}" hx-target="#tran_{{ transaction.id }}" hx-swap="outerHTML" class="space-y-4">
       <div class="flex items-center justify-between gap-4">
         <h3 class="section-heading">Edit transaction</h3>
-        <span class="font-mono text-sm {{ 'text-success' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</span>
+        <span class="amount text-sm {{ 'amount-positive' if transaction.amount > 0 else '' }}">{% if transaction.amount > 0 %}+{% else %}&minus;{% endif %}${{ transaction.display_amount }}</span>
       </div>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="grid gap-2 text-sm">
