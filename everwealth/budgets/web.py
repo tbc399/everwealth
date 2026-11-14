@@ -136,6 +136,22 @@ async def get_income_edit(
     return templates.TemplateResponse("budgets/edit-income.html", context)
 
 
+@router.get("/budgets/other-spending", response_class=HTMLResponse)
+async def get_other_spending(
+    request: Request, db: Connection = Depends(get_connection), user_id: str = Depends(auth_user),
+    month: str = "",
+):
+    period = await _selected_period(user_id, db, month)
+    transactions = await Transaction.fetch_other_spending(
+        user_id, period.id, period.start.date(), period.end.date(), db,
+    )
+    return templates.TemplateResponse(
+        "budgets/other-spending.html",
+        {"request": request, "period": period, "transactions": transactions,
+         "total": sum(abs(transaction.amount) for transaction in transactions) / 100},
+    )
+
+
 @router.get("/budgets/{budget_id}", response_class=HTMLResponse)
 @router.get("/budgets/{budget_id}/edit", response_class=HTMLResponse)
 async def get_budget_detail(

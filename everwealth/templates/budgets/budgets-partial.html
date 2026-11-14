@@ -26,7 +26,7 @@
         {% endfor %}
         <tr id="other-spending">
           <td class="min-w-40">
-            <span class="font-medium">Other spending</span>
+            <button type="button" class="link link-hover font-medium" hx-get="/budgets/other-spending?month={{ period.start.strftime('%Y-%m') }}" hx-target="body" hx-swap="beforeend">Other spending</button>
             <p class="muted mt-1">Transactions outside this month's budgets</p>
           </td>
           <td class="text-right font-mono text-sm">${{ "{:,.0f}".format(overview.other_spending) }}</td>

@@ -268,6 +268,30 @@ class Transaction(BaseModel):
         return (record["first_date"], record["last_date"]) if record else (None, None)
 
     @staticmethod
+    async def fetch_other_spending(
+        user_id: str, period_id: str, start: date, end: date, db: Connection
+    ) -> list["Transaction"]:
+        records = await db.fetch(
+            """
+            SELECT t.*, c.name AS category_name
+            FROM transactions t
+            LEFT JOIN categories c ON c.id = t.category_id
+            WHERE t.user_id = $1
+              AND t.date BETWEEN $2 AND $3
+              AND COALESCE(t.hidden, FALSE) = FALSE
+              AND (c.type = 'expense' OR t.category_id IS NULL)
+              AND NOT EXISTS (
+                  SELECT 1 FROM budgets b
+                  WHERE b.user_id = $1 AND b.period_id = $4 AND b.category_id = t.category_id
+              )
+            ORDER BY t.date DESC, t.id DESC
+            """,
+            user_id, start, end, period_id,
+        )
+        # This query only returns visible rows, including legacy NULL hidden flags.
+        return [Transaction.model_validate({**dict(record), "hidden": False}) for record in records]
+
+    @staticmethod
     async def fetch_for_category_in_range(
         user_id: str, category_id: str, start: date, end: date, db: Connection
     ) -> list["Transaction"]:
