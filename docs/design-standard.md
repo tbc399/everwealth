@@ -262,6 +262,25 @@ Stored light-theme preferences migrate to `jaxon`; explicit dark preferences
 are retained. Keyboard focus and reduced-motion behavior remain consistent
 across partial navigation.
 
+### Application density
+
+The application uses a more compact desktop scale than the marketing page:
+
+| Element | Desktop | Mobile (700px and below) / touch controls |
+| --- | --- | --- |
+| Buttons, single-line inputs, selects, and tabs | 36px high | At least 44px high |
+| Month pills | At least 36px high | At least 44px high |
+| Sidebar menu items | At least 36px high; 2px between items | At least 44px high; 2px between items |
+| Table cell vertical padding | 10px per side | 14px per side at mobile widths |
+| Space between main sections | 20px | 24px at mobile widths |
+| Panel header vertical padding | 16px | 20px at mobile widths |
+| Card body padding | 20px | 20px at mobile widths |
+
+A desktop transaction row containing a category select is approximately 56px
+high: a 36px control plus 20px of vertical cell padding. Typography, color, and
+the 1280px workspace width stay consistent with the application standard. The
+marketing page retains its original spacing and button sizes.
+
 For each design change, check:
 
 - Does it use the established palette and typography?
