@@ -1,0 +1,14 @@
+{% extends "marketing/layout.html" %}
+{% block extra_head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+  <article class="marketing-page legal-page wrap">
+    <p class="eyebrow">Legal information</p>
+    <h1>{% block legal_heading %}{% endblock %}</h1>
+    <p class="policy-metadata">Draft prepared November 19, 2026 &middot; Not yet effective</p>
+    <aside class="legal-notice" aria-label="Draft status">
+      <strong>Draft for review</strong>
+      <p>This document is a starting draft, not an adopted policy or agreement. Jaxon's legal operator, contact details, applicable locations, and final practices still need to be confirmed before it takes effect.</p>
+    </aside>
+    {% block legal_body %}{% endblock %}
+  </article>
+{% endblock %}

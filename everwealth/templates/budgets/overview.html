@@ -3,6 +3,13 @@
 {% set spending_progress = [overview.current_spend / overview.expected_spend * 100, 100]|min if overview.expected_spend else 0 %}
 {% set remaining = overview.expected_spend - overview.current_spend %}
 <section class="budget-summary" aria-label="Monthly budget overview">
+  <div class="summary-card summary-balance {{ 'summary-over' if remaining < 0 }}">
+    <div class="summary-label">Left to spend</div>
+    <p class="summary-value amount {{ 'amount-negative' if remaining < 0 }}">
+      {% if remaining < 0 %}&minus;{% endif %}${{ "{:,.0f}".format(remaining|abs) }}
+    </p>
+    <p class="summary-caption">{{ "Over budget" if remaining < 0 else "Remaining this month" }}</p>
+  </div>
   <div class="summary-card">
     <div class="summary-label">
       <span>Income</span>
@@ -24,12 +31,5 @@
     <p class="summary-caption">of ${{ "{:,.0f}".format(overview.expected_spend) }} budgeted</p>
     <progress class="progress progress-warning" value="{{ spending_progress }}"
               max="100" aria-label="Budget spent"></progress>
-  </div>
-  <div class="summary-card summary-balance {{ 'summary-over' if remaining < 0 }}">
-    <div class="summary-label">Left to spend</div>
-    <p class="summary-value amount {{ 'amount-negative' if remaining < 0 }}">
-      {% if remaining < 0 %}&minus;{% endif %}${{ "{:,.0f}".format(remaining|abs) }}
-    </p>
-    <p class="summary-caption">{{ "Over budget" if remaining < 0 else "Remaining this month" }}</p>
   </div>
 </section>

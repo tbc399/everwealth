@@ -146,7 +146,8 @@ data: use 14–16px for primary application content and at least 12px for metada
 - The explanatory section has **90px vertical padding**. Its three steps have a
   **42px gap** and begin **48px** below the introduction.
 - The closing panel uses **44px vertical / 48px horizontal padding**. The footer
-  has **45px vertical padding**.
+  begins **64px** below the content and has **48px vertical padding** above its
+  bottom copyright row.
 
 For new layouts, favor a 4px spacing rhythm: 4, 8, 12, 16, 24, 32, 48, and 64px.
 This is guidance for new work, not a claim that every existing value uses that
@@ -169,6 +170,7 @@ and give flex/grid children room to shrink. Do not rely on fixed page heights.
 | Informational pill | Pill tint, 20px radius, 7px × 10px padding; 10px text in the miniature preview |
 | Progress meter | 5px high, 8px radius, light track and muted green fill |
 | Step block | One top border, 24px top padding, numbered uppercase label |
+| Marketing footer | Top rule; brand introduction plus Product, Resources, and Account link groups; copyright and Privacy/Terms/Cookies links below |
 
 Prefer these radii by role rather than applying the largest radius everywhere.
 The preview card's **1-degree rotation** is a marketing illustration treatment,
@@ -238,6 +240,7 @@ brand accents.
 | Source | Responsibility |
 | --- | --- |
 | `static/styles/brand.css` | Exact brand colors and font families shared with marketing |
+| `static/styles/marketing.css` | Shared public footer and help/about page layouts |
 | `static/styles/theme.css` | Jaxon light theme, existing dark theme, semantic status palette, radii |
 | `static/styles/app.css` | App shell, heading hierarchy, panels, controls, tables, summaries, responsive behavior |
 | `static/input.css` | Tailwind build entry point and template/source scanning |
@@ -249,13 +252,20 @@ component in the source stylesheets. Use the existing utility classes for local
 layout. Financial values use `.amount` for Arial and tabular numerals, rather
 than a monospace font. Shared card headers use `.panel-header`.
 
+Legal-information pages share the marketing layout and show a clear draft status
+until adopted. See [the legal launch checklist](legal-launch-checklist.md) for the
+business details and review work still needed. Legal links are also available on
+sign-in and account-creation screens; their presence is not a consent mechanism.
+
 The overall workspace is centered with a maximum width of 1280px, matching the
 app's original width. It has a 224px desktop sidebar at 1024px and above and a mobile drawer
 below that width. Desktop content has 40px padding; narrow layouts have 20px.
 App page headings scale from 32px to 40px and section headings use 22px. The
-monthly overview uses three cards on desktop, with a highlighted remaining
-balance; at 700px and below the balance spans the full row beneath income and
-spending. Financial gains and losses retain green/red semantics, with darker
+monthly overview uses three cards on desktop, with the highlighted remaining
+balance on the left; at 700px and below the balance spans the full row above
+income and spending. The budget page header contains a month dropdown ordered
+newest first; category and new-budget actions sit beside the budget list.
+Financial gains and losses retain green/red semantics, with darker
 status text on the Jaxon light background for readability.
 
 Stored light-theme preferences migrate to `jaxon`; explicit dark preferences
@@ -269,7 +279,7 @@ The application uses a more compact desktop scale than the marketing page:
 | Element | Desktop | Mobile (700px and below) / touch controls |
 | --- | --- | --- |
 | Buttons, single-line inputs, selects, and tabs | 36px high | At least 44px high |
-| Month pills | At least 36px high | At least 44px high |
+| Month selector | 36px high | At least 44px high |
 | Sidebar menu items | At least 36px high; 2px between items | At least 44px high; 2px between items |
 | Table cell vertical padding | 10px per side | 14px per side at mobile widths |
 | Space between main sections | 20px | 24px at mobile widths |

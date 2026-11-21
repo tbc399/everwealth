@@ -1,5 +1,4 @@
 import "./transaction-upload.js";
-import { initBudgetTimeline } from "./budget-timeline.js";
 
 import {
   createIcons, ArrowLeft, ArrowLeftRight, ArrowRight,
@@ -39,7 +38,6 @@ const refresh = () => {
   createIcons({ icons });
   syncTheme();
   syncNavigation();
-  initBudgetTimeline();
   const heading = document.querySelector("#main-content h1");
   if (heading) document.title = heading.textContent.trim() + " | Jaxon";
   document.querySelectorAll("dialog[data-modal]:not([open])").forEach((dialog) => {

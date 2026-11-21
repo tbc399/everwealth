@@ -1,0 +1,19 @@
+{% set selected_month = period.start.strftime('%Y-%m') %}
+<nav class="budget-month-selector" aria-label="Budget month navigation" hx-sync="this:replace">
+  <select name="month" class="select select-sm budget-month-field"
+          hx-get="/budgets/partial" hx-trigger="change"
+          hx-target="#main-content" hx-push-url="true" aria-label="Budget month">
+    {% if selected_month not in month_values %}
+      <option value="{{ selected_month }}" selected>{{ period.start.strftime('%B %Y') }}</option>
+    {% endif %}
+    {% for item in months|sort(attribute='start', reverse=true) %}
+      {% set value = item.start.strftime('%Y-%m') %}
+      {% set over_income = item.spending > item.income %}
+      <option value="{{ value }}" {% if value == selected_month %}selected{% endif %}
+              class="{{ 'month-over-income' if over_income else 'month-within-income' }}"
+              aria-label="{{ item.start.strftime('%B %Y') }}: {{ 'spending exceeded income' if over_income else 'spending within income' }}">
+        {{ item.start.strftime('%B %Y') }}
+      </option>
+    {% endfor %}
+  </select>
+</nav>

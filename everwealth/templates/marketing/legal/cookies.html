@@ -1,0 +1,27 @@
+{% extends "marketing/legal/layout.html" %}
+{% block title %}Cookies & storage — Jaxon{% endblock %}
+{% block description %}How Jaxon's sign-in cookie and theme preference storage work, with browser controls and third-party connection information.{% endblock %}
+{% block legal_heading %}Cookies &amp; storage{% endblock %}
+{% block legal_body %}
+    <section>
+      <h2>Sign-in cookie</h2>
+      <p>After sign-in, Jaxon sets a first-party cookie named <code>session</code> so the app can recognize your authenticated requests. It is used for account access, rather than advertising. The current sign-in session normally expires after ten days; signing out clears the cookie from that browser.</p>
+      <p>The cookie is marked HttpOnly so page scripts cannot read it. Its Secure setting depends on the deployment configuration and must be enabled for the live HTTPS service.</p>
+    </section>
+    <section>
+      <h2>Theme preference</h2>
+      <p>Jaxon uses local storage named <code>theme</code> to remember the light or dark display preference in your browser. It does not have an automatic expiry and remains until it is changed or cleared through your browser's site-data settings.</p>
+    </section>
+    <section>
+      <h2>Your browser controls</h2>
+      <p>You can clear cookies and local storage in your browser settings. Blocking the sign-in cookie can prevent authenticated features from working. Clearing theme storage resets the saved display preference.</p>
+    </section>
+    <section>
+      <h2>External financial connections</h2>
+      <p>If you open Plaid's account-linking flow, its technology and privacy disclosures also apply. Review <a href="https://plaid.com/legal/">Plaid's privacy information</a> for its practices. This first-party inventory is not a complete audit of cookies or storage used by external providers.</p>
+    </section>
+    <section>
+      <h2>Final storage and consent review</h2>
+      <p>Before this notice takes effect, the live deployment must be checked for additional analytics, advertising, embedded tools, and provider storage. Whether a cookie or local-storage item needs consent depends on its purpose, duration, and applicable law. This notice and the footer links do not obtain that consent.</p>
+    </section>
+{% endblock %}

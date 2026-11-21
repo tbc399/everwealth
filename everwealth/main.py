@@ -36,6 +36,7 @@ from everwealth.transactions.hooks import router as transactions_hooks_router
 # from everwealth.settings.categories.web import router as settings_router
 from everwealth.transactions.web import router as transaction_router
 from everwealth.web.dashboard import router as dashboard_router
+from everwealth.web.marketing import router as marketing_router
 from everwealth.web.settings import router as settings_router
 
 templates = Jinja2Templates(directory="everwealth/templates")
@@ -104,6 +105,7 @@ api_router.include_router(budget_router)
 api_router.include_router(transaction_router)
 api_router.include_router(login_router)
 api_router.include_router(dashboard_router)
+api_router.include_router(marketing_router)
 api_router.include_router(accounts_router)
 api_router.include_router(settings_router)
 api_router.include_router(accounts_hooks_router)

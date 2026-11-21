@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block description %}Make room for what matters with Jaxon. Plan your monthly budget, organize transactions, and see where your money goes.{% endblock %}">
+    <meta name="theme-color" content="#f8f7f2">
+    <title>{% block title %}Jaxon — Money, with a little more clarity.{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', path='/jaxon.css') }}">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {% include "marketing/header.html" %}
+    <main id="main">
+      {% block content %}{% endblock %}
+    </main>
+    {% include "marketing/footer.html" %}
+  </body>
+</html>

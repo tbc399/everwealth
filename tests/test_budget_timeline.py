@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 from unittest.mock import AsyncMock
 
 import httpx
@@ -9,27 +10,24 @@ from everwealth.budgets import Budget, BudgetOverview, BudgetPeriod, BudgetView
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("path", ["/budgets", "/budgets/partial"])
-async def test_month_selection_and_timeline_colors(ui_app, monkeypatch, path):
+async def test_month_selection_and_status_colors(ui_app, monkeypatch, path):
     period = BudgetPeriod.for_month("test-user", 2026, 1)
     lookup = AsyncMock(return_value=period)
     monkeypatch.setattr(BudgetPeriod, "fetch_for_month", lookup)
     monkeypatch.setattr(BudgetPeriod, "timeline", AsyncMock(return_value=[
         {"start": datetime(2026, 1, 1), "income": 10000, "spending": 11000},
-        {"start": datetime(2026, 2, 1), "income": 10000, "spending": 10000},
+        {"start": datetime(2025, 12, 1), "income": 10000, "spending": 10000},
         {"start": datetime(2026, 3, 1), "income": 0, "spending": 0},
     ]))
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=ui_app), base_url="http://test") as client:
         response = await client.get(path, params={"month": "2026-01"})
     assert response.status_code == 200
     assert "January 2026" in response.text
-    assert 'hx-get="/budgets/partial?month=2026-01"' in response.text
-    assert 'hx-push-url="/budgets?month=2026-01"' in response.text
-    assert 'aria-current="date"' in response.text
+    assert 'value="2026-01" selected' in response.text
+    assert 'hx-get="/budgets/partial" hx-trigger="change"' in response.text
     assert 'aria-label="January 2026: spending exceeded income"' in response.text
-    assert response.text.count("badge-error") == 1
-    assert response.text.count("badge-success") == 2
-    assert 'data-month-scroll="-1"' in response.text
-    assert 'data-month-scroll="1"' in response.text
+    assert response.text.count("month-over-income") == 1
+    assert response.text.count("month-within-income") == 2
     assert 'hx-get="/budgets/create?month=2026-01"' in response.text
     assert 'hx-get="/budgets/income/edit?month=2026-01"' in response.text
     assert BudgetView.fetch_all_by_month.call_args.args[1:3] == (2026, 1)
@@ -37,6 +35,29 @@ async def test_month_selection_and_timeline_colors(ui_app, monkeypatch, path):
     assert lookup.call_args.args[:3] == ("test-user", 2026, 1)
     if path.endswith("partial"):
         assert "<html" not in response.text
+        assert response.headers["HX-Push-Url"] == "/budgets?month=2026-01"
+
+    header = response.text.split('<header class="page-header">', 1)[1].split("</header>", 1)[0]
+    assert 'aria-label="Budget month navigation"' in header
+    assert "<button" not in header
+    assert re.findall(r'<option value="([^"]+)"', header) == ["2026-03", "2026-01", "2025-12"]
+    assert "New budget" not in header
+    assert "Categories" not in header
+    list_header = response.text.split('<div class="panel-header">', 1)[1].split('<div class="overflow-x-auto">', 1)[0]
+    assert "New budget" in list_header
+    assert "Categories" in list_header
+    summary = response.text.split('aria-label="Monthly budget overview">', 1)[1].split("</section>", 1)[0]
+    assert summary.index("Left to spend") < summary.index("Income") < summary.index("Spending")
+
+
+@pytest.mark.asyncio
+async def test_selector_keeps_current_month_without_timeline_entries(ui_app, monkeypatch):
+    monkeypatch.setattr(BudgetPeriod, "timeline", AsyncMock(return_value=[]))
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=ui_app), base_url="http://test") as client:
+        response = await client.get("/budgets/partial")
+    assert response.status_code == 200
+    assert 'value="2026-10" selected>October 2026</option>' in response.text
+    assert response.headers["HX-Push-Url"] == "/budgets?month=2026-10"
 
 
 @pytest.mark.asyncio

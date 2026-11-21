@@ -38,13 +38,16 @@ async def _selected_period(user_id: str, db: Connection, month: str = "") -> Bud
 
 async def _budget_context(user_id: str, db: Connection, month: str = "") -> dict:
     period = await _selected_period(user_id, db, month)
+    months = await BudgetPeriod.timeline(user_id, db)
+    month_values = [item["start"].strftime("%Y-%m") for item in months]
     return {
         "budgets": await BudgetView.fetch_all_by_month(
             user_id, period.start.year, period.start.month, db
         ),
         "overview": await BudgetOverview.fetch(user_id, period, db),
         "period": period,
-        "months": await BudgetPeriod.timeline(user_id, db),
+        "months": months,
+        "month_values": month_values,
     }
 
 
@@ -73,7 +76,10 @@ async def budgets_partial(
 ):
     context = await _budget_context(user_id, db, month)
     context.update({"request": request, "active_tab": "budgets"})
-    return templates.TemplateResponse("budgets/budgets-partial.html", context)
+    return templates.TemplateResponse(
+        "budgets/budgets-partial.html", context,
+        headers={"HX-Push-Url": f"/budgets?month={context['period'].start:%Y-%m}"},
+    )
 
 
 @router.get("/budgets/create", response_class=HTMLResponse)

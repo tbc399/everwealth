@@ -1,0 +1,43 @@
+{% extends "marketing/layout.html" %}
+{% block title %}Help & getting started — Jaxon{% endblock %}
+{% block description %}Get started with Jaxon: create an account, import transactions, set monthly budgets, and review your spending.{% endblock %}
+{% block content %}
+  <article class="marketing-page wrap">
+    <p class="eyebrow">Help &amp; getting started</p>
+    <h1>Start with this month.</h1>
+    <p class="page-intro">A few simple steps to get your budget and transactions in one place.</p>
+    <section id="getting-started">
+      <h2>1. Set up your account</h2>
+      <p><a href="/register">Create an account</a>, then open Accounts to add a manual account for your imported transactions. If you already have an account, <a href="/login">sign in here</a>.</p>
+    </section>
+    <section id="transaction-imports">
+      <h2>2. Bring in your transactions</h2>
+      <p>In Transactions, choose Import transactions, select an account, and upload a CSV file. Match the date, description, and amount columns to your file. You can also map a credit/debit column when amounts are unsigned.</p>
+      <p><a href="{{ url_for('static', path='/upload_template.csv') }}" download>Download the CSV template</a> for an example of the expected fields. Without a credit/debit column, use positive amounts for money in and negative amounts for money out.</p>
+    </section>
+    <section id="monthly-budgets">
+      <h2>3. Give your money a plan</h2>
+      <p>Open Budgets and edit planned income to set your overall monthly income. Add budgets for your spending categories. Categories can be main categories or subcategories of an existing main category.</p>
+    </section>
+    <section>
+      <h2>4. Check in as the month goes on</h2>
+      <p>Compare recorded spending with your planned amounts. Open Other spending to see uncategorized transactions and spending in categories without a budget. Use the month timeline to review earlier periods.</p>
+    </section>
+    <section class="help-questions" aria-labelledby="questions-heading">
+      <h2 id="questions-heading">A few useful details</h2>
+      <details>
+        <summary>What do the month colors mean?</summary>
+        <p>A red month means visible spending exceeded recorded income for that period. Green means it did not. The comparison uses recorded income, rather than the income amount you planned.</p>
+      </details>
+      <details>
+        <summary>Can I correct a transaction after importing it?</summary>
+        <p>Yes. Use the edit control in Transactions to update its description, date, category, or notes. You can also hide a transaction so it is excluded from the budget totals.</p>
+      </details>
+      <details>
+        <summary>What happens if I import the same CSV again?</summary>
+        <p>Jaxon skips rows matching the same account, original date, description, and amount. Two separate purchases with exactly those same details can also match, so review your source file before importing.</p>
+      </details>
+    </section>
+    <div class="page-actions"><a class="button" href="/register">Get started with Jaxon <span aria-hidden="true">↗</span></a></div>
+  </article>
+{% endblock %}

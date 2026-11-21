@@ -1,0 +1,36 @@
+{% extends "marketing/legal/layout.html" %}
+{% block title %}Privacy policy — Jaxon{% endblock %}
+{% block description %}Jaxon's draft privacy policy: account information, financial records, cookies, service providers, and data choices.{% endblock %}
+{% block legal_heading %}Privacy policy{% endblock %}
+{% block legal_body %}
+    <section>
+      <h2>Information used by Jaxon</h2>
+      <p>When you create an account, Jaxon processes your username, email address, and password to register and authenticate you. Passwords are stored as password hashes. Your profile can also contain your first and last name.</p>
+      <p>When you use the budgeting features, Jaxon stores the account names, budgets, categories, transaction dates, descriptions, amounts, and notes you supply. CSV imports create transaction records, including original values used to recognize repeat imports and retain the original transaction details after edits.</p>
+      <p>If you connect a financial account through Plaid, Jaxon receives account and institution identifiers, account names and types, masked account-number details, and transaction information. Jaxon also stores connection credentials supplied by Plaid to maintain that connection.</p>
+    </section>
+    <section>
+      <h2>How information is used</h2>
+      <p>This information supports sign-in, account management, transaction imports, financial-account connections, budget calculations, and the views you request. If email sign-in is used, your email address is also used to send sign-in messages.</p>
+      <p>Application logs can include your IP address, request paths and query parameters, response status, timing, and diagnostic errors. These records support operating and troubleshooting the service.</p>
+    </section>
+    <section>
+      <h2>Cookies and browser storage</h2>
+      <p>Jaxon uses a sign-in cookie and browser storage for your display theme. See the <a href="/cookies">Cookies &amp; Storage notice</a> for their purposes, duration, and browser controls.</p>
+    </section>
+    <section>
+      <h2>Service providers and connected accounts</h2>
+      <p>Operating the service involves hosting, database, and, when enabled, email and financial-connection providers. The final policy must identify the providers and processing locations used by the live service.</p>
+      <p>Plaid handles financial-account linking under its own terms and privacy disclosures. Review <a href="https://plaid.com/legal/">Plaid's privacy information</a> when deciding whether to connect an account. Its policy does not replace Jaxon's explanation of its own data practices.</p>
+    </section>
+    <section>
+      <h2>Your information and choices</h2>
+      <p>You can update profile names and transaction details within the app. Hiding a transaction excludes it from budget calculations; it does not delete the stored record. Signing out clears the sign-in cookie from that browser; it does not delete your account.</p>
+      <p>The final policy must provide a working privacy contact and explain how to request access, correction, export, or deletion, including any verification process and rights available where you live.</p>
+    </section>
+    <section>
+      <h2>Retention, sharing, and other disclosures</h2>
+      <p>Retention periods for accounts, financial records, connection credentials, logs, and backups have not been specified in this draft. The final policy must explain those periods or the criteria used to determine them.</p>
+      <p>Before this policy takes effect, Jaxon's operator must also confirm disclosures about selling or sharing data, third-party tracking and browser privacy signals, international processing, children's eligibility, and notification of material policy changes. This draft does not assert that any particular privacy-law certification or exemption applies.</p>
+    </section>
+{% endblock %}

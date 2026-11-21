@@ -1,0 +1,215 @@
+/* Shared footer and informational pages; the landing composition is in jaxon.css. */
+.site-footer {
+  margin-top: 64px;
+  border-top: 1px solid var(--line);
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: 48px;
+  padding-block: 48px;
+}
+
+.footer-brand .wordmark {
+  font-size: 25px;
+}
+
+.footer-brand .footer-tagline {
+  margin-block: 16px 12px;
+  color: var(--ink);
+  font-family: var(--font-editorial);
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.footer-brand p {
+  max-width: 280px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.footer-column h2 {
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.footer-column ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-column a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding-block: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.footer-bottom a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.policy-metadata {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.legal-notice {
+  margin-block: 24px 36px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--jaxon-pill);
+  font-size: 14px;
+}
+
+.legal-notice p {
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.legal-page code {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--jaxon-pill);
+  font-size: 0.875em;
+}
+
+/* Public help and about content uses a narrower reading measure. */
+.marketing-page {
+  max-width: 760px;
+  padding-block: 80px 32px;
+}
+
+.marketing-page h1 {
+  font-size: clamp(36px, 5vw, 48px);
+  letter-spacing: -1.5px;
+}
+
+.marketing-page .page-intro {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.marketing-page section {
+  margin-top: 40px;
+  scroll-margin-top: 24px;
+}
+
+.marketing-page section h2 {
+  margin-bottom: 12px;
+  font-family: var(--font-editorial);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+}
+
+.marketing-page section p {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.marketing-page section a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.help-questions details {
+  border-bottom: 1px solid var(--line);
+}
+
+.help-questions summary {
+  padding-block: 18px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.help-questions details p {
+  margin-top: 0;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 960px) {
+  .footer-main {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer-brand p {
+    max-width: 460px;
+  }
+}
+
+@media (max-width: 700px) {
+  .site-footer {
+    margin-top: 48px;
+  }
+
+  .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-block: 32px;
+  }
+
+  .footer-column a, .footer-bottom a {
+    min-height: 44px;
+  }
+
+  .marketing-page {
+    padding-top: 48px;
+  }
+}

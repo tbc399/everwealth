@@ -289,26 +289,33 @@
         margin-top: auto;
     }
 
-    .month-timeline {
-        padding-block: 0.25rem;
+    .budget-month-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+        max-width: 100%;
     }
 
-    .month-pill {
-        min-height: 2.25rem;
-        padding-inline: 1rem;
-        border-radius: 999px;
-        font-size: 0.8125rem;
+    .budget-month-field {
+        width: 11.5rem;
+        min-width: 0;
+        max-width: 100%;
     }
 
-    [data-theme="jaxon"] .month-pill.badge-outline {
-        background: var(--color-base-100);
+    .month-within-income {
+        color: var(--color-success);
     }
 
-    [data-theme="jaxon"] .month-pill.badge-success.badge-outline {
+    .month-over-income {
+        color: var(--color-error);
+    }
+
+    [data-theme="jaxon"] .month-within-income {
         color: var(--color-success-content);
     }
 
-    [data-theme="jaxon"] .month-pill.badge-error.badge-outline {
+    [data-theme="jaxon"] .month-over-income {
         color: var(--color-error-content);
     }
 
@@ -451,6 +458,27 @@
         letter-spacing: -0.75px;
     }
 
+    .auth-legal {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px 16px;
+        margin-top: 1.25rem;
+        color: var(--app-muted);
+        font-size: 0.75rem;
+    }
+
+    .auth-legal a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2rem;
+        text-underline-offset: 4px;
+    }
+
+    .auth-legal a:hover {
+        text-decoration: underline;
+    }
+
     @media (min-width: 1024px) {
         .app-shell {
             grid-template-columns: 14rem minmax(0, 1fr);
@@ -532,6 +560,10 @@
 
     /* Keep touch controls comfortable even with a compact desktop layout. */
     @media (max-width: 700px), (pointer: coarse) {
+        .auth-legal a {
+            min-height: 2.75rem;
+        }
+
         .app-navigation [data-nav] {
             min-height: 2.75rem;
         }
@@ -543,10 +575,6 @@
 
         .tab {
             height: 2.75rem;
-            min-height: 2.75rem;
-        }
-
-        .month-pill {
             min-height: 2.75rem;
         }
     }
